@@ -1,0 +1,162 @@
+// To parse this JSON data, do
+//
+//     final posSale = posSaleFromJson(jsonString);
+
+import 'dart:convert';
+
+PosSale posSaleFromJson(String str) => PosSale.fromJson(json.decode(str));
+
+String posSaleToJson(PosSale data) => json.encode(data.toJson());
+
+class PosSale {
+  PosSale({
+    required this.objType,
+    required this.docNum,
+    required this.cardCode,
+    required this.docTotal,
+    required this.balance,
+    this.ref1,
+    required this.docDate,
+    required this.discSum,
+    required this.payments,
+    required this.rows,
+    required this.totalPaid,
+    required this.userName,
+  });
+
+  int objType;
+  int docNum;
+  int cardCode;
+  int docTotal;
+  int balance;
+  String? ref1;
+  DateTime docDate;
+  int discSum;
+  List<Payment> payments;
+  List<SaleRow> rows;
+  int totalPaid;
+  String userName;
+
+  factory PosSale.fromJson(Map<String, dynamic> json) => PosSale(
+        objType: json["ObjType"],
+        docNum: json["DocNum"],
+        cardCode: json["CardCode"],
+        docTotal: json["DocTotal"],
+        balance: json["Balance"],
+        ref1: json["ref1"],
+        docDate: DateTime.parse(json["DocDate"]),
+        discSum: json["DiscSum"],
+        payments: List<Payment>.from(
+            json["payments"].map((x) => Payment.fromJson(x))),
+        rows: List<SaleRow>.from(json["rows"].map((x) => SaleRow.fromJson(x))),
+        totalPaid: json["totalPaid"],
+        userName: json["userName"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "ObjType": objType,
+        "DocNum": docNum,
+        "CardCode": cardCode,
+        "DocTotal": docTotal,
+        "Balance": balance,
+        "ref1": ref1,
+        "DocDate":
+            "${docDate.year.toString().padLeft(4, '0')}-${docDate.month.toString().padLeft(2, '0')}-${docDate.day.toString().padLeft(2, '0')}",
+        "DiscSum": discSum,
+        "payments": List<dynamic>.from(payments.map((x) => x.toJson())),
+        "rows": List<dynamic>.from(rows.map((x) => x.toJson())),
+        "TotalPaid": totalPaid,
+        "userName": userName,
+      };
+}
+
+class Payment {
+  Payment({
+    this.sumApplied,
+    required this.oACTSId,
+    this.name,
+  });
+
+  int? sumApplied;
+  int oACTSId;
+  String? name;
+
+  factory Payment.fromJson(Map<String, dynamic> json) => Payment(
+        sumApplied: json["SumApplied"],
+        oACTSId: json["o_a_c_t_s_id"],
+        name: json['name'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "SumApplied": sumApplied,
+        "o_a_c_t_s_id": oACTSId,
+        "name": name,
+      };
+}
+
+class SaleRow {
+  SaleRow({
+    this.name,
+    required this.oPLNSId,
+    required this.sellingPrice,
+    required this.quantity,
+    this.uomEntry,
+    required this.oITMSId,
+    this.discSum,
+    required this.lineTotal,
+    required this.lineNum,
+    this.commission,
+    this.taxId,
+    this.taxRate,
+    this.taxAmount,
+    this.ref1,
+  });
+  String? name;
+  int oPLNSId;
+  int sellingPrice;
+  int quantity;
+  dynamic uomEntry;
+  int oITMSId;
+  int? discSum;
+  int lineTotal;
+  int lineNum;
+  int? commission;
+  dynamic? taxId;
+  dynamic? taxRate;
+  dynamic? taxAmount;
+  String? ref1;
+
+  factory SaleRow.fromJson(Map<String, dynamic> json) => SaleRow(
+        name: json["name"],
+        oPLNSId: json["o_p_l_n_s_id"],
+        sellingPrice: json["SellingPrice"],
+        quantity: json["Quantity"],
+        uomEntry: json["UomEntry"],
+        oITMSId: json["o_i_t_m_s_id"],
+        discSum: json["DiscSum"],
+        lineTotal: json["LineTotal"],
+        lineNum: json["LineNum"],
+        commission: json["Commission"],
+        taxId: json["TaxId"],
+        taxRate: json["TaxRate"],
+        taxAmount: json["TaxAmount"],
+        ref1: json["ref1"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "name": name,
+        "o_p_l_n_s_id": oPLNSId,
+        "SellingPrice": sellingPrice,
+        "Quantity": quantity,
+        "UomEntry": uomEntry,
+        "o_i_t_m_s_id": oITMSId,
+        "DiscSum": discSum,
+        "LineTotal": lineTotal,
+        "LineNum": lineNum,
+        "Commission": commission,
+        "TaxId": taxId,
+        "TaxRate": taxRate,
+        "TaxAmount": taxAmount,
+        "ref1": ref1,
+      };
+}

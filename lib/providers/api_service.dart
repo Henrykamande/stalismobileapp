@@ -1,0 +1,236 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:testproject/models/accountmodel.dart';
+import 'package:testproject/models/customermode.dart';
+import 'package:testproject/models/login_requestmodel.dart';
+import 'package:testproject/models/paymentsAccounts.dart';
+import 'package:testproject/models/postSale.dart';
+import 'package:testproject/models/product.dart';
+import 'package:testproject/providers/shared_preferences_services.dart';
+
+class GetProducts with ChangeNotifier {
+  var data;
+  var selectedprod;
+  var accountsdata;
+  var response;
+  PrefService _prefs = PrefService();
+
+  List<ResponseDatum> result = [];
+
+  //This function set the headers for api calls
+  sethenders() async {
+    var cache = await _prefs.readCache('Token', 'StoreId', 'loggedinUserName');
+
+    String token = cache['Token'];
+    String storeId = cache['StoreId'];
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      "Authorization": "Bearer $token",
+      "storeid": "$storeId"
+    };
+    return headers;
+  }
+
+  Future<List<dynamic>> getTodoList(String? query) async {
+    final queryparamaeters = jsonEncode({
+      "searchText": "$query",
+    });
+    var headers = await sethenders();
+
+    var url = Uri.https('apoyobackend.softcloudtech.co.ke',
+        '/api/v1/search-products-mobile-api');
+
+    try {
+      if (query != null) {
+        response =
+            await http.post(url, headers: headers, body: queryparamaeters);
+      } else {
+        /* final queryparamaeters = jsonEncode({
+          "searchText": "",
+        });
+        try {
+          response =
+              await http.post(url, headers: headers, body: queryparamaeters);
+        } catch (e) {
+          print("Error occured when body is empty string $e");
+        } */
+      }
+
+      if (response.statusCode == 200) {
+        print('Sucessful POst');
+        data = jsonDecode(response.body)['ResponseData'];
+
+        //print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ${data['ResponseData']}");
+        /*  data = json.decode(response.body);
+        print(data); */
+        //result = data.map((e) => ResponseData.fromJson(e)).toList();
+        /* ata = data.map((e) => ResponseDatum.fromJson(e)).toList();
+        print(
+            '########################################################## $data}['
+            ']');
+        data.foreach((e) => print(e)); */
+
+        return data;
+      } else {
+        print('Request failed with status: ${response.statusCode}.');
+      }
+    } on Exception catch (e) {
+      print(
+          'error>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> $e');
+    }
+
+    return data = [];
+  }
+
+  Future<List<dynamic>> getaccounts(searchquery) async {
+    var headers = await sethenders();
+    List<dynamic> accountsdata;
+    final queryparamaeters = jsonEncode({
+      "searchText": "$searchquery",
+    });
+
+    var url =
+        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/search-account');
+
+    if (searchquery != null) {
+      response = await http.post(url, headers: headers, body: queryparamaeters);
+      if (response.statusCode == 200) {
+        print('Sucessful POst');
+        accountsdata = jsonDecode(response.body)['ResponseData'];
+        return accountsdata;
+      } else {
+        print('Request failed with status: ${response.statusCode}.');
+      }
+    }
+    response = await http.get(url, headers: headers);
+    accountsdata = jsonDecode(response.body)['ResponseData'];
+    notifyListeners();
+
+    return accountsdata;
+  }
+
+  Future<List<CustomersResponseDatum>> getcustomers(
+      String? querycustomerName) async {
+    var headers = await sethenders();
+    final queryparamaeters = jsonEncode({
+      "searchText": "$querycustomerName",
+    });
+    List<CustomersResponseDatum> customersdata;
+
+    var url = Uri.https('apoyobackend.softcloudtech.co.ke', '/customers');
+    response = await http.get(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      print('Customer Fetch ');
+    }
+    customersdata = await jsonDecode(response.body)['ResponseData'];
+
+    print(
+        "accountttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt $accountsdata");
+    notifyListeners();
+    return customersdata;
+    /* customersdata
+        .map((json) => CustomersResponseDatum.fromJson(json))
+        .where((customerdata) {_linenum
+                            prodproducts_linenum
+      final customerName = customerdata.name.toLowerCase();
+      final querycustomerLower = querycustomerName!.toLowerCase();
+      return customerName.contains(querycustomerLower);
+    }).toList();*/
+  }
+
+  void postsale(salecard) async {
+    print('Print Sales $salecard');
+    var headers = await sethenders();
+    final queryparamaeters = posSaleToJson(salecard);
+    print(
+        'Query paramsaleCardaeters ..........................................................$queryparamaeters');
+    //print(jsonDecode(queryparamaeters));
+    var url = Uri.https(
+      'apoyobackend.softcloudtech.co.ke',
+      '/api/v1/documents',
+    );
+    try {
+      response = await http.post(
+        url,
+        headers: headers,
+        body: queryparamaeters,
+      );
+      print('Query paramsaleCardaeters $queryparamaeters');
+
+      print('response from postr sale ${response.body}');
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void getBankAccounts() async {
+    var headers = await sethenders();
+    var url =
+        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/bank-accounts');
+    response = await http.get(
+      url,
+      headers: headers,
+    );
+  }
+
+  void selectedProduct(ResponseDatum productSelected) {
+    selectedprod = productSelected;
+    //print(selectedprod);
+  }
+
+  Future<List<dynamic>> fetchSoldProducts(startDate) async {
+    var headers = await sethenders();
+    final queryparameters = jsonEncode({
+      "StartDate": startDate,
+      "combinedReport": "N",
+      "SoldBy": null,
+      "CustomerID": null,
+      "ProductID": null
+    });
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/bought-sold-products/14');
+    response = await http.post(
+      url,
+      headers: headers,
+      body: queryparameters,
+    );
+    if (response.statusCode == 200) {
+      print('Customer Fetch ');
+    }
+    data = await jsonDecode(response.body)['ResponseData']['AllProductsSold'];
+    print(
+        'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff $data');
+    notifyListeners();
+    return data;
+  }
+
+  Future<PaymentAccountsResponseData> getanaccount(accountId) async {
+    var headers = await sethenders();
+    PaymentAccountsResponseData accountsdata;
+
+    var url =
+        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/bank-accounts');
+    response = await http.get(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      print('Sucessful POst');
+    }
+    accountsdata = jsonDecode(response.body)['ResponseData'];
+    print(
+        "accountttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt $accountsdata");
+    notifyListeners();
+    return accountsdata;
+  }
+}
