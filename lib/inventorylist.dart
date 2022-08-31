@@ -61,7 +61,6 @@ class _InventoryListState extends State<InventoryList> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20.0),
                     ),
-                    hintText: "eg: Maize",
                     prefixIcon: Icon(
                       Icons.search,
                       color: Colors.purple.shade900,

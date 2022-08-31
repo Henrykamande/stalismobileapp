@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:testproject/models/accountmodel.dart';
 import 'package:testproject/models/customermode.dart';
 import 'package:testproject/models/login_requestmodel.dart';
+import 'package:testproject/models/macaddress.dart';
+import 'package:testproject/models/paidamount.dart';
 import 'package:testproject/models/paymentsAccounts.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/models/product.dart';
@@ -17,6 +19,7 @@ class GetProducts with ChangeNotifier {
   var selectedprod;
   var accountsdata;
   var response;
+  int totalpayments = 0;
   PrefService _prefs = PrefService();
 
   List<ResponseDatum> result = [];
@@ -95,9 +98,9 @@ class GetProducts with ChangeNotifier {
     });
 
     var url =
-        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/search-account');
+        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/bank-accounts');
 
-    if (searchquery != null) {
+    /* if (searchquery != null) {
       response = await http.post(url, headers: headers, body: queryparamaeters);
       if (response.statusCode == 200) {
         print('Sucessful POst');
@@ -106,7 +109,7 @@ class GetProducts with ChangeNotifier {
       } else {
         print('Request failed with status: ${response.statusCode}.');
       }
-    }
+    } */
     response = await http.get(url, headers: headers);
     accountsdata = jsonDecode(response.body)['ResponseData'];
     notifyListeners();
@@ -207,8 +210,7 @@ class GetProducts with ChangeNotifier {
       print('Customer Fetch ');
     }
     data = await jsonDecode(response.body)['ResponseData']['AllProductsSold'];
-    print(
-        'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff $data');
+
     notifyListeners();
     return data;
   }
@@ -232,5 +234,139 @@ class GetProducts with ChangeNotifier {
         "accountttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt $accountsdata");
     notifyListeners();
     return accountsdata;
+  }
+
+  Future<List<dynamic>> fetchSalePayments(startDate) async {
+    var headers = await sethenders();
+    print('Start Date $startDate');
+    var queryparameters = jsonEncode({
+      "storeid": "${headers['storeid']}",
+      "StartDate": "$startDate",
+      "EndDate": "$startDate",
+    });
+
+    try {
+      print('Params Fect Payments $queryparameters');
+      var url = Uri.https(
+          'apoyobackend.softcloudtech.co.ke', '/api/v1/sale-payments-report');
+      print(url);
+    } catch (e) {
+      print(e);
+    }
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/sale-payments-report');
+    response = await http.post(
+      url,
+      headers: headers,
+      body: queryparameters,
+    );
+    print('Response ${response.statusCode}');
+    if (response.statusCode == 200) {
+      print('Customer Fetch ');
+      data = await jsonDecode(response.body)['ResponseData']['AllPayments'];
+      print(
+          'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff $data');
+    }
+    notifyListeners();
+    return data;
+  }
+
+  Future<String> defaultPrinterAddress(printerAddress) async {
+    var headers = await sethenders();
+    print(printerAddress);
+    print(headers['storeid']);
+    final queryparameters = jsonEncode({
+      "store_id": headers['storeid'],
+      'address': printerAddress,
+    });
+
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/store-mac-address');
+    response = await http.post(
+      url,
+      headers: headers,
+      body: queryparameters,
+    );
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      print('Customer Fetch ');
+    }
+    data = await jsonDecode(response.body);
+    print(data);
+
+    notifyListeners();
+    return data;
+  }
+
+  /* Future<List<dynamic>> getPrinterAddress() async {
+    var headers = await sethenders();
+    var url = Uri.https('apoyobackend.softcloudtech.co.ke',
+        '/api/v1/store-mac-address/${headers['storeid']}');
+    response = await http.get(
+      url,
+      headers: headers,
+    );
+    data = await jsonDecode(response.body);
+
+    print(
+        'rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr${data}');
+    return data['ResponseData'];
+  } */
+
+  Future<int> getTotalPayments(query) async {
+    var data;
+    var headers = await sethenders();
+    final queryparameters = jsonEncode({
+      "storeid": "${headers['storeid']}",
+      "StartDate": "$query",
+      "EndDate": "$query",
+    });
+    print(
+        '222222222222222222222222222222222222222222222222222222222222222222222222222222222222 $queryparameters');
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/sale-payments-report');
+    var response = await http.post(
+      url,
+      headers: headers,
+      body: queryparameters,
+    );
+    if (response.statusCode == 200) {
+      data = await jsonDecode(response.body)['ResponseData']['TotalAmount'];
+      /* TotalAmountData totalpaymentdata =
+          data.map((dynamic item) => TotalAmountData.fromJson(item)).toList(); */
+      totalpayments = data;
+      print(
+          '888888888888888888888888888888888888888888888888888888888888888888888888888888888888888 $totalpayments');
+      notifyListeners();
+      return data;
+    } else {
+      throw 'Cant get total payment';
+    }
+  }
+
+  Future<int> getsoldtotals(_searchquery) async {
+    var headers = await sethenders();
+    final queryparameters = jsonEncode({
+      "StartDate": _searchquery,
+      "combinedReport": "N",
+      "SoldBy": null,
+      "CustomerID": null,
+      "ProductID": null
+    });
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/bought-sold-products/14');
+    var response = await http.post(
+      url,
+      headers: headers,
+      body: queryparameters,
+    );
+    if (response.statusCode == 200) {
+      print('Customer Fetch ');
+    }
+    var data =
+        await jsonDecode(response.body)['ResponseData']['TotalSalesAmount'];
+
+    print('total sold amount $data');
+    return data;
   }
 }

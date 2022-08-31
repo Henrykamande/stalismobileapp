@@ -25,7 +25,8 @@ class UserLogin with ChangeNotifier {
       print(
           'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  dddddddddd userdat$datamap');
       String token = datamap['ResponseData']['authToken'];
-      int storeid = 121;
+      int storeid = datamap['ResponseData']['store_id'];
+
       print(
           "store id ----------------------------------------------------------------------- $storeid");
       String logineduserName = datamap['ResponseData']['name'];

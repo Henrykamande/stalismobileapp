@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:testproject/AddPayment.dart';
 import 'package:testproject/models/accountmodel.dart';
 import 'package:testproject/models/paymentsAccounts.dart';
 import 'package:testproject/models/postSale.dart';
@@ -30,18 +29,6 @@ class _PaymentSearchState extends State<PaymentSearch> {
     super.initState();
     accountsList = _accountslistbulder.getaccounts(_searchquery);
     amountPaid = TextEditingController();
-  }
-
-  void _showaddPaymentPane() {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) {
-          return Container(
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
-            child: AddPaymentForm(),
-          );
-        });
   }
 
   void _showaddProductPane() {
@@ -82,7 +69,6 @@ class _PaymentSearchState extends State<PaymentSearch> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20.0),
                   ),
-                  hintText: "eg: Maize",
                   prefixIcon: Icon(
                     Icons.search,
                     color: Colors.purple.shade900,
@@ -146,6 +132,7 @@ class _PaymentSearchState extends State<PaymentSearch> {
             child: Column(
               children: [
                 TextFormField(
+                  readOnly: true,
                   initialValue: selectedAccout.name,
                 ),
                 TextField(
@@ -172,7 +159,6 @@ class _PaymentSearchState extends State<PaymentSearch> {
         oACTSId: selectedAccount.oACTSId,
         name: selectedAccount.name);
     paymentData.addPayment(newpayment);
-    print(newpayment);
     Navigator.pushNamed(context, '/start');
   }
 }

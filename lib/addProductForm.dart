@@ -18,6 +18,7 @@ class _AddProductFormState extends State<AddProductForm> {
   int _total = 0;
   String _productName = "";
   int _linenum = 0;
+  String? ref1;
 
   /* double _totalPrice() {Products
     setState(() {
@@ -47,81 +48,87 @@ class _AddProductFormState extends State<AddProductForm> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
-                        initialValue: _selectedProd.name,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          hintText: "Enter Product Name",
-                          labelText: 'Product Name',
-                          fillColor: Colors.white,
-                          filled: true,
-                          enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                            color: Colors.white,
-                            width: 2.0,
-                          )),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          initialValue: _selectedProd.name,
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            hintText: "Enter Product Name",
+                            labelText: 'Product Name',
+                            fillColor: Colors.white,
+                            filled: true,
+                          ),
+                          validator: (val) =>
+                              val!.isEmpty ? 'Please Enter Product Name' : null,
+                          onChanged: (val) => setState(() {
+                            _productName = _selectedProd.name;
+                          }),
                         ),
-                        validator: (val) =>
-                            val!.isEmpty ? 'Please Enter Product Name' : null,
-                        onChanged: (val) => setState(() {
-                          _productName = _selectedProd.name;
-                        }),
                       ),
                     ),
                   ],
                 ),
               ),
-              Row(children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Expanded(
-                  child: TextFormField(
-                    initialValue: _qtyToSell.toString(),
-                    decoration: InputDecoration(
-                      labelText: 'Qty To Sell',
-                      fillColor: Colors.white,
-                      filled: true,
-                      enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.white,
-                        width: 2.0,
-                      )),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      initialValue: _qtyToSell.toString(),
+                      decoration: InputDecoration(
+                        labelText: 'Qty To Sell',
+                        fillColor: Colors.white,
+                        filled: true,
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red, width: 1.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.blue, width: 1.0),
+                        ),
+                      ),
+                      validator: (val) =>
+                          val!.isEmpty ? 'Please Enter Qty to Sell' : null,
+                      onChanged: (val) => setState(() {
+                        _qtyToSell = int.parse(
+                          val,
+                        );
+                        _total = _qtyToSell * _sellingPrice;
+                      }),
                     ),
-                    validator: (val) =>
-                        val!.isEmpty ? 'Please Enter Product Name' : null,
-                    onChanged: (val) => setState(() {
-                      _qtyToSell = int.parse(
-                        val,
-                      );
-                      _total = _qtyToSell * _sellingPrice;
-                    }),
                   ),
                 ),
                 Expanded(
-                  child: TextFormField(
-                    initialValue: _selectedProd.sellingPrice.toString(),
-                    decoration: InputDecoration(
-                      labelText: 'Selling Price',
-                      fillColor: Colors.white,
-                      filled: true,
-                      enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.white,
-                        width: 2.0,
-                      )),
-                      focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.pink,
-                        width: 2.0,
-                      )),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        labelText: 'Selling Price',
+                        fillColor: Colors.white,
+                        filled: true,
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red, width: 1.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.blue, width: 1.0),
+                        ),
+                      ),
+                      validator: (val) {
+                        setState(() {
+                          _sellingPrice = int.parse((val!));
+                          _total = _qtyToSell * _sellingPrice;
+                        });
+                      },
+                      onChanged: (val) => setState(() {
+                        _sellingPrice = int.parse((val));
+                        _total = _qtyToSell * _sellingPrice;
+                      }),
                     ),
-                    validator: (val) =>
-                        val!.isEmpty ? 'Please Enter Quaitity ' : null,
-                    onChanged: (val) => setState(() {
-                      _sellingPrice = int.parse((val));
-                      _total = _qtyToSell * _sellingPrice;
-                    }),
                   ),
                 ),
-                Expanded(
+                /* Expanded(
                   child: TextFormField(
                     initialValue: _selectedProd.availableQty.toString(),
                     readOnly: true,
@@ -141,8 +148,30 @@ class _AddProductFormState extends State<AddProductForm> {
                       )),
                     ),
                   ),
-                ),
+                ), */
               ]),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: "Enter Ref/Serial No",
+                    labelText: 'Ref/Serial No',
+                    fillColor: Colors.white,
+                    filled: true,
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red, width: 1.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                    ),
+                  ),
+                  validator: (val) =>
+                      val!.isEmpty ? 'Please Ref/Serial No' : null,
+                  onChanged: (val) => setState(() {
+                    ref1 = val;
+                  }),
+                ),
+              ),
 
               Card(
                 child: Text('Total: $_total'),
@@ -155,7 +184,7 @@ class _AddProductFormState extends State<AddProductForm> {
               RaisedButton(
                 color: Colors.pink[400],
                 child: Text(
-                  'Update',
+                  'Add To List',
                   style: TextStyle(color: Colors.white),
                 ),
                 onPressed: () {
@@ -169,6 +198,7 @@ class _AddProductFormState extends State<AddProductForm> {
                     }
 
                     final newproduct = new SaleRow(
+                      ref1: ref1,
                       name: _selectedProd.name,
                       oPLNSId: _selectedProd.o_p_l_n_s_id,
                       sellingPrice: _sellingPrice,
@@ -181,7 +211,6 @@ class _AddProductFormState extends State<AddProductForm> {
                       taxId: null,
                       taxRate: null,
                       taxAmount: null,
-                      ref1: 'testing',
                     );
                     productsData.addProduct(newproduct);
                     Navigator.pushNamed(context, '/start');
@@ -191,5 +220,17 @@ class _AddProductFormState extends State<AddProductForm> {
             ],
           ),
         ));
+  }
+
+  snackbarmessage() {
+    final snackBar = SnackBar(
+      content: const Text('Hi, I am a SnackBar!'),
+      backgroundColor: (Colors.black12),
+      action: SnackBarAction(
+        label: 'dismiss',
+        onPressed: () {},
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

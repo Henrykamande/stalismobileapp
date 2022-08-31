@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:testproject/addProductForm.dart';
+import 'package:testproject/models/paidamount.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
@@ -10,37 +11,88 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:testproject/providers/shared_preferences_services.dart';
 
-class SoldProducts extends StatefulWidget {
-  const SoldProducts({Key? key}) : super(key: key);
+class SalePayment extends StatefulWidget {
+  const SalePayment({Key? key}) : super(key: key);
 
   @override
-  State<SoldProducts> createState() => _SoldProductsState();
+  State<SalePayment> createState() => _SalePaymentState();
 }
 
-class _SoldProductsState extends State<SoldProducts> {
-  late Future<List<dynamic>> soldproducts;
+class _SalePaymentState extends State<SalePayment> {
+  late Future<List<dynamic>> salepayment;
+  late Future<List<dynamic>> totalpayment;
+  String _datequery = "";
+  var datapayment;
+  var data;
+  GetProducts _paymentlistbulder = GetProducts();
+  TextEditingController dateInput = TextEditingController();
   PrefService _prefs = PrefService();
   final formatnum = new NumberFormat("#,##0.00", "en_US");
-  int totalsold = 0;
-  GetProducts _listbulder = GetProducts();
-  TextEditingController dateInput = TextEditingController();
-  String _searchquery = '';
 
   @override
   void initState() {
+    _paymentlistbulder.fetchSalePayments(_datequery);
+    getTotalPayments(_datequery);
     super.initState();
+  }
+
+  sethenders() async {
+    var cache = await _prefs.readCache('Token', 'StoreId', 'loggedinUserName');
+
+    String token = cache['Token'];
+    String storeId = cache['StoreId'];
+
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      "Authorization": "Bearer $token",
+      "storeid": "$storeId"
+    };
+    return headers;
+  }
+
+  getTotalPayments(query) async {
+    var headers = sethenders();
+    final queryparameters = jsonEncode({
+      "storeid": "${headers['storeid']}",
+      "StartDate": "$query",
+      "EndDate": "$query",
+    });
+    print(
+        '222222222222222222222222222222222222222222222222222222222222222222222222222222222222 $queryparameters');
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/sale-payments-report');
+    var response = await http.post(
+      url,
+      headers: headers,
+      body: queryparameters,
+    );
+    if (response.statusCode == 200) {
+      data = await jsonDecode(response.body)['ResponseData']['TotalAmount'];
+      /* TotalAmountData totalpaymentdata =
+          data.map((dynamic item) => TotalAmountData.fromJson(item)).toList(); */
+      setState(() {
+        datapayment = data;
+      });
+      print(
+          '888888888888888888888888888888888888888888888888888888888888888888888888888888888888888 $data');
+      return datapayment;
+    } else {
+      throw 'Cant get total payment';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final selectedProduct = Provider.of<GetProducts>(context);
-    soldproducts = _listbulder.fetchSoldProducts(_searchquery);
-    final totalSales = _listbulder.getsoldtotals(_searchquery);
+    salepayment = _paymentlistbulder.fetchSalePayments(_datequery);
+    datapayment = _paymentlistbulder.getTotalPayments(_datequery);
+
+    print(salepayment);
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
       appBar: AppBar(
         title: Container(
-          child: Text('Sold Products'),
+          child: Text('Sale Payments'),
         ),
         elevation: 0.0,
       ),
@@ -77,18 +129,8 @@ class _SoldProductsState extends State<SoldProducts> {
                             formattedDate); //formatted date output using intl package =>  2021-03-16
                         setState(() {
                           dateInput.text = formattedDate;
-                          _searchquery = dateInput
+                          _datequery = dateInput
                               .text; //set output date to TextField value.
-                        });
-                      } else {
-                        DateTime now = new DateTime.now();
-                        DateTime date =
-                            new DateTime(now.year, now.month, now.day);
-                        String formattedDate =
-                            DateFormat('yyyy-MM-dd').format(date);
-                        setState(() {
-                          dateInput.text =
-                              formattedDate; //set output date to TextField value.
                         });
                       }
                     }),
@@ -102,44 +144,42 @@ class _SoldProductsState extends State<SoldProducts> {
               Expanded(
                 child: Container(
                   child: FutureBuilder<List<dynamic>>(
-                      future: soldproducts,
+                      future: salepayment,
                       builder: (context, snapshot) {
-                        if (snapshot.data == null) {}
+                        if (snapshot.data == null) {
+                          print('payment ${snapshot.data}');
+                        }
                         if (snapshot.hasData) {
                           List<dynamic> result = snapshot.data!;
-                          print(result);
-                          print('rSold Products $result');
 
                           return ListView.builder(
                             itemCount: result.length,
                             itemBuilder: (context, index) => InkWell(
                               onTap: () {
-                                setState(() {
-                                  totalsold = totalsold +
-                                      int.parse(result[index]['LineTotal']);
-                                });
-
                                 //print(result[index]['name']);
 
-                                final selectedproduct = new ResponseDatum(
-                                  sellingPrice: (result[index]['SellingPrice']),
-                                  availableQty: (result[index]['AvailableQty']),
-                                  o_p_l_n_s_id: (result[index]['o_p_l_n_s_id']),
-                                  id: result[index]['id'],
-                                  name: result[index]['Name'],
-                                );
-                                selectedProduct
-                                    .selectedProduct(selectedproduct);
+                                /* final selectedproduct = new ResponseDatum(
+                                        sellingPrice: (result[index]
+                                            ['SellingPrice']),
+                                        availableQty: (result[index]
+                                            ['AvailableQty']),
+                                        o_p_l_n_s_id: (result[index]
+                                            ['o_p_l_n_s_id']),
+                                        id: result[index]['id'],
+                                        name: result[index]['Name'],
+                                      ); 
+                                      selectedProduct
+                                          .selectedProduct(selectedproduct);
 
-                                print(selectedproduct.id);
+                                      print(selectedproduct.id);*/
                               },
                               child: ListTile(
-                                title: Text(result[index]['product']['Name']
-                                    .toString()),
-                                subtitle: Text(
-                                    "Quantity Sold: ${result[index]['Quantity'].toString()}"),
+                                title: Text(
+                                    "${result[index]['oact']['Name'].toString()}"),
+                                /* subtitle: Text(
+                                          "Amount: ${result[index]['SumApplied'].toString()}"), */
                                 trailing: Text(
-                                    "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}"),
+                                    "Amount: ${formatnum.format(result[index]['SumApplied']).toString()}"),
                               ),
                             ),
                           );
@@ -148,13 +188,13 @@ class _SoldProductsState extends State<SoldProducts> {
                         }
 
                         return Center(
-                          child: Text('Select Date'),
+                          child: CircularProgressIndicator(),
                         );
                       }),
                 ),
               ),
               FutureBuilder<int>(
-                  future: totalSales,
+                  future: datapayment,
                   builder: (context, snapshot) {
                     print(
                         'SnapShot Data.......................................... ${snapshot.data}');
@@ -163,12 +203,10 @@ class _SoldProductsState extends State<SoldProducts> {
                       var result = snapshot.data!;
                       print(
                           '5555555555555555555555555555555555555555555555555555555555555555555555555   $result');
-                      return (dateInput.text != '')
-                          ? Text(
-                              ('Total Sales : ${formatnum.format(result)}'),
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            )
-                          : Text('');
+                      return Text(
+                        ('Total Sales : $result'),
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      );
                     }
                     return Text('');
                   }),

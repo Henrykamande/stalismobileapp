@@ -16,6 +16,7 @@ class PosSale {
     required this.docTotal,
     required this.balance,
     this.ref1,
+    this.ref2,
     required this.docDate,
     required this.discSum,
     required this.payments,
@@ -29,6 +30,7 @@ class PosSale {
   int cardCode;
   int docTotal;
   int balance;
+  String? ref2;
   String? ref1;
   DateTime docDate;
   int discSum;
@@ -39,6 +41,7 @@ class PosSale {
 
   factory PosSale.fromJson(Map<String, dynamic> json) => PosSale(
         objType: json["ObjType"],
+        ref2: json['ref2'],
         docNum: json["DocNum"],
         cardCode: json["CardCode"],
         docTotal: json["DocTotal"],
@@ -60,6 +63,7 @@ class PosSale {
         "DocTotal": docTotal,
         "Balance": balance,
         "ref1": ref1,
+        "ref2": ref2,
         "DocDate":
             "${docDate.year.toString().padLeft(4, '0')}-${docDate.month.toString().padLeft(2, '0')}-${docDate.day.toString().padLeft(2, '0')}",
         "DiscSum": discSum,
@@ -97,6 +101,7 @@ class Payment {
 class SaleRow {
   SaleRow({
     this.name,
+    this.ref1,
     required this.oPLNSId,
     required this.sellingPrice,
     required this.quantity,
@@ -109,7 +114,6 @@ class SaleRow {
     this.taxId,
     this.taxRate,
     this.taxAmount,
-    this.ref1,
   });
   String? name;
   int oPLNSId;

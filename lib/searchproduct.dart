@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:testproject/AddPayment.dart';
 import 'package:testproject/addProductForm.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/api_service.dart';
@@ -46,7 +45,7 @@ class _SearchProductState extends State<SearchProduct> {
     return Scaffold(
       appBar: AppBar(
         title: Container(
-          child: Text('Search Prodcut'),
+          child: Text('Search Product'),
         ),
         elevation: 0.0,
       ),
@@ -72,7 +71,6 @@ class _SearchProductState extends State<SearchProduct> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20.0),
                     ),
-                    hintText: "eg: Maize",
                     prefixIcon: Icon(
                       Icons.search,
                       color: Colors.purple.shade900,
@@ -118,12 +116,12 @@ class _SearchProductState extends State<SearchProduct> {
                                       title: Text(result[index]['Name']),
                                       subtitle: Text(
                                           "Selling Price: Ksh ${result[index]['SellingPrice'].toString()}"),
-                                      trailing: Text(
-                                          "Av.Qty:  ${result[index]['AvailableQty']..toString()}"),
+                                      /*trailing: Text(
+                                          "Av.Qty:  ${result[index]['AvailableQty']..toString()}"), */
                                     ),
                                   ),
                                 )
-                              : Text('Enter prouct to search');
+                              : Text('Enter product to search');
                         } else if (snapshot.hasError) {
                           return Text('${snapshot.error}');
                         }

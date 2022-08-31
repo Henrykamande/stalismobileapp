@@ -10,7 +10,7 @@ class ProductListProvider with ChangeNotifier {
   int _totalbill = 0;
   int _balance = 0;
   int _totalpayment = 0;
-
+  List printers = [];
   var _accountSelected;
   List<Payment> _payments = [];
   List<SaleRow> _productList = [];
@@ -105,6 +105,11 @@ class ProductListProvider with ChangeNotifier {
 
   void accountchoice(accountUserSelected) {
     _accountSelected = accountUserSelected;
+    notifyListeners();
+  }
+
+  void addPrinter(addbluetoothPrinter) {
+    printers.add(addbluetoothPrinter);
     notifyListeners();
   }
 }

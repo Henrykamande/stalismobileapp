@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:testproject/AddPayment.dart';
+import 'package:testproject/paymentslist.dart';
 import 'package:testproject/providers/defaultprinter.dart';
 import 'package:testproject/searchaccount.dart';
 import 'package:testproject/addProductForm.dart';
@@ -46,7 +46,8 @@ class Stalisapp extends StatelessWidget {
             '/inventory': (context) => InventoryList(),
             '/soldproducts': (context) => SoldProducts(),
             '/paymentsearch': (context) => PaymentSearch(),
-            '/addpayment': (context) => AddPaymentForm(),
+            '/salepayments': (context) => SalePayment(),
+            '/defaultprinter': (context) => PrintPage(),
           },
           title: title,
           home: Scaffold(

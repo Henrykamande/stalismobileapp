@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:testproject/models/postSale.dart';
+import 'package:testproject/providers/api_service.dart';
+import 'package:testproject/providers/defaultprinter.dart';
+import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 
 class PrintPage extends StatefulWidget {
-  final PosSale saleCard;
-  PrintPage(this.saleCard);
   State<PrintPage> createState() => _PrintPageState();
 }
 
@@ -17,6 +19,7 @@ class _PrintPageState extends State<PrintPage> {
   List<BluetoothDevice> _devices = [];
   BluetoothDevice? _selecteddevice;
   bool _connected = false;
+  List<BluetoothDevice> _activedevices = [];
   @override
   void initState() {
     super.initState();
@@ -101,6 +104,7 @@ class _PrintPageState extends State<PrintPage> {
 
   @override
   Widget build(BuildContext context) {
+    var defaultPrinter = Provider.of<GetProducts>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text("Select Printer"),
@@ -126,8 +130,12 @@ class _PrintPageState extends State<PrintPage> {
               Expanded(
                 child: DropdownButton(
                   items: _getDeviceItems(),
-                  onChanged: (BluetoothDevice? value) =>
-                      setState(() => _selecteddevice = value),
+                  onChanged: (BluetoothDevice? value) => setState(() {
+                    _selecteddevice = value;
+                    print('On change selected printer $_selecteddevice');
+                    defaultPrinter
+                        .defaultPrinterAddress(_selecteddevice!.address);
+                  }),
                   value: _selecteddevice,
                 ),
               ),
@@ -150,28 +158,19 @@ class _PrintPageState extends State<PrintPage> {
               SizedBox(
                 width: 20,
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    primary: _connected ? Colors.red : Colors.green),
-                onPressed: () {
-                  _connect();
-                  print('Connected status $_connected');
-                },
-                child: Text(
-                  _connected ? 'Disconnect' : 'Connect',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
             ],
           ),
-          Padding(
+          /* Padding(
             padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(primary: Colors.brown),
               onPressed: () {
+                /* bluetooth.printCustom('Victoria Hardware', 1, 2);
+                bluetooth.printCustom('0724961618', 1, 2);
+
                 bluetooth.print3Column('Qty', 'Price', 'Total', 0);
                 for (var i = 0; i < widget.saleCard.rows.length; i++) {
-                  // TO DO
+                  //
                   var currentElement = widget.saleCard.rows[i];
                   bluetooth.printCustom('${currentElement.name}', 0, 0);
                   bluetooth.print3Column(
@@ -195,11 +194,10 @@ class _PrintPageState extends State<PrintPage> {
                 bluetooth.paperCut();
                 //testPrint.sample();
 
-                Navigator.pushNamed(context, '/start');
+                Navigator.pushNamed(context, '/start'); */
               },
-              child: Text('PRINT TEST', style: TextStyle(color: Colors.white)),
             ),
-          ),
+          ), */
         ],
       ),
     );
@@ -212,9 +210,18 @@ class _PrintPageState extends State<PrintPage> {
         child: Text('NONE'),
       ));
     } else {
+      var listPrinters = Provider.of<ProductListProvider>(context);
+      listPrinters.addPrinter(_devices);
+
+      /* var existingItem = _devices.firstWhere(
+          (itemToCheck) => itemToCheck.address == '57:4C:54:02:80:D7');
+      print(
+          '============================================================ ${existingItem.name}'); */
       _devices.forEach((device) {
         items.add(DropdownMenuItem(
-          child: Text(device.name ?? ""),
+          child: Column(
+            children: [Text(device.name ?? ""), Text(device.address ?? "")],
+          ),
           value: device,
         ));
       });
