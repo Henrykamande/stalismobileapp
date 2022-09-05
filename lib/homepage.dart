@@ -31,6 +31,7 @@ class _HomePageState extends State<HomePage> {
   TextEditingController dateInput = TextEditingController();
   String saleType = '';
   bool setdate = true;
+  String storename = '';
   List<SaleRow> products = [];
   String? customerNo;
   var macaddress;
@@ -41,11 +42,13 @@ class _HomePageState extends State<HomePage> {
     products = [];
     setdate = true;
     _getPrinterAddress();
+    sethenders();
     super.initState();
   }
 
   sethenders() async {
-    var cache = await _prefs.readCache('Token', 'StoreId', 'loggedinUserName');
+    cache = await _prefs.readCache(
+        'Token', 'StoreId', 'loggedinUserName', 'storename');
 
     String token = cache['Token'];
     String storeId = cache['StoreId'];
@@ -55,6 +58,9 @@ class _HomePageState extends State<HomePage> {
       "Authorization": "Bearer $token",
       "storeid": "$storeId"
     };
+    setState(() {
+      storename = cache['storename'];
+    });
     return headers;
   }
 
@@ -132,10 +138,10 @@ class _HomePageState extends State<HomePage> {
             FlatButton(
               onPressed: () async {
                 cache = await _prefs.readCache(
-                    'Token', 'StoreId', 'loggedInUserName');
+                    'Token', 'StoreId', 'loggedInUserName', 'storename');
                 print(cache['Token']);
                 await _prefs.removeCache(
-                    'Token', 'StoreId', 'loggedInUserName');
+                    'Token', 'StoreId', 'loggedInUserName', 'storename');
                 print(cache);
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => Stalisapp()));
@@ -181,6 +187,8 @@ class _HomePageState extends State<HomePage> {
                     child: IconButton(
                       enableFeedback: false,
                       onPressed: () {
+                        productsData.setPreviousRoute('/start');
+
                         Navigator.pushNamed(context, '/searchproduct');
                       },
                       icon: const Icon(
@@ -202,6 +210,8 @@ class _HomePageState extends State<HomePage> {
                     child: IconButton(
                       enableFeedback: false,
                       onPressed: () {
+                        productsData.setPreviousRoute('/start');
+
                         Navigator.pushNamed(context, '/paymentsearch');
                       },
                       icon: const Icon(
@@ -245,7 +255,7 @@ class _HomePageState extends State<HomePage> {
                     height: 100,
                     child: DrawerHeader(
                       child: ListTile(
-                        title: Text('Shop Name'),
+                        title: Text(storename),
                         leading: CircleAvatar(
                           backgroundColor: Colors.amber,
                           child: Text(''),
@@ -270,15 +280,24 @@ class _HomePageState extends State<HomePage> {
                     Navigator.pushNamed(context, '/start');
                   },
                 ),
-                /* ListTile(
-                  title: const Text('Invetory'),
+                ListTile(
+                  title: const Text('Customer Deposit'),
                   onTap: () {
                     // Update the state of the app
                     // ...
                     // Then close the drawer
-                    Navigator.pushNamed(context, '/inventory');
+                    Navigator.pushNamed(context, '/customerDeposit');
                   },
-                ), */
+                ),
+                ListTile(
+                  title: const Text('Return & Replacement'),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.pushNamed(context, '/customercreditnote');
+                  },
+                ),
                 ListTile(
                   title: const Text('Sold Products'),
                   onTap: () {
@@ -591,8 +610,8 @@ class _HomePageState extends State<HomePage> {
                             print(' Printer list on device  $printers');
                             print('Mac Address $macaddress');
 
-                            cache = await _prefs.readCache(
-                                'Token', 'StoreId', 'loggedInUserName');
+                            cache = await _prefs.readCache('Token', 'StoreId',
+                                'loggedInUserName', 'storename');
                             print(cache['loggedInUserName']);
 
                             if (balance > 0) {
@@ -658,6 +677,7 @@ class _HomePageState extends State<HomePage> {
                               // var existingprinter = null;
 
                               productsData.postsalearray(saleCard);
+
                               bluetooth.printCustom('2.N.K TELECOM', 1, 1);
                               bluetooth.printCustom(
                                   'Mobile Phones & Accessories -Karatina',
@@ -700,7 +720,7 @@ class _HomePageState extends State<HomePage> {
                                   '${formatnum.format(saleCard.balance)}', 0);
                               bluetooth.printNewLine();
                               bluetooth.printCustom(
-                                  'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones wil not be accepted back Whatsoever.Battery, charger,liquid or mechanical damages have no warranty',
+                                  'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
                                   0,
                                   1);
 
@@ -709,10 +729,6 @@ class _HomePageState extends State<HomePage> {
                                 builder: (context) => PrintPage(saleCard))); */
                               productsData.setprodLIstempty();
 
-                              ScaffoldMessenger.of(this.context)
-                                  .showSnackBar(SnackBar(
-                                content: Text("Hi, I am a snack bar!"),
-                              ));
                               Navigator.pushNamed(context, '/start');
                             }
                           },

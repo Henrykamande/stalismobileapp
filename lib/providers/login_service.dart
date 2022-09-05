@@ -26,11 +26,12 @@ class UserLogin with ChangeNotifier {
           'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  dddddddddd userdat$datamap');
       String token = datamap['ResponseData']['authToken'];
       int storeid = datamap['ResponseData']['store_id'];
+      String storename = datamap['ResponseData']['storename'];
 
       print(
           "store id ----------------------------------------------------------------------- $storeid");
       String logineduserName = datamap['ResponseData']['name'];
-      _prefs.createCache(token, storeid.toString(), logineduserName);
+      _prefs.createCache(token, storeid.toString(), logineduserName, storename);
 
       notifyListeners();
       return true;

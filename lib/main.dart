@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:testproject/creditnote.dart';
+import 'package:testproject/deposit.dart';
 import 'package:testproject/paymentslist.dart';
 import 'package:testproject/providers/defaultprinter.dart';
 import 'package:testproject/searchaccount.dart';
@@ -48,6 +50,8 @@ class Stalisapp extends StatelessWidget {
             '/paymentsearch': (context) => PaymentSearch(),
             '/salepayments': (context) => SalePayment(),
             '/defaultprinter': (context) => PrintPage(),
+            '/customerDeposit': (context) => CustomerDeposit(),
+            '/customercreditnote': (context) => CustomerCreditNote(),
           },
           title: title,
           home: Scaffold(

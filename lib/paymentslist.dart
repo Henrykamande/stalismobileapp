@@ -37,7 +37,8 @@ class _SalePaymentState extends State<SalePayment> {
   }
 
   sethenders() async {
-    var cache = await _prefs.readCache('Token', 'StoreId', 'loggedinUserName');
+    var cache = await _prefs.readCache(
+        'Token', 'StoreId', 'loggedinUserName', 'storename');
 
     String token = cache['Token'];
     String storeId = cache['StoreId'];
@@ -204,7 +205,7 @@ class _SalePaymentState extends State<SalePayment> {
                       print(
                           '5555555555555555555555555555555555555555555555555555555555555555555555555   $result');
                       return Text(
-                        ('Total Sales : $result'),
+                        ('Total Sales : ${formatnum.format(result)}'),
                         style: TextStyle(fontWeight: FontWeight.bold),
                       );
                     }

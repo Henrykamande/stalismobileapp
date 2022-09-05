@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/models/accountmodel.dart';
+import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/paymentsAccounts.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/models/product.dart';
@@ -45,7 +46,7 @@ class _PaymentSearchState extends State<PaymentSearch> {
   @override
   Widget build(BuildContext context) {
     final paymentsData = Provider.of<ProductListProvider>(context);
-
+    final previousrouteString = paymentsData.previousRoute;
     return Scaffold(
       appBar: AppBar(
         title: Container(
@@ -97,8 +98,8 @@ class _PaymentSearchState extends State<PaymentSearch> {
                                 oACTSId: result[index]['id'],
                                 name: result[index]['Name'],
                               );
-                              openAddPaymentDialog(
-                                  paymentsData, selectedAccount);
+                              openAddPaymentDialog(paymentsData,
+                                  selectedAccount, previousrouteString);
 
                               paymentsData.accountSelected(selectedAccount);
                             },
@@ -123,7 +124,9 @@ class _PaymentSearchState extends State<PaymentSearch> {
     );
   }
 
-  Future openAddPaymentDialog(paymentsData, selectedAccout) => showDialog(
+  Future openAddPaymentDialog(
+          paymentsData, selectedAccout, previousrouteString) =>
+      showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Add Payment'),
@@ -145,20 +148,44 @@ class _PaymentSearchState extends State<PaymentSearch> {
           actions: [
             TextButton(
               onPressed: () {
-                submit(paymentsData, selectedAccout);
+                Navigator.pushNamed(context, '/start');
+                ;
+              },
+              child: Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+                submit(paymentsData, selectedAccout, previousrouteString);
               },
               child: Text('Add Payment'),
-            )
+            ),
           ],
         ),
       );
 
-  void submit(paymentData, selectedAccount) {
+  void submit(paymentData, selectedAccount, previousrouteString) {
     Payment newpayment = Payment(
         sumApplied: int.parse(amountPaid.text),
         oACTSId: selectedAccount.oACTSId,
         name: selectedAccount.name);
-    paymentData.addPayment(newpayment);
-    Navigator.pushNamed(context, '/start');
+
+    if (previousrouteString == '/customercreditnote') {
+      TopupPayment newpayment = new TopupPayment(
+        paymentMode: selectedAccount.name,
+        amount: int.parse(amountPaid.text),
+        accountId: selectedAccount.oACTSID,
+      );
+      paymentData.addTopUpPayment(newpayment);
+      Navigator.pushNamed(context, '/customercreditnote');
+    }
+
+    if (previousrouteString == '/customerDeposit') {
+      paymentData.addDepositPayment(newpayment);
+      Navigator.pushNamed(context, '/customerDeposit');
+    }
+    if (previousrouteString == '/start') {
+      paymentData.addPayment(newpayment);
+      Navigator.pushNamed(context, '/start');
+    }
   }
 }

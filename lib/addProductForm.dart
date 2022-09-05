@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/postSale.dart';
+import 'package:testproject/models/previousRoute.dart';
 import 'package:testproject/models/product.dart';
 
 import 'package:testproject/providers/api_service.dart';
@@ -32,16 +34,30 @@ class _AddProductFormState extends State<AddProductForm> {
     final selectedProdp = Provider.of<GetProducts>(context);
     final _selectedProd = selectedProdp.selectedprod;
     print(_selectedProd.name);
+    final previousrouteString = productsData.previousRoute;
     final products = productsData.productlist;
+    var args = ModalRoute.of(context)!.settings.arguments;
+    print(
+        "args ================================================================= $previousrouteString");
     return Form(
         key: _formKey,
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Text(
-                'Add a Product',
-                style: TextStyle(fontSize: 20.0),
-              ),
+              (previousrouteString == '/customercreditnotereplacement')
+                  ? Text(
+                      'Add Replacement',
+                      style: TextStyle(fontSize: 20.0),
+                    )
+                  : (previousrouteString == '/customercreditnote')
+                      ? Text(
+                          'Add Return Product',
+                          style: TextStyle(fontSize: 20.0),
+                        )
+                      : Text(
+                          'Add Product',
+                          style: TextStyle(fontSize: 20.0),
+                        ),
 
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -212,8 +228,39 @@ class _AddProductFormState extends State<AddProductForm> {
                       taxRate: null,
                       taxAmount: null,
                     );
-                    productsData.addProduct(newproduct);
-                    Navigator.pushNamed(context, '/start');
+                    if (previousrouteString ==
+                        '/customercreditnotereplacement') {
+                      ReplacedProduct newproduct = new ReplacedProduct(
+                        productName: _selectedProd.name,
+                        productId: _selectedProd.id,
+                        quantity: _qtyToSell,
+                        sellingPrice: _sellingPrice,
+                        lineTotal: _total,
+                        ref1: ref1,
+                      );
+                      productsData.addReplacementProduct(newproduct);
+                      Navigator.pushNamed(context, '/customercreditnote');
+                    } else {}
+                    if (previousrouteString == '/customercreditnote') {
+                      ReturnedProduct newproduct = new ReturnedProduct(
+                        productName: _selectedProd.name,
+                        productId: _selectedProd.id,
+                        quantity: _qtyToSell,
+                        sellingPrice: _sellingPrice,
+                        lineTotal: _total,
+                        ref1: ref1,
+                      );
+                      productsData.addReturnProduct(newproduct);
+                      Navigator.pushNamed(context, '/customercreditnote');
+                    } else {}
+                    if (previousrouteString == '/customerDeposit') {
+                      productsData.addDepositProduct(newproduct);
+                      Navigator.pushNamed(context, '/customerDeposit');
+                    } else {}
+                    if (previousrouteString == '/start') {
+                      productsData.addProduct(newproduct);
+                      Navigator.pushNamed(context, '/start');
+                    } else {}
                   }
                 },
               )

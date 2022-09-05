@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:testproject/models/accountmodel.dart';
+import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/customermode.dart';
 import 'package:testproject/models/login_requestmodel.dart';
 import 'package:testproject/models/macaddress.dart';
@@ -26,7 +27,8 @@ class GetProducts with ChangeNotifier {
 
   //This function set the headers for api calls
   sethenders() async {
-    var cache = await _prefs.readCache('Token', 'StoreId', 'loggedinUserName');
+    var cache = await _prefs.readCache(
+        'Token', 'StoreId', 'loggedinUserName', 'storename');
 
     String token = cache['Token'];
     String storeId = cache['StoreId'];
@@ -368,5 +370,33 @@ class GetProducts with ChangeNotifier {
 
     print('total sold amount $data');
     return data;
+  }
+
+  //Credit memo
+  void postCreditMemo(creditMemo) async {
+    print('Print Sales $creditMemo');
+    print(
+        "9090909000000000000000000000000000000000000000000999999999999999999 Credit Memo function");
+    var headers = await sethenders();
+    final queryparamaeters = creditMemoToJson(creditMemo);
+    print(
+        'Query paramsaleCardaeters ..........................................................$queryparamaeters');
+    //print(jsonDecode(queryparamaeters));
+    var url = Uri.https(
+      'apoyobackend.softcloudtech.co.ke',
+      '/api/v1/credit-memo',
+    );
+    try {
+      response = await http.post(
+        url,
+        headers: headers,
+        body: queryparamaeters,
+      );
+      print('Query paramsaleCardaeters $queryparamaeters');
+
+      print('response from postr sale ${response.body}');
+    } catch (e) {
+      print(e);
+    }
   }
 }

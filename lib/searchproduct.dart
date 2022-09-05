@@ -5,6 +5,7 @@ import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/searchaccount.dart';
 
@@ -40,13 +41,26 @@ class _SearchProductState extends State<SearchProduct> {
   @override
   Widget build(BuildContext context) {
     final selectedProduct = Provider.of<GetProducts>(context);
+    final productsData = Provider.of<ProductListProvider>(context);
     productlistdata = _todolistbulder.getTodoList(_searchquery);
+    final previousrouteString = productsData.previousRoute;
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
       appBar: AppBar(
-        title: Container(
-          child: Text('Search Product'),
-        ),
+        title: (previousrouteString == '/customercreditnotereplacement')
+            ? Text(
+                'Search Replacement Product',
+                style: TextStyle(fontSize: 20.0),
+              )
+            : (previousrouteString == '/customercreditnote')
+                ? Text(
+                    'Search Return Product',
+                    style: TextStyle(fontSize: 20.0),
+                  )
+                : Text(
+                    'Search Product',
+                    style: TextStyle(fontSize: 20.0),
+                  ),
         elevation: 0.0,
       ),
       resizeToAvoidBottomInset: true,
