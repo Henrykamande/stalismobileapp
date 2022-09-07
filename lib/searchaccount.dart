@@ -125,43 +125,52 @@ class _PaymentSearchState extends State<PaymentSearch> {
   }
 
   Future openAddPaymentDialog(
-          paymentsData, selectedAccout, previousrouteString) =>
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Add Payment'),
-          content: Container(
-            height: 100,
-            child: Column(
-              children: [
-                TextFormField(
-                  readOnly: true,
-                  initialValue: selectedAccout.name,
-                ),
-                TextField(
-                  controller: amountPaid,
-                  decoration: InputDecoration(hintText: "Enter Amount Paid "),
-                )
-              ],
-            ),
+      paymentsData, selectedAccout, previousrouteString) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Add Payment'),
+        content: Container(
+          height: 100,
+          child: Column(
+            children: [
+              TextFormField(
+                readOnly: true,
+                initialValue: selectedAccout.name,
+              ),
+              TextField(
+                controller: amountPaid,
+                decoration: InputDecoration(hintText: "Enter Amount Paid "),
+              )
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/start');
-                ;
-              },
-              child: Text('Close'),
-            ),
-            TextButton(
-              onPressed: () {
-                submit(paymentsData, selectedAccout, previousrouteString);
-              },
-              child: Text('Add Payment'),
-            ),
-          ],
         ),
-      );
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (previousrouteString == '/customercreditnote') {
+                Navigator.pushNamed(context, '/start');
+              }
+              if (previousrouteString == '/customerDeposit') {
+                Navigator.pushNamed(context, '/customerDeposit');
+              }
+              if (previousrouteString == '/start') {
+                submit(paymentsData, selectedAccout, previousrouteString);
+                Navigator.pushNamed(context, '/start');
+              }
+            },
+            child: Text('Close'),
+          ),
+          TextButton(
+            onPressed: () {
+              submit(paymentsData, selectedAccout, previousrouteString);
+            },
+            child: Text('Add Payment'),
+          ),
+        ],
+      ),
+    );
+  }
 
   void submit(paymentData, selectedAccount, previousrouteString) {
     Payment newpayment = Payment(
@@ -172,8 +181,8 @@ class _PaymentSearchState extends State<PaymentSearch> {
     if (previousrouteString == '/customercreditnote') {
       TopupPayment newpayment = new TopupPayment(
         paymentMode: selectedAccount.name,
-        amount: int.parse(amountPaid.text),
-        accountId: selectedAccount.oACTSID,
+        SumApplied: int.parse(amountPaid.text),
+        o_a_c_t_s_id: selectedAccount.oACTSId,
       );
       paymentData.addTopUpPayment(newpayment);
       Navigator.pushNamed(context, '/customercreditnote');

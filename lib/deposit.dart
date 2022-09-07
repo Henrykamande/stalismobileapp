@@ -309,6 +309,15 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                 },
               ),
               ListTile(
+                title: const Text('Returned Products'),
+                onTap: () {
+                  // Update the state of the app
+                  // ...
+                  // Then close the drawer
+                  Navigator.pushNamed(context, '/returnedproducts');
+                },
+              ),
+              ListTile(
                 title: const Text('Payments'),
                 onTap: () {
                   // Update the state of the app

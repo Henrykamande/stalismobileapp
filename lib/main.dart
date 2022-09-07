@@ -3,6 +3,7 @@ import 'package:testproject/creditnote.dart';
 import 'package:testproject/deposit.dart';
 import 'package:testproject/paymentslist.dart';
 import 'package:testproject/providers/defaultprinter.dart';
+import 'package:testproject/retrunedProducts.dart';
 import 'package:testproject/searchaccount.dart';
 import 'package:testproject/addProductForm.dart';
 import 'package:testproject/inventorylist.dart';
@@ -52,6 +53,7 @@ class Stalisapp extends StatelessWidget {
             '/defaultprinter': (context) => PrintPage(),
             '/customerDeposit': (context) => CustomerDeposit(),
             '/customercreditnote': (context) => CustomerCreditNote(),
+            '/returnedproducts': (context) => ReturnProducts(),
           },
           title: title,
           home: Scaffold(

@@ -21,6 +21,7 @@ class GetProducts with ChangeNotifier {
   var accountsdata;
   var response;
   int totalpayments = 0;
+
   PrefService _prefs = PrefService();
 
   List<ResponseDatum> result = [];
@@ -54,6 +55,12 @@ class GetProducts with ChangeNotifier {
       if (query != null) {
         response =
             await http.post(url, headers: headers, body: queryparamaeters);
+        if (response.statusCode == 200) {
+          print('Sucessful POst');
+          data = jsonDecode(response.body)['ResponseData'];
+
+          return data;
+        }
       } else {
         /* final queryparamaeters = jsonEncode({
           "searchText": "",
@@ -67,7 +74,7 @@ class GetProducts with ChangeNotifier {
       }
 
       if (response.statusCode == 200) {
-        print('Sucessful POst');
+        /* print('Sucessful POst');
         data = jsonDecode(response.body)['ResponseData'];
 
         //print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ${data['ResponseData']}");
@@ -80,14 +87,11 @@ class GetProducts with ChangeNotifier {
             ']');
         data.foreach((e) => print(e)); */
 
-        return data;
+        return data; */
       } else {
         print('Request failed with status: ${response.statusCode}.');
       }
-    } on Exception catch (e) {
-      print(
-          'error>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> $e');
-    }
+    } on Exception catch (e) {}
 
     return data = [];
   }
@@ -138,8 +142,6 @@ class GetProducts with ChangeNotifier {
     }
     customersdata = await jsonDecode(response.body)['ResponseData'];
 
-    print(
-        "accountttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt $accountsdata");
     notifyListeners();
     return customersdata;
     /* customersdata
@@ -156,8 +158,7 @@ class GetProducts with ChangeNotifier {
     print('Print Sales $salecard');
     var headers = await sethenders();
     final queryparamaeters = posSaleToJson(salecard);
-    print(
-        'Query paramsaleCardaeters ..........................................................$queryparamaeters');
+
     //print(jsonDecode(queryparamaeters));
     var url = Uri.https(
       'apoyobackend.softcloudtech.co.ke',
@@ -232,12 +233,12 @@ class GetProducts with ChangeNotifier {
       print('Sucessful POst');
     }
     accountsdata = jsonDecode(response.body)['ResponseData'];
-    print(
-        "accountttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt $accountsdata");
+
     notifyListeners();
     return accountsdata;
   }
 
+//Fetching payment data
   Future<List<dynamic>> fetchSalePayments(startDate) async {
     var headers = await sethenders();
     print('Start Date $startDate');
@@ -266,8 +267,6 @@ class GetProducts with ChangeNotifier {
     if (response.statusCode == 200) {
       print('Customer Fetch ');
       data = await jsonDecode(response.body)['ResponseData']['AllPayments'];
-      print(
-          'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff $data');
     }
     notifyListeners();
     return data;
@@ -323,8 +322,7 @@ class GetProducts with ChangeNotifier {
       "StartDate": "$query",
       "EndDate": "$query",
     });
-    print(
-        '222222222222222222222222222222222222222222222222222222222222222222222222222222222222 $queryparameters');
+
     var url = Uri.https(
         'apoyobackend.softcloudtech.co.ke', '/api/v1/sale-payments-report');
     var response = await http.post(
@@ -337,8 +335,7 @@ class GetProducts with ChangeNotifier {
       /* TotalAmountData totalpaymentdata =
           data.map((dynamic item) => TotalAmountData.fromJson(item)).toList(); */
       totalpayments = data;
-      print(
-          '888888888888888888888888888888888888888888888888888888888888888888888888888888888888888 $totalpayments');
+
       notifyListeners();
       return data;
     } else {
@@ -362,25 +359,18 @@ class GetProducts with ChangeNotifier {
       headers: headers,
       body: queryparameters,
     );
-    if (response.statusCode == 200) {
-      print('Customer Fetch ');
-    }
+    if (response.statusCode == 200) {}
     var data =
         await jsonDecode(response.body)['ResponseData']['TotalSalesAmount'];
 
-    print('total sold amount $data');
     return data;
   }
 
   //Credit memo
   void postCreditMemo(creditMemo) async {
-    print('Print Sales $creditMemo');
-    print(
-        "9090909000000000000000000000000000000000000000000999999999999999999 Credit Memo function");
     var headers = await sethenders();
     final queryparamaeters = creditMemoToJson(creditMemo);
-    print(
-        'Query paramsaleCardaeters ..........................................................$queryparamaeters');
+
     //print(jsonDecode(queryparamaeters));
     var url = Uri.https(
       'apoyobackend.softcloudtech.co.ke',
@@ -398,5 +388,39 @@ class GetProducts with ChangeNotifier {
     } catch (e) {
       print(e);
     }
+  }
+
+// Fetching returned Products
+  Future<List<dynamic>> fetchReturnedProducts(startDate) async {
+    var headers = await sethenders();
+    print('Start Date $startDate');
+    var queryparameters = jsonEncode({
+      "storeid": "${headers['storeid']}",
+      "StartDate": "$startDate",
+      "EndDate": "$startDate",
+    });
+
+    try {
+      print('Params Fetch retruned Products $queryparameters');
+      var url = Uri.https('apoyobackend.softcloudtech.co.ke',
+          '/api/v1/returned-products-report');
+      print(url);
+    } catch (e) {
+      print(e);
+    }
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/returned-products-report');
+    response = await http.post(
+      url,
+      headers: headers,
+      body: queryparameters,
+    );
+    print('Response ${response.statusCode}');
+    if (response.statusCode == 200) {
+      print('Customer Fetch ');
+      data = await jsonDecode(response.body)['ResponseData']['AllSales'];
+    }
+    notifyListeners();
+    return data;
   }
 }

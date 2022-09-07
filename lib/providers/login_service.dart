@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:testproject/providers/shared_preferences_services.dart';
 
 class UserLogin with ChangeNotifier {
+  bool isLoggedIn = false;
+
   Future<bool> loginApi(String password, String email) async {
     List<dynamic> respData;
     final PrefService _prefs = PrefService();
@@ -32,11 +34,11 @@ class UserLogin with ChangeNotifier {
           "store id ----------------------------------------------------------------------- $storeid");
       String logineduserName = datamap['ResponseData']['name'];
       _prefs.createCache(token, storeid.toString(), logineduserName, storename);
-
+      isLoggedIn = true;
       notifyListeners();
-      return true;
+      return isLoggedIn;
     } else {
-      return false;
+      return isLoggedIn;
     }
   }
 }

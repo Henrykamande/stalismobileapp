@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:testproject/addPayment.dart';
 import 'package:testproject/searchaccount.dart';
 import 'package:testproject/main.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   PrefService _prefs = PrefService();
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
-
+  final _formKey = GlobalKey<FormState>();
   var cache;
   bool _connected = false;
   TextEditingController dateInput = TextEditingController();
@@ -34,12 +35,13 @@ class _HomePageState extends State<HomePage> {
   String storename = '';
   List<SaleRow> products = [];
   String? customerNo;
+  String? printerErrorMessage;
   var macaddress;
+
   final formatnum = new NumberFormat("#,##0.00", "en_US");
 
   @override
   void initState() {
-    products = [];
     setdate = true;
     _getPrinterAddress();
     sethenders();
@@ -308,6 +310,15 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
                 ListTile(
+                  title: const Text('Returned Products'),
+                  onTap: () {
+                    // Update the state of the app
+                    // ...
+                    // Then close the drawer
+                    Navigator.pushNamed(context, '/returnedproducts');
+                  },
+                ),
+                ListTile(
                   title: const Text('Payments'),
                   onTap: () {
                     // Update the state of the app
@@ -334,28 +345,39 @@ class _HomePageState extends State<HomePage> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          decoration: InputDecoration(hintText: 'Customer No'),
-                          onChanged: (val) => setState(() {
-                            customerNo = val;
-                          }),
+                child: Form(
+                  key: _formKey,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                              initialValue: productsData.customerName,
+                              decoration:
+                                  InputDecoration(hintText: 'Customer Phone'),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please Enter Customer Phone';
+                                }
+                                return null;
+                              },
+                              onChanged: (val) =>
+                                  productsData.setCustomerName(val)
+                              /* setState(() {
+                              customerNo = val;
+                            }), */
+                              ),
                         ),
-                      ),
-                      Expanded(
-                        child: TextField(
+                        Expanded(
+                          child: TextFormField(
                             controller: dateInput,
 
                             //editing controller of this TextField
                             decoration: InputDecoration(
                                 icon: Icon(
                                     Icons.calendar_today), //icon of text field
-                                labelText:
-                                    '${dateInput.text}' //label text of field
+                                labelText: 'Date' //label text of field
                                 ),
                             readOnly: true,
                             //set it true, so that user will not able to edit text
@@ -363,7 +385,9 @@ class _HomePageState extends State<HomePage> {
                               DateTime? pickedDate = await showDatePicker(
                                   context: context,
                                   initialDate: DateTime.now(),
-                                  firstDate: DateTime.now()
+                                  currentDate: DateTime.now(),
+                                  firstDate: DateTime(1900)
+                                      //firstDate: DateTime.now()
                                       .subtract(Duration(hours: 0)),
                                   //DateTime.now() - not to allow to choose before today.
                                   lastDate: DateTime(2100));
@@ -377,8 +401,9 @@ class _HomePageState extends State<HomePage> {
                                     formattedDate); //formatted date output using intl package =>  2021-03-16
                                 setState(() {
                                   dateInput.text = formattedDate;
-                                  setdate =
-                                      false; //set output date to TextField value.
+                                  setdate = false;
+                                  productsData.setSaleDate(dateInput.text);
+                                  //set output date to TextField value.
                                 });
                               } else {
                                 DateTime now = new DateTime.now();
@@ -387,17 +412,26 @@ class _HomePageState extends State<HomePage> {
                                 String formattedDate =
                                     DateFormat('yyyy-MM-dd').format(date);
                                 setState(() {
-                                  dateInput.text =
-                                      formattedDate; //set output date to TextField value.
+                                  dateInput.text = formattedDate;
+                                  productsData.setSaleDate(dateInput
+                                      .text); //set output date to TextField value.
                                 });
                               }
-                            }),
-                      ),
-                    ]),
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Select Date';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ]),
+                ),
               ),
-              setdate
+              (printerErrorMessage != null)
                   ? Text(
-                      'Please Select Date!',
+                      '$printerErrorMessage!',
                       style: TextStyle(color: Colors.red),
                     )
                   : Text(''),
@@ -411,7 +445,7 @@ class _HomePageState extends State<HomePage> {
                               title: Text(
                                 products[index].name.toString(),
                                 style: TextStyle(
-                                    fontSize: 16.0,
+                                    fontSize: 13.0,
                                     fontWeight: FontWeight.bold),
                               ),
                               subtitle: Row(
@@ -421,7 +455,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(
                                       "Qty: ${(products[index].quantity).toString()}",
                                       style: TextStyle(
-                                          fontSize: 12.0,
+                                          fontSize: 11.0,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),
@@ -430,14 +464,14 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(
                                       "Price: ${products[index].sellingPrice.toString()}",
                                       style: TextStyle(
-                                          fontSize: 12.0,
+                                          fontSize: 11.0,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
                               ),
                               trailing: Padding(
-                                padding: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.all(4.0),
                                 child: Column(
                                   children: [
                                     Text(formatnum
@@ -465,7 +499,7 @@ class _HomePageState extends State<HomePage> {
                           )),
               ),
               Container(
-                height: 150.0,
+                height: 80.0,
                 child: (paymentlist.length == 0)
                     ? Text("No payment added")
                     : ListView.builder(
@@ -511,26 +545,26 @@ class _HomePageState extends State<HomePage> {
                       bottom: Radius.elliptical(
                           MediaQuery.of(context).size.width, 40.0)),
                 ),
-                padding: EdgeInsets.all(10.0),
+                padding: EdgeInsets.all(2.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(4.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             'Total: Ksh',
                             style: TextStyle(
-                              fontSize: 16.0,
+                              fontSize: 13.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             '${formatnum.format(totalbill)}',
                             style: TextStyle(
-                              fontSize: 16.0,
+                              fontSize: 13.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -538,7 +572,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     Padding(
-                        padding: const EdgeInsets.all(10.0),
+                        padding: const EdgeInsets.all(4.0),
                         child: (totalpayment > totalbill)
                             ? Text(
                                 'Payment can not be more than the Total',
@@ -551,21 +585,21 @@ class _HomePageState extends State<HomePage> {
                                   Text(
                                     'Payment: Ksh',
                                     style: TextStyle(
-                                      fontSize: 16.0,
+                                      fontSize: 13.0,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
                                     '${formatnum.format(totalpayment)}',
                                     style: TextStyle(
-                                      fontSize: 16.0,
+                                      fontSize: 12.0,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
                               )),
                     Padding(
-                      padding: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(2.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -573,14 +607,14 @@ class _HomePageState extends State<HomePage> {
                             'Balance: Ksh',
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 16.0,
+                              fontSize: 13.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             '${formatnum.format(balance)}',
                             style: TextStyle(
-                              fontSize: 16.0,
+                              fontSize: 13.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -605,131 +639,134 @@ class _HomePageState extends State<HomePage> {
                             AlertDialog(
                               content: Text('success'),
                             );
+                            if (_formKey.currentState!.validate()) {
+                              // print('Date  ...............${pickeddate}');
 
-                            // print('Date  ...............${pickeddate}');
-                            print(' Printer list on device  $printers');
-                            print('Mac Address $macaddress');
+                              cache = await _prefs.readCache('Token', 'StoreId',
+                                  'loggedInUserName', 'storename');
+                              if (totalpayment > totalbill) {
+                              } else {
+                                PosSale saleCard = new PosSale(
+                                    ref2: customerNo,
+                                    objType: 14,
+                                    docNum: 2,
+                                    discSum: 0,
+                                    cardCode: 1,
+                                    payments: paymentlist,
+                                    docTotal: totalbill,
+                                    balance: balance,
+                                    docDate: DateFormat('yyyy-MM-dd')
+                                        .parse(dateInput.text),
+                                    rows: products,
+                                    totalPaid: totalpayment,
+                                    userName: cache['loggedInUserName']);
+                                productsData.postsalearray(saleCard);
 
-                            cache = await _prefs.readCache('Token', 'StoreId',
-                                'loggedInUserName', 'storename');
-                            print(cache['loggedInUserName']);
+                                //var printeraddress = salepost.getPrinterAddress();
+                                // print(
+                                //     'Printer address fron fuction $printeraddress');
+                                try {
+                                  var activedevices =
+                                      await bluetooth.getBondedDevices();
+                                  var existingprinter =
+                                      activedevices.firstWhere((itemToCheck) =>
+                                          itemToCheck.address == macaddress);
+                                  void _connect() {
+                                    if (existingprinter != null) {
+                                      print(
+                                          'Selected device connect method $existingprinter');
+                                      bluetooth.isConnected.then((isConnected) {
+                                        print(isConnected);
+                                        if (isConnected == false) {
+                                          bluetooth
+                                              .connect(existingprinter!)
+                                              .catchError((error) {
+                                            print(error);
+                                            setState(() {
+                                              _connected = false;
+                                              printerErrorMessage =
+                                                  "Set Default Printer ";
+                                            });
+                                          });
+                                          setState(() => _connected = true);
+                                        }
+                                      });
+                                    } else {
+                                      setState(() {
+                                        printerErrorMessage =
+                                            "Set Default Printer ";
+                                      });
+                                    }
+                                  }
 
-                            if (balance > 0) {
-                              setState(() {
-                                saleType = 'credit';
-                              });
-                            }
-                            if (balance == 0) {
-                              setState(() {
-                                saleType = 'cash';
-                              });
-                            }
-                            print('payment List $paymentlist');
-                            if (totalpayment > totalbill) {
-                            } else {
-                              PosSale saleCard = new PosSale(
-                                  ref2: customerNo,
-                                  objType: 14,
-                                  docNum: 2,
-                                  discSum: 0,
-                                  cardCode: 1,
-                                  payments: paymentlist,
-                                  docTotal: totalbill,
-                                  balance: balance,
-                                  docDate: DateFormat('yyyy-MM-dd')
-                                      .parse(dateInput.text),
-                                  rows: products,
-                                  totalPaid: totalpayment,
-                                  userName: cache['loggedInUserName']);
-                              //var printeraddress = salepost.getPrinterAddress();
-                              // print(
-                              //     'Printer address fron fuction $printeraddress');
-                              try {
-                                var activedevices =
-                                    await bluetooth.getBondedDevices();
-                                var existingprinter = activedevices.firstWhere(
-                                    (itemToCheck) =>
-                                        itemToCheck.address == macaddress);
-                                void _connect() {
-                                  if (existingprinter != null) {
-                                    print(
-                                        'Selected device connect method $existingprinter');
-                                    bluetooth.isConnected.then((isConnected) {
-                                      print(isConnected);
-                                      if (isConnected == false) {
-                                        bluetooth
-                                            .connect(existingprinter!)
-                                            .catchError((error) {
-                                          print(error);
-                                          setState(() => _connected = false);
-                                        });
-                                        setState(() => _connected = true);
-                                      }
-                                    });
-                                  } else {
-                                    show('No device selected.');
+                                  _connect();
+                                } on PlatformException {}
+
+                                // var existingprinter = null;
+
+                                bluetooth.printCustom('2.N.K TELECOM', 1, 1);
+                                bluetooth.printCustom(
+                                    'Mobile Phones & Accessories -Karatina',
+                                    0,
+                                    2);
+                                bluetooth.printCustom(
+                                    'Tel: 0780 048 175', 1, 1);
+                                bluetooth.printCustom(
+                                    'Our promise: If you bought from us then it is original',
+                                    0,
+                                    1);
+
+                                if (saleCard.ref2 != null) {
+                                  bluetooth.printCustom(
+                                      'Customer No ${saleCard.ref2!}', 0, 0);
+                                }
+                                bluetooth.print3Column(
+                                    'Qty', 'Price', 'Total', 0);
+                                for (var i = 0; i < saleCard.rows.length; i++) {
+                                  //
+                                  var currentElement = saleCard.rows[i];
+                                  bluetooth.printCustom(
+                                      '${currentElement.name}', 0, 0);
+                                  bluetooth.print3Column(
+                                      '${currentElement.quantity}',
+                                      '    ${formatnum.format(currentElement.sellingPrice)}',
+                                      '    ${formatnum.format(currentElement.lineTotal)}',
+                                      0);
+                                  if (currentElement.ref1 != null) {
+                                    bluetooth.printCustom(
+                                        currentElement.ref1!, 0, 0);
                                   }
                                 }
-
-                                _connect();
-                              } on PlatformException {}
-
-                              // var existingprinter = null;
-
-                              productsData.postsalearray(saleCard);
-
-                              bluetooth.printCustom('2.N.K TELECOM', 1, 1);
-                              bluetooth.printCustom(
-                                  'Mobile Phones & Accessories -Karatina',
-                                  0,
-                                  2);
-                              bluetooth.printCustom('Tel: 0780 048 175', 1, 1);
-                              bluetooth.printCustom(
-                                  'Our promise: If you bought from us then it is original',
-                                  0,
-                                  1);
-
-                              if (saleCard.ref2 != null) {
-                                bluetooth.printCustom(
-                                    'Customer No ${saleCard.ref2!}', 0, 0);
-                              }
-                              bluetooth.print3Column(
-                                  'Qty', 'Price', 'Total', 0);
-                              for (var i = 0; i < saleCard.rows.length; i++) {
-                                //
-                                var currentElement = saleCard.rows[i];
-                                bluetooth.printCustom(
-                                    '${currentElement.name}', 0, 0);
-                                bluetooth.print3Column(
-                                    '${currentElement.quantity}',
-                                    '    ${formatnum.format(currentElement.sellingPrice)}',
-                                    '    ${formatnum.format(currentElement.lineTotal)}',
+                                bluetooth.print4Column(
+                                    'Total Bill:',
+                                    '',
+                                    ' ',
+                                    '${formatnum.format(saleCard.docTotal)}',
                                     0);
-                                if (currentElement.ref1 != null) {
-                                  bluetooth.printCustom(
-                                      currentElement.ref1!, 0, 0);
-                                }
+
+                                bluetooth.print4Column(
+                                    'Total Paid:',
+                                    '',
+                                    ' ',
+                                    '${formatnum.format(saleCard.totalPaid)}',
+                                    0);
+
+                                bluetooth.print4Column('Total Bal:', '', ' ',
+                                    '${formatnum.format(saleCard.balance)}', 0);
+                                bluetooth.printNewLine();
+                                bluetooth.printCustom(
+                                    'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
+                                    0,
+                                    1);
+
+                                bluetooth.paperCut();
+                                /*Navigator.of(context).push(MaterialPageRoute( 
+                                builder: (context) => PrintPage(saleCard)));*/
+                                productsData.setprodLIstempty();
+                                productsData.resetCustmerName();
+
+                                Navigator.pushNamed(context, '/start');
                               }
-                              bluetooth.print4Column('Total Bill:', '', ' ',
-                                  '${formatnum.format(saleCard.docTotal)}', 0);
-
-                              bluetooth.print4Column('Total Paid:', '', ' ',
-                                  '${formatnum.format(saleCard.totalPaid)}', 0);
-
-                              bluetooth.print4Column('Total Bal:', '', ' ',
-                                  '${formatnum.format(saleCard.balance)}', 0);
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
-                                  0,
-                                  1);
-
-                              bluetooth.paperCut();
-                              /* Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => PrintPage(saleCard))); */
-                              productsData.setprodLIstempty();
-
-                              Navigator.pushNamed(context, '/start');
                             }
                           },
                           child: Text(

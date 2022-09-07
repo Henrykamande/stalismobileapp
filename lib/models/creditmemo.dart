@@ -132,23 +132,23 @@ class ReturnedProduct {
 class TopupPayment {
   TopupPayment({
     this.paymentMode,
-    this.accountId,
-    this.amount,
+    this.o_a_c_t_s_id,
+    this.SumApplied,
   });
 
   String? paymentMode;
-  int? accountId;
-  int? amount;
+  int? o_a_c_t_s_id;
+  int? SumApplied;
 
   factory TopupPayment.fromJson(Map<String, dynamic> json) => TopupPayment(
         paymentMode: json["paymentMode"],
-        accountId: json["accountId"],
-        amount: json["amount"],
+        o_a_c_t_s_id: json["o_a_c_t_s_id"],
+        SumApplied: json["SumApplied"],
       );
 
   Map<String, dynamic> toJson() => {
         "paymentMode": paymentMode,
-        "accountId": accountId,
-        "amount": amount,
+        "o_a_c_t_s_id": o_a_c_t_s_id,
+        "SumApplied": SumApplied,
       };
 }

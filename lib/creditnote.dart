@@ -355,6 +355,15 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                 },
               ),
               ListTile(
+                title: const Text('Returned Products'),
+                onTap: () {
+                  // Update the state of the app
+                  // ...
+                  // Then close the drawer
+                  Navigator.pushNamed(context, '/returnedproducts');
+                },
+              ),
+              ListTile(
                 title: const Text('SetUp Printer'),
                 onTap: () {
                   // Update the state of the app
@@ -581,6 +590,12 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  (topUpBalance > 0)
+                      ? Text(
+                          'Make payment for the top up',
+                          style: TextStyle(color: Colors.red),
+                        )
+                      : Text(''),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
@@ -814,6 +829,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                 'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
                                 0,
                                 1);
+                            bluetooth.printNewLine();
 
                             bluetooth.paperCut();
                             /* Navigator.of(context).push(MaterialPageRoute(

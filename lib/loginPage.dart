@@ -98,9 +98,16 @@ class _LoginPageState extends State<LoginPage> {
                                   emailController.text.toString())
                               .then((response) {
                             if (response) {
+                              print('THis is login response $response');
                               Navigator.pushNamedAndRemoveUntil(
                                   context, '/start', (route) => false);
-                            } else {
+                            }
+                            if (response == false) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        'Check your Emial and Password and try again !')),
+                              );
                               SnackBar(content: Text('Invalid credentials'));
                             }
                           });

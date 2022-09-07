@@ -24,10 +24,11 @@ class _SoldProductsState extends State<SoldProducts> {
   int totalsold = 0;
   GetProducts _listbulder = GetProducts();
   TextEditingController dateInput = TextEditingController();
-  String _searchquery = '';
+  String _searchquery = DateTime.now().toString();
 
   @override
   void initState() {
+    soldproducts = _listbulder.fetchSoldProducts(_searchquery);
     super.initState();
   }
 
@@ -81,7 +82,7 @@ class _SoldProductsState extends State<SoldProducts> {
                               .text; //set output date to TextField value.
                         });
                       } else {
-                        DateTime now = new DateTime.now();
+                        /*  DateTime now = new DateTime.now();
                         DateTime date =
                             new DateTime(now.year, now.month, now.day);
                         String formattedDate =
@@ -89,10 +90,11 @@ class _SoldProductsState extends State<SoldProducts> {
                         setState(() {
                           dateInput.text =
                               formattedDate; //set output date to TextField value.
-                        });
+                        }); */
                       }
                     }),
               ),
+              Text('Select Date'),
               SizedBox(
                 height: 20.0,
               ),
@@ -110,45 +112,42 @@ class _SoldProductsState extends State<SoldProducts> {
                           print(result);
                           print('rSold Products $result');
 
-                          return ListView.builder(
-                            itemCount: result.length,
-                            itemBuilder: (context, index) => InkWell(
-                              onTap: () {
-                                setState(() {
-                                  totalsold = totalsold +
-                                      int.parse(result[index]['LineTotal']);
-                                });
-
-                                //print(result[index]['name']);
-
-                                final selectedproduct = new ResponseDatum(
-                                  sellingPrice: (result[index]['SellingPrice']),
-                                  availableQty: (result[index]['AvailableQty']),
-                                  o_p_l_n_s_id: (result[index]['o_p_l_n_s_id']),
-                                  id: result[index]['id'],
-                                  name: result[index]['Name'],
-                                );
-                                selectedProduct
-                                    .selectedProduct(selectedproduct);
-
-                                print(selectedproduct.id);
-                              },
-                              child: ListTile(
-                                title: Text(result[index]['product']['Name']
-                                    .toString()),
-                                subtitle: Text(
-                                    "Quantity Sold: ${result[index]['Quantity'].toString()}"),
-                                trailing: Text(
-                                    "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}"),
-                              ),
-                            ),
-                          );
+                          return (result != [])
+                              ? ListView.builder(
+                                  itemCount: result.length,
+                                  itemBuilder: (context, index) => Card(
+                                    child: ListTile(
+                                      title: Text(result[index]['product']
+                                              ['Name']
+                                          .toString()),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              "Quantity Sold: ${result[index]['Quantity'].toString()}"),
+                                          Row(
+                                            children: [
+                                              (result[index]['ref2'] != null)
+                                                  ? Text(
+                                                      "Customer No: ${result[index]['ref2'].toString()}")
+                                                  : Text(''),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                      trailing: Text(
+                                          "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}"),
+                                    ),
+                                  ),
+                                )
+                              : Text('Select Date');
                         } else if (snapshot.hasError) {
                           return Text('${snapshot.error}');
                         }
 
                         return Center(
-                          child: Text('Select Date'),
+                          child: Center(child: Text('')),
                         );
                       }),
                 ),
@@ -156,13 +155,10 @@ class _SoldProductsState extends State<SoldProducts> {
               FutureBuilder<int>(
                   future: totalSales,
                   builder: (context, snapshot) {
-                    print(
-                        'SnapShot Data.......................................... ${snapshot.data}');
                     if (snapshot.hasData) {
                       print(snapshot.hasData);
                       var result = snapshot.data!;
-                      print(
-                          '5555555555555555555555555555555555555555555555555555555555555555555555555   $result');
+
                       return (dateInput.text != '')
                           ? Text(
                               ('Total Sales : ${formatnum.format(result)}'),

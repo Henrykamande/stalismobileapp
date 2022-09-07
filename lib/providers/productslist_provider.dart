@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/models/creditmemo.dart';
 
@@ -22,7 +23,8 @@ class ProductListProvider with ChangeNotifier {
   int _totalReplacementCost = 0;
   int _topUpBalance = 0;
   int _totalTopUpPayment = 0;
-
+  String _customerName = '';
+  String _saleDate = DateFormat('yyyy-MM-dd').format(DateTime.now()).toString();
   List<SaleRow> _depositProductsList = [];
   List<TopupPayment> _topUpPaymentList = [];
   List<ReplacedProduct> _replacementProductList = [];
@@ -72,7 +74,8 @@ class ProductListProvider with ChangeNotifier {
   int get totalReplacementCost => _totalReplacementCost;
   int get topUpBalance => _topUpBalance;
   String get previousRoute => _previousRoute;
-
+  String get customerName => _customerName;
+  String get dateSetSale => _saleDate;
 //Replacement Product functions
 
   void setCreditNoteListempty() {
@@ -118,7 +121,7 @@ class ProductListProvider with ChangeNotifier {
   int totalTopUpPaymentcalc() {
     _totalTopUpPayment = 0;
     _topUpPaymentList.forEach((item) {
-      _totalTopUpPayment += item.amount!;
+      _totalTopUpPayment += item.SumApplied!;
     });
     notifyListeners();
     return _totalTopUpPayment;
@@ -295,5 +298,20 @@ class ProductListProvider with ChangeNotifier {
 
   void setPreviousRoute(routeString) {
     _previousRoute = routeString;
+    notifyListeners();
+  }
+
+  void setCustomerName(customerName) {
+    _customerName = customerName;
+    notifyListeners();
+  }
+
+  void resetCustmerName() {
+    _customerName = '';
+  }
+
+  void setSaleDate(saleDate) {
+    _saleDate = saleDate;
+    notifyListeners();
   }
 }
