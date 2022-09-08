@@ -28,6 +28,7 @@ class CustomerCreditNote extends StatefulWidget {
 class _CustomerCreditNoteState extends State<CustomerCreditNote> {
   PrefService _prefs = PrefService();
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  final _formKey = GlobalKey<FormState>();
 
   var cache;
   bool _connected = false;
@@ -36,9 +37,9 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
   bool setdate = true;
   String storename = '';
   List<SaleRow> products = [];
-  late String customerNo;
-  late String customerName;
-  var macaddress;
+  String customerNo = '';
+  String customerName = '';
+  var macaddress = "";
   final formatnum = new NumberFormat("#,##0.00", "en_US");
 
   @override
@@ -381,74 +382,93 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: Form(
+                key: _formKey,
+                child: Column(
                   children: [
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(hintText: 'Cust Phone No'),
-                        onChanged: (val) => setState(() {
-                          customerNo = val;
-                        }),
+                    Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                decoration:
+                                    InputDecoration(hintText: 'Cust Phone No'),
+                                validator: (val) =>
+                                    val!.isEmpty ? 'Customer Phone' : null,
+                                onChanged: (val) => setState(() {
+                                  customerNo = val;
+                                }),
+                              ),
+                            ),
+                            Expanded(
+                              child: TextField(
+                                  controller: dateInput,
+
+                                  //editing controller of this TextField
+                                  decoration: InputDecoration(
+                                      icon: Icon(Icons
+                                          .calendar_today), //icon of text field
+                                      labelText:
+                                          '${dateInput.text}' //label text of field
+                                      ),
+                                  readOnly: true,
+                                  //set it true, so that user will not able to edit text
+                                  onTap: () async {
+                                    DateTime? pickedDate = await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime.now()
+                                            .subtract(Duration(hours: 0)),
+                                        //DateTime.now() - not to allow to choose before today.
+                                        lastDate: DateTime(2100));
+
+                                    if (pickedDate != null) {
+                                      print(
+                                          pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                                      String formattedDate =
+                                          DateFormat('yyyy-MM-dd')
+                                              .format(pickedDate);
+                                      print(
+                                          formattedDate); //formatted date output using intl package =>  2021-03-16
+                                      setState(() {
+                                        dateInput.text = formattedDate;
+                                        setdate =
+                                            false; //set output date to TextField value.
+                                      });
+                                    } else {
+                                      DateTime now = new DateTime.now();
+                                      DateTime date = new DateTime(
+                                          now.year, now.month, now.day);
+                                      String formattedDate =
+                                          DateFormat('yyyy-MM-dd').format(date);
+                                      setState(() {
+                                        dateInput.text =
+                                            formattedDate; //set output date to TextField value.
+                                      });
+                                    }
+                                  }),
+                            ),
+                          ]),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Container(
+                        height: 30.0,
+                        child: TextFormField(
+                          decoration: InputDecoration(hintText: 'Cust Name'),
+                          validator: (val) =>
+                              val!.isEmpty ? 'Customer Name' : null,
+                          onChanged: (val) => setState(() {
+                            customerName = val;
+                          }),
+                        ),
                       ),
                     ),
-                    Expanded(
-                      child: TextField(
-                          controller: dateInput,
-
-                          //editing controller of this TextField
-                          decoration: InputDecoration(
-                              icon: Icon(
-                                  Icons.calendar_today), //icon of text field
-                              labelText:
-                                  '${dateInput.text}' //label text of field
-                              ),
-                          readOnly: true,
-                          //set it true, so that user will not able to edit text
-                          onTap: () async {
-                            DateTime? pickedDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate:
-                                    DateTime.now().subtract(Duration(hours: 0)),
-                                //DateTime.now() - not to allow to choose before today.
-                                lastDate: DateTime(2100));
-
-                            if (pickedDate != null) {
-                              print(
-                                  pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
-                              String formattedDate =
-                                  DateFormat('yyyy-MM-dd').format(pickedDate);
-                              print(
-                                  formattedDate); //formatted date output using intl package =>  2021-03-16
-                              setState(() {
-                                dateInput.text = formattedDate;
-                                setdate =
-                                    false; //set output date to TextField value.
-                              });
-                            } else {
-                              DateTime now = new DateTime.now();
-                              DateTime date =
-                                  new DateTime(now.year, now.month, now.day);
-                              String formattedDate =
-                                  DateFormat('yyyy-MM-dd').format(date);
-                              setState(() {
-                                dateInput.text =
-                                    formattedDate; //set output date to TextField value.
-                              });
-                            }
-                          }),
-                    ),
-                  ]),
-            ),
-            Container(
-              height: 30.0,
-              child: TextFormField(
-                decoration: InputDecoration(hintText: 'Cust Name'),
-                onChanged: (val) => setState(() {
-                  customerName = val;
-                }),
+                  ],
+                ),
               ),
             ),
             setdate
@@ -528,7 +548,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                         color: Colors.white,
                         child: ListTile(
                           title: Text(
-                              '${replacementproductsList[index].productName}'),
+                              '${replacementproductsList[index].productName.toString()}'),
                           subtitle: Row(
                             children: [
                               Padding(
@@ -590,14 +610,14 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                           ? Container(
                               color: Colors.white,
                               child: ListTile(
-                                title:
-                                    Text('${topUpPayment[index].paymentMode}'),
+                                title: Text(
+                                    '${topUpPayment[index].paymentMode ?? ""}'),
                                 trailing: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
                                     children: [
                                       Text(
-                                          "Ksh ${(formatnum.format(topUpPayment[index].SumApplied)).toString()}"),
+                                          "Ksh ${(formatnum.format(topUpPayment[index].SumApplied ?? "")).toString()}"),
                                       Expanded(
                                         child: IconButton(
                                             icon: Icon(
@@ -605,10 +625,8 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                               color: Colors.red,
                                             ),
                                             onPressed: () {
-                                              setState(() {
-                                                productsData
-                                                    .removePayment(index);
-                                              });
+                                              productsData
+                                                  .removeTopUpPayment(index);
                                             }),
                                       )
                                     ],
@@ -698,153 +716,157 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                             borderRadius: BorderRadius.circular(10)),
                         color: Colors.blue,
                         onPressed: () async {
-                          /* if (dateInput.text == null ||
+                          if (_formKey.currentState!.validate()) {
+                            /* if (dateInput.text == null ||
                                 dateInput.text == '') {
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
                                 content: Text("Hi, I am a snack bar!"),
                               ));
                             } */
-                          AlertDialog(
-                            content: Text('success'),
-                          );
+                            AlertDialog(
+                              content: Text('success'),
+                            );
 
-                          // print('Date  ...............${pickeddate}');
-                          print(' Printer list on device  $printers');
-                          print('Mac Address $macaddress');
+                            // print('Date  ...............${pickeddate}');
+                            print(' Printer list on device  $printers');
+                            print('Mac Address $macaddress');
 
-                          cache = await _prefs.readCache('Token', 'StoreId',
-                              'loggedInUserName', 'storename');
-                          print(cache['loggedInUserName']);
+                            cache = await _prefs.readCache('Token', 'StoreId',
+                                'loggedInUserName', 'storename');
+                            print(cache['loggedInUserName']);
 
-                          if (depositBalance > 0) {
-                            setState(() {
-                              saleType = 'credit';
-                            });
-                          }
-                          if (depositBalance == 0) {
-                            setState(() {
-                              saleType = 'cash';
-                            });
-                          }
-                          print('payment List $depositPaymentList');
-                          if (totalReturnpayments < 0) {
-                          } else {
-                            CreditMemo creditMemo = new CreditMemo(
-                                topupPayments: topUpPayment,
-                                customerName: customerName,
-                                customerPhone: customerNo,
-                                storeId: int.parse(cache['StoreId']),
-                                returnedProducts: returnProductList,
-                                replacedProducts: replacementproductsList);
-                            //var printeraddress = salepost.getPrinterAddress();
-                            // print(
-                            //     'Printer address fron fuction $printeraddress');
-                            /*   try {
-                              var activedevices =
-                                  await bluetooth.getBondedDevices();
-                              var existingprinter = activedevices.firstWhere(
-                                  (itemToCheck) =>
-                                      itemToCheck.address == macaddress);
-                              void _connect() {
-                                if (existingprinter != null) {
-                                  print(
-                                      'Selected device connect method $existingprinter');
-                                  bluetooth.isConnected.then((isConnected) {
-                                    print(isConnected);
-                                    if (isConnected == false) {
-                                      bluetooth
-                                          .connect(existingprinter!)
-                                          .catchError((error) {
-                                        print(error);
-                                        setState(() => _connected = false);
-                                      });
-                                      setState(() => _connected = true);
-                                    }
-                                  });
-                                } else {
-                                  show('No device selected.');
+                            if (depositBalance > 0) {
+                              setState(() {
+                                saleType = 'credit';
+                              });
+                            }
+                            if (depositBalance == 0) {
+                              setState(() {
+                                saleType = 'cash';
+                              });
+                            }
+                            print('payment List $depositPaymentList');
+                            if (totalReturnpayments < 0) {
+                            } else {
+                              CreditMemo creditMemo = new CreditMemo(
+                                  topupPayments: topUpPayment,
+                                  customerName: customerName,
+                                  customerPhone: customerNo,
+                                  storeId: int.parse(cache['StoreId']),
+                                  returnedProducts: returnProductList,
+                                  replacedProducts: replacementproductsList);
+                              //var printeraddress = salepost.getPrinterAddress();
+                              // print(
+                              //     'Printer address fron fuction $printeraddress');
+                              try {
+                                var activedevices =
+                                    await bluetooth.getBondedDevices();
+                                var existingprinter = activedevices.firstWhere(
+                                    (itemToCheck) =>
+                                        itemToCheck.address == macaddress);
+                                void _connect() {
+                                  if (existingprinter != null) {
+                                    print(
+                                        'Selected device connect method $existingprinter');
+                                    bluetooth.isConnected.then((isConnected) {
+                                      print(isConnected);
+                                      if (isConnected == false) {
+                                        bluetooth
+                                            .connect(existingprinter!)
+                                            .catchError((error) {
+                                          print(error);
+                                          setState(() => _connected = false);
+                                        });
+                                        setState(() => _connected = true);
+                                      }
+                                    });
+                                  } else {
+                                    show('No device selected.');
+                                  }
+                                }
+
+                                _connect();
+                              } on PlatformException {}
+
+                              // var existingprinter = null;
+
+                              salepost.postCreditMemo(creditMemo);
+                              bluetooth.printCustom('2.N.K TELECOM', 1, 1);
+                              bluetooth.printCustom(
+                                  'Mobile Phones & Accessories -Karatina',
+                                  0,
+                                  2);
+                              bluetooth.printCustom('Tel: 0780 048 175', 1, 1);
+                              bluetooth.printCustom(
+                                  'Our promise: If you bought from us then it is original',
+                                  0,
+                                  1);
+
+                              bluetooth.printCustom(
+                                  'Customer Name: ${creditMemo.customerName} Date : ${dateInput.text}',
+                                  0,
+                                  1);
+                              bluetooth.printCustom(
+                                  'Customer No: ${creditMemo.customerPhone}',
+                                  0,
+                                  0);
+                              bluetooth.print3Column(
+                                  'Qty', 'Price', 'Total', 0);
+                              for (var i = 0;
+                                  i < creditMemo.returnedProducts.length;
+                                  i++) {
+                                //
+                                var currentElement =
+                                    creditMemo.returnedProducts[i];
+                                bluetooth.printCustom(
+                                    '${currentElement.productName}', 0, 0);
+                                bluetooth.print3Column(
+                                    '${currentElement.quantity}',
+                                    '    ${formatnum.format(currentElement.sellingPrice)}',
+                                    '    ${formatnum.format(currentElement.lineTotal)}',
+                                    0);
+                                if (currentElement.ref1 != null) {
+                                  bluetooth.printCustom(
+                                      currentElement.ref1!, 0, 0);
                                 }
                               }
-
-                              _connect();
-                            } on PlatformException {}
-
-                            // var existingprinter = null;
-
-                            salepost.postCreditMemo(creditMemo);
-                            bluetooth.printCustom('2.N.K TELECOM', 1, 1);
-                            bluetooth.printCustom(
-                                'Mobile Phones & Accessories -Karatina', 0, 2);
-                            bluetooth.printCustom('Tel: 0780 048 175', 1, 1);
-                            bluetooth.printCustom(
-                                'Our promise: If you bought from us then it is original',
-                                0,
-                                1);
-
-                            bluetooth.print3Column(
-                                'Customer No: ${creditMemo.customerName}',''
-                                'Date : $dateInput.text ',
-                                0);
-                            bluetooth.printCustom(
-                                'Customer No: ${creditMemo.customerPhone}',
-                                0,
-                                0);
-                            bluetooth.print3Column('Qty', 'Price', 'Total', 0);
-                            for (var i = 0;
-                                i < creditMemo.returnedProducts.length;
-                                i++) {
-                              //
-                              var currentElement =
-                                  creditMemo.returnedProducts[i];
-                              bluetooth.printCustom(
-                                  '${currentElement.productName}', 0, 0);
-                              bluetooth.print3Column(
-                                  '${currentElement.quantity}',
-                                  '    ${formatnum.format(currentElement.sellingPrice)}',
-                                  '    ${formatnum.format(currentElement.lineTotal)}',
+                              bluetooth.print4Column(
+                                  'Total Return Cost:',
+                                  '',
+                                  ' ',
+                                  'Ksh ${formatnum.format(totalReturncost)}',
                                   0);
-                              if (currentElement.ref1 != null) {
-                                bluetooth.printCustom(
-                                    currentElement.ref1!, 0, 0);
-                              }
-                            }
-                            bluetooth.print4Column(
-                                'Total Return Cost:',
-                                '',
-                                ' ',
-                                'Ksh ${formatnum.format(totalReturncost)}',
-                                0);
 
-                            bluetooth.print4Column(
-                                'Total Replacement: ',
-                                '',
-                                ' ',
-                                'Ksh ${formatnum.format(totalReplacementCost)}',
-                                0);
+                              bluetooth.print4Column(
+                                  'Total Replacement: ',
+                                  '',
+                                  ' ',
+                                  'Ksh ${formatnum.format(totalReplacementCost)}',
+                                  0);
 
-                            bluetooth.print4Column(
-                                'Top Up Payment :',
-                                '',
-                                ' ',
-                                'Ksh ${formatnum.format(totalTopUpPayment)}',
-                                0);
-                            bluetooth.printNewLine();
-                            bluetooth.printCustom(
-                                'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
-                                0,
-                                1);
-                            bluetooth.printNewLine();
+                              bluetooth.print4Column(
+                                  'Top Up Payment :',
+                                  '',
+                                  ' ',
+                                  'Ksh ${formatnum.format(totalTopUpPayment)}',
+                                  0);
+                              bluetooth.printNewLine();
+                              bluetooth.printCustom(
+                                  'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
+                                  0,
+                                  1);
+                              bluetooth.printNewLine();
 
-                            bluetooth.paperCut(); */
+                              bluetooth.paperCut();
 
-                            salepost.postCreditMemo(creditMemo);
-
-                            /* Navigator.of(context).push(MaterialPageRoute(
+                              /* Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => PrintPage(saleCard))); */
-                            productsData.setCreditNoteListempty();
+                              productsData.setCreditNoteListempty();
 
-                            Navigator.pushNamed(context, '/customercreditnote');
+                              Navigator.pushNamed(
+                                  context, '/customercreditnote');
+                            }
                           }
                         },
                         child: Text(

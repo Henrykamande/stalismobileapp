@@ -36,7 +36,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
   String storename = '';
   List<SaleRow> products = [];
   String customerNo = "";
-  var macaddress;
+  var macaddress = "";
   final formatnum = new NumberFormat("#,##0.00", "en_US");
   String customerName = "";
 
@@ -706,9 +706,15 @@ class _CustomerDepositState extends State<CustomerDeposit> {
 
                             if (saleCard.ref2 != null) {
                               bluetooth.printCustom(
-                                  'Customer No ${saleCard.ref2!}', 0, 0);
+                                  'Customer No ${saleCard.ref2!}  Date : ${dateInput.text} ',
+                                  0,
+                                  0);
                             }
                             bluetooth.print3Column('Qty', 'Price', 'Total', 0);
+                            bluetooth.printCustom(
+                                '-----------------------------------------',
+                                0,
+                                0);
                             for (var i = 0; i < saleCard.rows.length; i++) {
                               //
                               var currentElement = saleCard.rows[i];
@@ -724,6 +730,10 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                     currentElement.ref1!, 0, 0);
                               }
                             }
+                            bluetooth.printCustom(
+                                '-----------------------------------------',
+                                0,
+                                0);
                             bluetooth.print4Column('Total Bill:', '', ' ',
                                 '${formatnum.format(saleCard.docTotal)}', 0);
 

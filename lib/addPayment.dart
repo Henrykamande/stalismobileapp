@@ -67,7 +67,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
-                          initialValue: accountSelected.name,
+                          initialValue: accountSelected.name ?? "",
                           readOnly: true,
                           decoration: InputDecoration(
                             hintText: "Account Name",
