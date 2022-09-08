@@ -12,11 +12,12 @@ class PosSale {
   PosSale({
     required this.objType,
     required this.docNum,
-    required this.cardCode,
+    this.cardCode,
     required this.docTotal,
     required this.balance,
     this.ref1,
     this.ref2,
+    this.customerName,
     required this.docDate,
     required this.discSum,
     required this.payments,
@@ -27,11 +28,12 @@ class PosSale {
 
   int objType;
   int docNum;
-  int cardCode;
+  int? cardCode;
   int docTotal;
   int balance;
   String? ref2;
   String? ref1;
+  String? customerName;
   DateTime docDate;
   int discSum;
   List<Payment> payments;
@@ -54,6 +56,7 @@ class PosSale {
         rows: List<SaleRow>.from(json["rows"].map((x) => SaleRow.fromJson(x))),
         totalPaid: json["totalPaid"],
         userName: json["userName"],
+        customerName: json['customerName'],
       );
 
   Map<String, dynamic> toJson() => {
@@ -71,6 +74,7 @@ class PosSale {
         "rows": List<dynamic>.from(rows.map((x) => x.toJson())),
         "TotalPaid": totalPaid,
         "userName": userName,
+        "customerName": customerName,
       };
 }
 

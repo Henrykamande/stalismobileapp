@@ -525,59 +525,100 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                   : ListView.builder(
                       itemCount: replacementproductsList.length,
                       itemBuilder: (context, index) => Container(
-                            color: Colors.white,
-                            child: ListTile(
-                              title: Text(
-                                  '${replacementproductsList[index].productName}'),
-                              subtitle: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(2.0),
-                                    child: Text(
-                                      "Qty: ${(replacementproductsList[index].quantity).toString()}",
-                                      style: TextStyle(
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(2.0),
-                                    child: Text(
-                                      "Price: ${replacementproductsList[index].sellingPrice.toString()}",
-                                      style: TextStyle(
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              trailing: Padding(
+                        color: Colors.white,
+                        child: ListTile(
+                          title: Text(
+                              '${replacementproductsList[index].productName}'),
+                          subtitle: Row(
+                            children: [
+                              Padding(
                                 padding: const EdgeInsets.all(2.0),
-                                child: Column(
-                                  children: [
-                                    Text(formatnum
-                                        .format(replacementproductsList[index]
-                                            .lineTotal)
-                                        .toString()),
-                                    Expanded(
-                                      child: IconButton(
-                                          icon: Icon(
-                                            Icons.cancel,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              productsData
-                                                  .removeReplacementProduct(
-                                                      index);
-                                            });
-                                          }),
-                                    )
-                                  ],
+                                child: Text(
+                                  "Qty: ${(replacementproductsList[index].quantity).toString()}",
+                                  style: TextStyle(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
+                              Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: Text(
+                                  "Price: ${replacementproductsList[index].sellingPrice.toString()}",
+                                  style: TextStyle(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: Padding(
+                            padding: const EdgeInsets.all(2.0),
+                            child: Column(
+                              children: [
+                                Text(formatnum
+                                    .format(replacementproductsList[index]
+                                        .lineTotal)
+                                    .toString()),
+                                Expanded(
+                                  child: IconButton(
+                                      icon: Icon(
+                                        Icons.cancel,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          productsData
+                                              .removeReplacementProduct(index);
+                                        });
+                                      }),
+                                )
+                              ],
                             ),
-                          )),
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+            Container(
+              height: 80.0,
+              child: (topUpPayment.length == 0)
+                  ? Text("No payment added")
+                  : ListView.builder(
+                      itemCount: topUpPayment.length,
+                      itemBuilder: (context, index) => index <
+                              topUpPayment.length
+                          ? Container(
+                              color: Colors.white,
+                              child: ListTile(
+                                title:
+                                    Text('${topUpPayment[index].paymentMode}'),
+                                trailing: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                          "Ksh ${(formatnum.format(topUpPayment[index].SumApplied)).toString()}"),
+                                      Expanded(
+                                        child: IconButton(
+                                            icon: Icon(
+                                              Icons.cancel,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                productsData
+                                                    .removePayment(index);
+                                              });
+                                            }),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Card(
+                              child: Text("Hello"),
+                            )),
             ),
             Container(
               decoration: new BoxDecoration(
@@ -601,62 +642,22 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Total Retrun: Ksh',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '${formatnum.format(totalReturncost).toString()}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total Replacement: Ksh',
+                        Expanded(
+                          child: Text(
+                            'Total Return: Ksh ${formatnum.format(totalReturncost).toString()}',
                             style: TextStyle(
-                              fontSize: 16.0,
+                              fontSize: 14.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            '${formatnum.format(totalReplacementCost).toString()}',
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Total Rep: Ksh ${formatnum.format(totalReplacementCost).toString()}',
                             style: TextStyle(
-                              fontSize: 16.0,
+                              fontSize: 14.0,
                               fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ],
-                      )),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Payment: Ksh',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '${formatnum.format(totalTopUpPayment).toString()}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
@@ -667,19 +668,23 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Top up: Ksh',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            'Top up: Ksh ${formatnum.format(topUpBalance).toString()}',
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        Text(
-                          '${formatnum.format(topUpBalance).toString()}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            'Payment: Ksh ${formatnum.format(totalTopUpPayment).toString()}',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -735,7 +740,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                             //var printeraddress = salepost.getPrinterAddress();
                             // print(
                             //     'Printer address fron fuction $printeraddress');
-                            try {
+                            /*   try {
                               var activedevices =
                                   await bluetooth.getBondedDevices();
                               var existingprinter = activedevices.firstWhere(
@@ -777,9 +782,9 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                 0,
                                 1);
 
-                            bluetooth.printCustom(
-                                'Customer No: ${creditMemo.customerName}',
-                                0,
+                            bluetooth.print3Column(
+                                'Customer No: ${creditMemo.customerName}',''
+                                'Date : $dateInput.text ',
                                 0);
                             bluetooth.printCustom(
                                 'Customer No: ${creditMemo.customerPhone}',
@@ -831,7 +836,10 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                 1);
                             bluetooth.printNewLine();
 
-                            bluetooth.paperCut();
+                            bluetooth.paperCut(); */
+
+                            salepost.postCreditMemo(creditMemo);
+
                             /* Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => PrintPage(saleCard))); */
                             productsData.setCreditNoteListempty();

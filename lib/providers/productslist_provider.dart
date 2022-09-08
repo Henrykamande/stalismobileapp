@@ -24,6 +24,7 @@ class ProductListProvider with ChangeNotifier {
   int _topUpBalance = 0;
   int _totalTopUpPayment = 0;
   String _customerName = '';
+  String _customerPhone = "";
   String _saleDate = DateFormat('yyyy-MM-dd').format(DateTime.now()).toString();
   List<SaleRow> _depositProductsList = [];
   List<TopupPayment> _topUpPaymentList = [];
@@ -62,13 +63,13 @@ class ProductListProvider with ChangeNotifier {
   }
 
   dynamic get accountSelected {
-    return accountSelected;
+    return _accountSelected;
   }
 
   int get totabill => _totalbill;
   int get totaDepositBill => _totalbill;
   int get totalReturnPayment => _totalReturnPayment;
-  int get balance => _balance;
+  int get billBalance => _balance;
   int get depositBalance => _depositBalance;
   int get totalpayment => _totalpayment;
   int get totalReplacementCost => _totalReplacementCost;
@@ -76,6 +77,7 @@ class ProductListProvider with ChangeNotifier {
   String get previousRoute => _previousRoute;
   String get customerName => _customerName;
   String get dateSetSale => _saleDate;
+  String get customerPhone => _customerPhone;
 //Replacement Product functions
 
   void setCreditNoteListempty() {
@@ -116,6 +118,13 @@ class ProductListProvider with ChangeNotifier {
 
   void addTopUpPayment(topUpPayment) {
     _topUpPaymentList.add(topUpPayment);
+  }
+
+  void removeTopUpPayment(index) {
+    _totalTopUpPayment =
+        _totalTopUpPayment - _topUpPaymentList[index].SumApplied!;
+    _topUpPaymentList.removeAt(index);
+    notifyListeners();
   }
 
   int totalTopUpPaymentcalc() {
@@ -181,15 +190,15 @@ class ProductListProvider with ChangeNotifier {
   }
 
   void removeProduct(index) {
-    if (balance == 0) {
+    if (billBalance == 0) {
       _totalbill = _totalbill - _productList[index].lineTotal;
       _productList.removeAt(index);
     }
-    if (totalpayment == 0.0 && balance == 0.0) {
+    if (totalpayment == 0.0 && billBalance == 0.0) {
       _totalbill = _totalbill - _productList[index].lineTotal;
       _productList.removeAt(index);
     }
-    if (totalpayment == 0.0 && balance == 0.0) {
+    if (totalpayment == 0.0 && billBalance == 0.0) {
       _totalbill = _totalbill - _productList[index].lineTotal;
       _productList.removeAt(index);
     }
@@ -249,6 +258,7 @@ class ProductListProvider with ChangeNotifier {
   }
 
   int balancepayment() {
+    _balance = 0;
     _balance = _totalbill - totalPaymentcalc();
     notifyListeners();
     return _balance;
@@ -286,9 +296,10 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void accountchoice(accountUserSelected) {
+  accountchoice(accountUserSelected) {
     _accountSelected = accountUserSelected;
     notifyListeners();
+    return _accountSelected;
   }
 
   void addPrinter(addbluetoothPrinter) {
@@ -306,8 +317,20 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void resetCustmerName() {
+  setCustomerPhone(customerno) {
+    _customerPhone = customerno;
+    return _customerPhone;
+  }
+
+  resetCustmerPhone() {
+    _customerPhone = '';
+
+    return _customerPhone;
+  }
+
+  resetCustomerName() {
     _customerName = '';
+    return _customerName;
   }
 
   void setSaleDate(saleDate) {

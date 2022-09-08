@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:testproject/addPayment.dart';
 import 'package:testproject/addProductForm.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/api_service.dart';
@@ -26,7 +27,6 @@ class _SearchProductState extends State<SearchProduct> {
     super.initState();
   }
 
-  @override
   void _showaddProductPane() {
     showModalBottomSheet(
         isScrollControlled: true,
@@ -35,6 +35,18 @@ class _SearchProductState extends State<SearchProduct> {
           return Container(
             padding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
             child: AddProductForm(),
+          );
+        });
+  }
+
+  void _showaddPaymentPane() {
+    showModalBottomSheet(
+        isScrollControlled: true,
+        context: context,
+        builder: (context) {
+          return Container(
+            padding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+            child: AddPaymentForm(),
           );
         });
   }
@@ -124,6 +136,7 @@ class _SearchProductState extends State<SearchProduct> {
                                       );
                                       selectedProduct
                                           .selectedProduct(selectedproduct);
+                                      //_showaddProductPane();
                                       _showaddProductPane();
                                       print(selectedproduct.id);
                                     },

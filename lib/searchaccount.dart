@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:testproject/addPayment.dart';
 import 'package:testproject/models/accountmodel.dart';
 import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/paymentsAccounts.dart';
@@ -28,17 +29,17 @@ class _PaymentSearchState extends State<PaymentSearch> {
 
   void initState() {
     super.initState();
-    accountsList = _accountslistbulder.getaccounts(_searchquery);
-    amountPaid = TextEditingController();
+    //amountPaid = TextEditingController();
   }
 
-  void _showaddProductPane() {
+  void _showaddPaymentPane() {
     showModalBottomSheet(
+        isScrollControlled: true,
         context: context,
         builder: (context) {
           return Container(
             padding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
-            child: AddProductForm(),
+            child: AddPaymentForm(),
           );
         });
   }
@@ -47,6 +48,8 @@ class _PaymentSearchState extends State<PaymentSearch> {
   Widget build(BuildContext context) {
     final paymentsData = Provider.of<ProductListProvider>(context);
     final previousrouteString = paymentsData.previousRoute;
+    accountsList = _accountslistbulder.getaccounts(_searchquery);
+
     return Scaffold(
       appBar: AppBar(
         title: Container(
@@ -56,75 +59,83 @@ class _PaymentSearchState extends State<PaymentSearch> {
       ),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 20.0,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextFormField(
-                onChanged: (val) => setState(() => _searchquery = val),
-                decoration: InputDecoration(
-                  fillColor: Colors.grey[400],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.purple.shade900,
+        child: Container(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 20.0,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  onChanged: (val) => setState(() => _searchquery = val),
+                  decoration: InputDecoration(
+                    fillColor: Colors.grey[400],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.purple.shade900,
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Expanded(
-              child: Container(
-                child: FutureBuilder<List<dynamic>>(
-                    future: accountsList,
-                    builder: (context, snapshot) {
-                      if (snapshot.data == null) {}
-                      if (snapshot.hasData) {
-                        List<dynamic> result = snapshot.data!;
-                        print(result);
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: result.length,
-                          itemBuilder: (context, index) => InkWell(
-                            onTap: () {
-                              Payment selectedAccount = new Payment(
-                                oACTSId: result[index]['id'],
-                                name: result[index]['Name'],
-                              );
-                              openAddPaymentDialog(paymentsData,
-                                  selectedAccount, previousrouteString);
-
-                              paymentsData.accountSelected(selectedAccount);
-                            },
-                            child: ListTile(
-                              title: Text(result[index]['Name']),
-                            ),
-                          ),
-                        );
-                      } else if (snapshot.hasError) {
-                        return Text('${snapshot.error}');
-                      }
-
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }),
+              SizedBox(
+                height: 20.0,
               ),
-            ),
-          ],
+              Expanded(
+                child: Container(
+                  height: 300,
+                  child: FutureBuilder<List<dynamic>>(
+                      future: accountsList,
+                      builder: (context, snapshot) {
+                        if (snapshot.data == null) {}
+                        if (snapshot.hasData) {
+                          List<dynamic> result = snapshot.data!;
+                          print(result);
+                          return (_searchquery != '')
+                              ? ListView.builder(
+                                  itemCount: result.length,
+                                  itemBuilder: (context, index) => InkWell(
+                                    onTap: () async {
+                                      Payment selectedAccount = new Payment(
+                                        oACTSId: result[index]['id'],
+                                        name: result[index]['Name'],
+                                      );
+
+                                      /*  openAddPaymentDialog(paymentsData,
+                                    selectedAccount, previousrouteString);
+ */
+
+                                      await paymentsData
+                                          .accountchoice(selectedAccount);
+                                      _showaddPaymentPane();
+                                    },
+                                    child: ListTile(
+                                      title: Text(result[index]['Name']),
+                                    ),
+                                  ),
+                                )
+                              : Text('');
+                        } else if (snapshot.hasError) {
+                          return Text('${snapshot.error}');
+                        }
+
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Future openAddPaymentDialog(
+  /* Future openAddPaymentDialog(
       paymentsData, selectedAccout, previousrouteString) async {
     await showDialog(
       context: context,
@@ -197,4 +208,7 @@ class _PaymentSearchState extends State<PaymentSearch> {
       Navigator.pushNamed(context, '/start');
     }
   }
+
+ */
+
 }

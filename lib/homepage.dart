@@ -34,9 +34,9 @@ class _HomePageState extends State<HomePage> {
   bool setdate = true;
   String storename = '';
   List<SaleRow> products = [];
-  String? customerNo;
+  String customerNo = "";
   String? printerErrorMessage;
-  var macaddress;
+  var macaddress = '';
 
   final formatnum = new NumberFormat("#,##0.00", "en_US");
 
@@ -124,7 +124,6 @@ class _HomePageState extends State<HomePage> {
     final totalpayment = productsData.totalPaymentcalc();
     final List<Payment> paymentlist = productsData.paymentlist;
     final printers = productsData.printers;
-
     return MaterialApp(
       home: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -362,8 +361,10 @@ class _HomePageState extends State<HomePage> {
                                 }
                                 return null;
                               },
-                              onChanged: (val) =>
-                                  productsData.setCustomerName(val)
+                              onChanged: (val) {
+                                customerNo = productsData.setCustomerPhone(val);
+                              }
+
                               /* setState(() {
                               customerNo = val;
                             }), */
@@ -562,7 +563,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Text(
-                            '${formatnum.format(totalbill)}',
+                            '${formatnum.format(productsData.totalPrice())}',
                             style: TextStyle(
                               fontSize: 13.0,
                               fontWeight: FontWeight.bold,
@@ -573,7 +574,12 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Padding(
                         padding: const EdgeInsets.all(4.0),
-                        child: (totalpayment > totalbill)
+                        child: (context
+                                    .read<ProductListProvider>()
+                                    .totalPaymentcalc() >
+                                context
+                                    .read<ProductListProvider>()
+                                    .totalPrice())
                             ? Text(
                                 'Payment can not be more than the Total',
                                 style: TextStyle(color: Colors.red),
@@ -590,7 +596,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                   Text(
-                                    '${formatnum.format(totalpayment)}',
+                                    '${formatnum.format(context.read<ProductListProvider>().totalPaymentcalc())}',
                                     style: TextStyle(
                                       fontSize: 12.0,
                                       fontWeight: FontWeight.bold,
@@ -612,7 +618,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Text(
-                            '${formatnum.format(balance)}',
+                            '${formatnum.format(context.read<ProductListProvider>().balancepayment())}',
                             style: TextStyle(
                               fontSize: 13.0,
                               fontWeight: FontWeight.bold,
@@ -624,10 +630,19 @@ class _HomePageState extends State<HomePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        /* isloading
+                            ? CircularProgressIndicator(
+                                strokeWidth: 10.0,
+                              )
+                            :  */
                         RaisedButton(
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                           color: Colors.blue,
+                          child: Text(
+                            'Save',
+                            style: TextStyle(color: Colors.white),
+                          ),
                           onPressed: () async {
                             /* if (dateInput.text == null ||
                                 dateInput.text == '') {
@@ -641,17 +656,17 @@ class _HomePageState extends State<HomePage> {
                             );
                             if (_formKey.currentState!.validate()) {
                               // print('Date  ...............${pickeddate}');
+                              salepost.setislodaing();
 
                               cache = await _prefs.readCache('Token', 'StoreId',
                                   'loggedInUserName', 'storename');
                               if (totalpayment > totalbill) {
                               } else {
                                 PosSale saleCard = new PosSale(
-                                    ref2: customerNo,
+                                    ref2: customerNo.toString(),
                                     objType: 14,
                                     docNum: 2,
                                     discSum: 0,
-                                    cardCode: 1,
                                     payments: paymentlist,
                                     docTotal: totalbill,
                                     balance: balance,
@@ -660,7 +675,10 @@ class _HomePageState extends State<HomePage> {
                                     rows: products,
                                     totalPaid: totalpayment,
                                     userName: cache['loggedInUserName']);
+
                                 productsData.postsalearray(saleCard);
+
+                                //salepost.setislodaing();
 
                                 //var printeraddress = salepost.getPrinterAddress();
                                 // print(
@@ -721,7 +739,18 @@ class _HomePageState extends State<HomePage> {
                                       'Customer No ${saleCard.ref2!}', 0, 0);
                                 }
                                 bluetooth.print3Column(
+                                    '',
+                                    ''
+                                        'Date : ${dateInput.text} ',
+                                    '',
+                                    0);
+                                bluetooth.printNewLine();
+                                bluetooth.print3Column(
                                     'Qty', 'Price', 'Total', 0);
+                                bluetooth.printCustom(
+                                    '-----------------------------------------',
+                                    0,
+                                    0);
                                 for (var i = 0; i < saleCard.rows.length; i++) {
                                   //
                                   var currentElement = saleCard.rows[i];
@@ -734,9 +763,14 @@ class _HomePageState extends State<HomePage> {
                                       0);
                                   if (currentElement.ref1 != null) {
                                     bluetooth.printCustom(
-                                        currentElement.ref1!, 0, 0);
+                                        'Ref: ${currentElement.ref1!}', 0, 0);
                                   }
                                 }
+                                bluetooth.printCustom(
+                                    '------------------------------------------',
+                                    0,
+                                    0);
+                                bluetooth.printNewLine();
                                 bluetooth.print4Column(
                                     'Total Bill:',
                                     '',
@@ -758,21 +792,18 @@ class _HomePageState extends State<HomePage> {
                                     'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
                                     0,
                                     1);
+                                bluetooth.printNewLine();
 
                                 bluetooth.paperCut();
                                 /*Navigator.of(context).push(MaterialPageRoute( 
                                 builder: (context) => PrintPage(saleCard)));*/
                                 productsData.setprodLIstempty();
-                                productsData.resetCustmerName();
-
+                                productsData.resetCustmerPhone();
+                                productsData.resetCustomerName();
                                 Navigator.pushNamed(context, '/start');
                               }
                             }
                           },
-                          child: Text(
-                            'Save',
-                            style: TextStyle(color: Colors.white),
-                          ),
                         )
                       ],
                     )
@@ -785,6 +816,10 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  final snackBar = SnackBar(
+    content: Text('Yay! A SnackBar!'),
+  );
 
   Future show(
     String message, {

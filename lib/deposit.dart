@@ -35,9 +35,10 @@ class _CustomerDepositState extends State<CustomerDeposit> {
   bool setdate = true;
   String storename = '';
   List<SaleRow> products = [];
-  String? customerNo;
+  String customerNo = "";
   var macaddress;
   final formatnum = new NumberFormat("#,##0.00", "en_US");
+  String customerName = "";
 
   @override
   void initState() {
@@ -350,11 +351,11 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                   children: [
                     Expanded(
                       child: TextFormField(
-                        decoration: InputDecoration(hintText: 'Cust Phone No'),
-                        onChanged: (val) => setState(() {
-                          customerNo = val;
-                        }),
-                      ),
+                          initialValue: productsData.customerPhone,
+                          decoration:
+                              InputDecoration(hintText: 'Cust Phone No'),
+                          onChanged: (val) =>
+                              productsData.setCustomerPhone(val)),
                     ),
                     Expanded(
                       child: TextField(
@@ -408,11 +409,9 @@ class _CustomerDepositState extends State<CustomerDeposit> {
             Container(
               height: 30.0,
               child: TextFormField(
-                decoration: InputDecoration(hintText: 'Cust Name'),
-                onChanged: (val) => setState(() {
-                  customerNo = val;
-                }),
-              ),
+                  initialValue: productsData.customerName,
+                  decoration: InputDecoration(hintText: 'Cust Name'),
+                  onChanged: (val) => productsData.setCustomerName(val)),
             ),
             setdate
                 ? Text(
@@ -647,11 +646,11 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                           if (totalDepositpayments > totalDepositBill) {
                           } else {
                             PosSale saleCard = new PosSale(
-                                ref2: customerNo,
+                                ref2: productsData.customerPhone,
+                                customerName: productsData.customerName,
                                 objType: 14,
                                 docNum: 2,
                                 discSum: 0,
-                                cardCode: 1,
                                 payments: depositPaymentList,
                                 docTotal: totalDepositBill,
                                 balance: depositBalance,
@@ -695,7 +694,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
 
                             // var existingprinter = null;
 
-                            productsData.postDepositarray(saleCard);
+                            salepost.postDepositSale(saleCard);
                             bluetooth.printCustom('2.N.K TELECOM', 1, 1);
                             bluetooth.printCustom(
                                 'Mobile Phones & Accessories -Karatina', 0, 2);
@@ -742,6 +741,10 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                             bluetooth.paperCut();
                             /* Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => PrintPage(saleCard))); */
+                            salepost.postDepositSale(saleCard);
+
+                            productsData.resetCustmerPhone();
+                            productsData.resetCustomerName();
                             productsData.setDepositListempty();
 
                             Navigator.pushNamed(context, '/customerdeposit');

@@ -21,10 +21,24 @@ class GetProducts with ChangeNotifier {
   var accountsdata;
   var response;
   int totalpayments = 0;
+  bool _isloading = false;
 
   PrefService _prefs = PrefService();
 
   List<ResponseDatum> result = [];
+  bool get isloading => _isloading;
+
+  setislodaing() {
+    _isloading = true;
+    notifyListeners();
+    return _isloading;
+  }
+
+  setislodaingfalse() {
+    _isloading = false;
+    notifyListeners();
+    return _isloading;
+  }
 
   //This function set the headers for api calls
   sethenders() async {
@@ -154,7 +168,7 @@ class GetProducts with ChangeNotifier {
     }).toList();*/
   }
 
-  void postsale(salecard) async {
+  postsale(salecard) async {
     print('Print Sales $salecard');
     var headers = await sethenders();
     final queryparamaeters = posSaleToJson(salecard);
@@ -170,12 +184,13 @@ class GetProducts with ChangeNotifier {
         headers: headers,
         body: queryparamaeters,
       );
-      print('Query paramsaleCardaeters $queryparamaeters');
 
-      print('response from postr sale ${response.body}');
+      if (response.statusCode == 200) {
+      } else {}
     } catch (e) {
       print(e);
     }
+    notifyListeners();
   }
 
   void getBankAccounts() async {
@@ -422,5 +437,29 @@ class GetProducts with ChangeNotifier {
     }
     notifyListeners();
     return data;
+  }
+
+  void postDepositSale(salecard) async {
+    print('Print Sales $salecard');
+    var headers = await sethenders();
+    final queryparamaeters = posSaleToJson(salecard);
+
+    //print(jsonDecode(queryparamaeters));
+    var url = Uri.https(
+      'apoyobackend.softcloudtech.co.ke',
+      '/api/v1/sale-deposit',
+    );
+    try {
+      response = await http.post(
+        url,
+        headers: headers,
+        body: queryparamaeters,
+      );
+      print('Query param Deposit sale Card $queryparamaeters');
+
+      print('response from Deposit Sale ${response.body}');
+    } catch (e) {
+      print(e);
+    }
   }
 }

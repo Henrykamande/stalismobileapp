@@ -32,13 +32,11 @@ class _AddProductFormState extends State<AddProductForm> {
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductListProvider>(context);
     final selectedProdp = Provider.of<GetProducts>(context);
-    final _selectedProd = selectedProdp.selectedprod;
-    print(_selectedProd.name);
+    final _selectedProd = selectedProdp.selectedprod ?? "";
+
     final previousrouteString = productsData.previousRoute;
     final products = productsData.productlist;
-    var args = ModalRoute.of(context)!.settings.arguments;
-    print(
-        "args ================================================================= $previousrouteString");
+
     return Form(
         key: _formKey,
         child: SingleChildScrollView(
