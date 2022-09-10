@@ -23,8 +23,8 @@ class ProductListProvider with ChangeNotifier {
   int _totalReplacementCost = 0;
   int _topUpBalance = 0;
   int _totalTopUpPayment = 0;
-  String _customerName = '';
-  String _customerPhone = "";
+  String _customerName = ' ';
+  String _customerPhone = " ";
   String _saleDate = DateFormat('yyyy-MM-dd').format(DateTime.now()).toString();
   List<SaleRow> _depositProductsList = [];
   List<TopupPayment> _topUpPaymentList = [];

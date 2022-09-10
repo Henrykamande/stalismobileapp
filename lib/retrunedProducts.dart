@@ -137,27 +137,30 @@ class _ReturnProductsState extends State<ReturnProducts> {
               SizedBox(
                 height: 20.0,
               ),
-              SizedBox(
-                height: 20.0,
-              ),
               Expanded(
                 child: Container(
                   child: FutureBuilder<List<dynamic>>(
                       future: returnedProducts,
                       builder: (context, snapshot) {
-                        if (snapshot.data == null) {}
+                        if (snapshot.data == null) {
+                          return Text("No Returns");
+                        }
                         if (snapshot.hasData) {
+                          print(returnedProducts);
                           List<dynamic> result = snapshot.data!;
-                          print(
-                              "Retruned Products index 0 ${result[0]['product']['Name']}");
 
-                          return ListView.builder(
-                            itemCount: result.length,
-                            itemBuilder: (context, index) => InkWell(
-                              onTap: () {
-                                //print(result[index]['name']);
+                          return (result.isEmpty)
+                              ? Text("No Returns")
+                              : ListView.builder(
+                                  itemCount: result.length,
+                                  itemBuilder: (context, index) => (result
+                                          .isEmpty)
+                                      ? Text('No returns')
+                                      : InkWell(
+                                          onTap: () {
+                                            //print(result[index]['name']);
 
-                                /* final selectedproduct = new ResponseDatum(
+                                            /* final selectedproduct = new ResponseDatum(
                                         sellingPrice: (result[index]
                                             ['SellingPrice']),
                                         availableQty: (result[index]
@@ -171,68 +174,86 @@ class _ReturnProductsState extends State<ReturnProducts> {
                                           .selectedProduct(selectedproduct);
 
                                       print(selectedproduct.id);*/
-                              },
-                              child: Card(
-                                child: ListTile(
-                                  title: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        (result[index]['customerName'] != null)
-                                            ? Text(
-                                                " Customer Name :${result[index]['customerName']}")
-                                            : Text(''),
-                                        (result[index]['customerName'] != null)
-                                            ? Text(
-                                                " Phone :${result[index]['customerPhone']}")
-                                            : Text(''),
-                                        Text(
-                                          "${result[index]['product']['Name']}",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  subtitle: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                                "Qty: ${result[index]['Quantity'].toString()}",
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            SizedBox(
-                                              width: 20.0,
-                                            ),
-                                            Text(
-                                              "Price: ${formatnum.format(result[index]['Price']).toString()}",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
+                                          },
+                                          child: (result.length == 0)
+                                              ? Text("No Returns")
+                                              : Card(
+                                                  child: ListTile(
+                                                    title: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          (result[index][
+                                                                      'customerName'] !=
+                                                                  null)
+                                                              ? Text(
+                                                                  " Customer Name :${result[index]['customerName']}")
+                                                              : Text(''),
+                                                          (result[index][
+                                                                      'customerName'] !=
+                                                                  null)
+                                                              ? Text(
+                                                                  " Phone :${result[index]['customerPhone']}")
+                                                              : Text(''),
+                                                          Text(
+                                                            "${result[index]['product']['Name']}",
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    subtitle: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                  "Qty: ${result[index]['Quantity'].toString()}",
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold)),
+                                                              SizedBox(
+                                                                width: 20.0,
+                                                              ),
+                                                              Text(
+                                                                "Price: ${formatnum.format(result[index]['Price']).toString()}",
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    trailing: Text(
+                                                      "Ksh: ${formatnum.format(result[index]['LineTotal']).toString()}",
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  trailing: Text(
-                                    "Ksh: ${formatnum.format(result[index]['LineTotal']).toString()}",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
+                                );
                         } else if (snapshot.hasError) {
-                          return Text('${snapshot.error}');
+                          return Text('');
                         }
 
                         return Center(

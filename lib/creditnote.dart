@@ -319,7 +319,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                   Navigator.pushNamed(context, '/start');
                 },
               ),
-              ListTile(
+              /* ListTile(
                 title: const Text('Customer Deposit'),
                 onTap: () {
                   // Update the state of the app
@@ -327,7 +327,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                   // Then close the drawer
                   Navigator.pushNamed(context, '/customerDeposit');
                 },
-              ),
+              ), */
               ListTile(
                 title: const Text('Return & Replacement'),
                 onTap: () {
@@ -773,7 +773,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                       print(isConnected);
                                       if (isConnected == false) {
                                         bluetooth
-                                            .connect(existingprinter!)
+                                            .connect(existingprinter)
                                             .catchError((error) {
                                           print(error);
                                           setState(() => _connected = false);
@@ -834,22 +834,22 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               bluetooth.print4Column(
                                   'Total Return Cost:',
                                   '',
-                                  ' ',
                                   'Ksh ${formatnum.format(totalReturncost)}',
+                                  '',
                                   0);
 
                               bluetooth.print4Column(
                                   'Total Replacement: ',
                                   '',
-                                  ' ',
                                   'Ksh ${formatnum.format(totalReplacementCost)}',
+                                  '',
                                   0);
 
                               bluetooth.print4Column(
                                   'Top Up Payment :',
                                   '',
-                                  ' ',
                                   'Ksh ${formatnum.format(totalTopUpPayment)}',
+                                  '',
                                   0);
                               bluetooth.printNewLine();
                               bluetooth.printCustom(

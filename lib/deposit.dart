@@ -3,14 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:testproject/models/previousRoute.dart';
-import 'package:testproject/reusableComponents/bottomNavigation.dart';
-import 'package:testproject/reusableComponents/drawer.dart';
-import 'package:testproject/searchaccount.dart';
 import 'package:testproject/main.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/outsourced.dart';
-import 'package:testproject/print_page.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
@@ -676,7 +672,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                     print(isConnected);
                                     if (isConnected == false) {
                                       bluetooth
-                                          .connect(existingprinter!)
+                                          .connect(existingprinter)
                                           .catchError((error) {
                                         print(error);
                                         setState(() => _connected = false);

@@ -172,7 +172,8 @@ class GetProducts with ChangeNotifier {
     print('Print Sales $salecard');
     var headers = await sethenders();
     final queryparamaeters = posSaleToJson(salecard);
-
+    print(
+        "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ psot sale parameters $queryparamaeters");
     //print(jsonDecode(queryparamaeters));
     var url = Uri.https(
       'apoyobackend.softcloudtech.co.ke',

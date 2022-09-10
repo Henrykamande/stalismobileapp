@@ -29,14 +29,16 @@ class _HomePageState extends State<HomePage> {
   final _formKey = GlobalKey<FormState>();
   var cache;
   bool _connected = false;
+  String printerErrorMessage = "";
   TextEditingController dateInput = TextEditingController();
   String saleType = '';
   bool setdate = true;
   String storename = '';
   List<SaleRow> products = [];
   String customerNo = "";
-  String? printerErrorMessage;
+
   var macaddress = '';
+  List _devices = [];
 
   final formatnum = new NumberFormat("#,##0.00", "en_US");
 
@@ -44,8 +46,85 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     setdate = true;
     _getPrinterAddress();
+    initPlatformState();
     sethenders();
     super.initState();
+  }
+
+  Future<void> initPlatformState() async {
+    bool? isConnected = await bluetooth.isConnected;
+    List<BluetoothDevice> devices = [];
+    try {
+      devices = await bluetooth.getBondedDevices();
+    } on PlatformException {}
+
+    bluetooth.onStateChanged().listen((state) {
+      switch (state) {
+        case BlueThermalPrinter.CONNECTED:
+          setState(() {
+            _connected = true;
+
+            print("bluetooth device state: connected");
+          });
+          break;
+        case BlueThermalPrinter.DISCONNECTED:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: disconnected");
+          });
+          break;
+        case BlueThermalPrinter.DISCONNECT_REQUESTED:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: disconnect requested");
+          });
+          break;
+        case BlueThermalPrinter.STATE_TURNING_OFF:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: bluetooth turning off");
+          });
+          break;
+        case BlueThermalPrinter.STATE_OFF:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: bluetooth off");
+          });
+          break;
+        case BlueThermalPrinter.STATE_ON:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: bluetooth on");
+          });
+          break;
+        case BlueThermalPrinter.STATE_TURNING_ON:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: bluetooth turning on");
+          });
+          break;
+        case BlueThermalPrinter.ERROR:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: error");
+          });
+          break;
+        default:
+          print(state);
+          break;
+      }
+    });
+
+    if (!mounted) return;
+    setState(() {
+      _devices = devices;
+    });
+
+    if (isConnected == true) {
+      setState(() {
+        _connected = true;
+      });
+    }
   }
 
   sethenders() async {
@@ -112,18 +191,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final productsData = Provider.of<ProductListProvider>(context);
-
-    final salepost = Provider.of<GetProducts>(context);
-    List<SaleRow> products = productsData.productlist;
-
-    print('mac addresssssssssssss$macaddress');
-    //final paymentlist = productsData.paymentlist;
-    final totalbill = productsData.totalPrice();
-    final balance = productsData.balancepayment();
-    final totalpayment = productsData.totalPaymentcalc();
-    final List<Payment> paymentlist = productsData.paymentlist;
-    final printers = productsData.printers;
+    final productprovider =
+        Provider.of<ProductListProvider>(context, listen: true);
     return MaterialApp(
       home: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -136,6 +205,52 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           actions: [
+            /*  SizedBox(
+              height: 0.0,
+              child: RaisedButton(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                color: _connected ? Colors.red : Colors.green,
+                onPressed: _connected ? _disconnect : _connect,
+                child: Text(
+                  _connected ? 'Disconnect' : 'Connect',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ), */
+
+            FlatButton(
+                onPressed: _connected ? _disconnect : _connect,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.bluetooth,
+                      color: _connected ? Colors.red : Colors.green,
+                    ),
+                    Text(
+                      _connected ? 'Off' : 'On',
+                      style: TextStyle(
+                          color: _connected ? Colors.red : Colors.green),
+                    ),
+                  ],
+                )),
+            // button width and height
+            /*  Material(
+              color: _connected ? Colors.red : Colors.green, // button color
+              child: InkWell(
+                splashColor: Colors.green, // splash color
+                onTap: () {}, // button pressed
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(Icons.bluetooth), // icon
+                    Text(_connected ? 'Disconnect' : 'Connect',
+                        style: TextStyle(color: Colors.white)), // text
+                  ],
+                ),
+              ),
+            ), */
+
             FlatButton(
               onPressed: () async {
                 cache = await _prefs.readCache(
@@ -185,20 +300,21 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   Expanded(
-                    child: IconButton(
-                      enableFeedback: false,
-                      onPressed: () {
-                        productsData.setPreviousRoute('/start');
+                      child: IconButton(
+                    enableFeedback: false,
+                    onPressed: () {
+                      context
+                          .read<ProductListProvider>()
+                          .setPreviousRoute('/start');
 
-                        Navigator.pushNamed(context, '/searchproduct');
-                      },
-                      icon: const Icon(
-                        Icons.widgets_outlined,
-                        color: Colors.white,
-                        size: 35,
-                      ),
+                      Navigator.pushNamed(context, '/searchproduct');
+                    },
+                    icon: const Icon(
+                      Icons.widgets_outlined,
+                      color: Colors.white,
+                      size: 35,
                     ),
-                  ),
+                  )),
                 ],
               ),
               Column(
@@ -208,20 +324,21 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   Expanded(
-                    child: IconButton(
-                      enableFeedback: false,
-                      onPressed: () {
-                        productsData.setPreviousRoute('/start');
+                      child: IconButton(
+                    enableFeedback: false,
+                    onPressed: () {
+                      context
+                          .read<ProductListProvider>()
+                          .setPreviousRoute('/start');
 
-                        Navigator.pushNamed(context, '/paymentsearch');
-                      },
-                      icon: const Icon(
-                        Icons.widgets_outlined,
-                        color: Colors.white,
-                        size: 35,
-                      ),
+                      Navigator.pushNamed(context, '/paymentsearch');
+                    },
+                    icon: const Icon(
+                      Icons.widgets_outlined,
+                      color: Colors.white,
+                      size: 35,
                     ),
-                  ),
+                  )),
                 ],
               ),
               /* Column(
@@ -281,7 +398,7 @@ class _HomePageState extends State<HomePage> {
                     Navigator.pushNamed(context, '/start');
                   },
                 ),
-                ListTile(
+                /*  ListTile(
                   title: const Text('Customer Deposit'),
                   onTap: () {
                     // Update the state of the app
@@ -289,7 +406,7 @@ class _HomePageState extends State<HomePage> {
                     // Then close the drawer
                     Navigator.pushNamed(context, '/customerDeposit');
                   },
-                ),
+                ), */
                 ListTile(
                   title: const Text('Return & Replacement'),
                   onTap: () {
@@ -340,481 +457,491 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Form(
-                  key: _formKey,
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                              initialValue: productsData.customerName,
-                              decoration:
-                                  InputDecoration(hintText: 'Customer Phone'),
+            child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Form(
+                key: _formKey,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Consumer<ProductListProvider>(
+                          builder: (context, value, child) {
+                            return TextFormField(
+                                initialValue: value.customerName,
+                                decoration:
+                                    InputDecoration(hintText: 'Customer Phone'),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please Enter Customer Phone';
+                                  }
+                                  return null;
+                                },
+                                onChanged: (val) {
+                                  customerNo = context
+                                      .read<ProductListProvider>()
+                                      .setCustomerPhone(val);
+                                }
+
+                                /* setState(() {
+                                customerNo = val;
+                              }), */
+                                );
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: Consumer<ProductListProvider>(
+                          builder: (context, value, child) {
+                            return TextFormField(
+                              controller: dateInput,
+
+                              //editing controller of this TextField
+                              decoration: InputDecoration(
+                                  icon: Icon(Icons
+                                      .calendar_today), //icon of text field
+                                  labelText: 'Date' //label text of field
+                                  ),
+                              readOnly: true,
+                              //set it true, so that user will not able to edit text
+                              onTap: () async {
+                                DateTime? pickedDate = await showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    currentDate: DateTime.now(),
+                                    //firstDate: DateTime(1900)
+                                    firstDate: DateTime.now()
+                                        .subtract(Duration(hours: 0)),
+                                    //DateTime.now() - not to allow to choose before today.
+                                    lastDate: DateTime(2100));
+
+                                if (pickedDate != null) {
+                                  print(
+                                      pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                                  String formattedDate =
+                                      DateFormat('yyyy-MM-dd')
+                                          .format(pickedDate);
+                                  print(
+                                      formattedDate); //formatted date output using intl package =>  2021-03-16
+                                  setState(() {
+                                    dateInput.text = formattedDate;
+                                    setdate = false;
+                                    value.setSaleDate(dateInput.text);
+                                    //set output date to TextField value.
+                                  });
+                                } else {
+                                  DateTime now = new DateTime.now();
+                                  DateTime date = new DateTime(
+                                      now.year, now.month, now.day);
+                                  String formattedDate =
+                                      DateFormat('yyyy-MM-dd').format(date);
+                                  setState(() {
+                                    dateInput.text = formattedDate;
+                                    value.setSaleDate(dateInput
+                                        .text); //set output date to TextField value.
+                                  });
+                                }
+                              },
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please Enter Customer Phone';
+                                  return 'Please Select Date';
                                 }
                                 return null;
                               },
-                              onChanged: (val) {
-                                customerNo = productsData.setCustomerPhone(val);
-                              }
-
-                              /* setState(() {
-                              customerNo = val;
-                            }), */
-                              ),
+                            );
+                          },
                         ),
-                        Expanded(
-                          child: TextFormField(
-                            controller: dateInput,
-
-                            //editing controller of this TextField
-                            decoration: InputDecoration(
-                                icon: Icon(
-                                    Icons.calendar_today), //icon of text field
-                                labelText: 'Date' //label text of field
-                                ),
-                            readOnly: true,
-                            //set it true, so that user will not able to edit text
-                            onTap: () async {
-                              DateTime? pickedDate = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  currentDate: DateTime.now(),
-                                  firstDate: DateTime(1900)
-                                      //firstDate: DateTime.now()
-                                      .subtract(Duration(hours: 0)),
-                                  //DateTime.now() - not to allow to choose before today.
-                                  lastDate: DateTime(2100));
-
-                              if (pickedDate != null) {
-                                print(
-                                    pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
-                                String formattedDate =
-                                    DateFormat('yyyy-MM-dd').format(pickedDate);
-                                print(
-                                    formattedDate); //formatted date output using intl package =>  2021-03-16
-                                setState(() {
-                                  dateInput.text = formattedDate;
-                                  setdate = false;
-                                  productsData.setSaleDate(dateInput.text);
-                                  //set output date to TextField value.
-                                });
-                              } else {
-                                DateTime now = new DateTime.now();
-                                DateTime date =
-                                    new DateTime(now.year, now.month, now.day);
-                                String formattedDate =
-                                    DateFormat('yyyy-MM-dd').format(date);
-                                setState(() {
-                                  dateInput.text = formattedDate;
-                                  productsData.setSaleDate(dateInput
-                                      .text); //set output date to TextField value.
-                                });
-                              }
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please Select Date';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                      ]),
-                ),
+                      ),
+                    ]),
               ),
-              (printerErrorMessage != null)
-                  ? Text(
-                      '$printerErrorMessage!',
-                      style: TextStyle(color: Colors.red),
-                    )
-                  : Text(''),
-              Expanded(
-                child: ListView.builder(
-                    itemCount: products.length,
-                    itemBuilder: (context, index) => index < products.length
-                        ? Container(
-                            color: Colors.white,
-                            child: ListTile(
-                              title: Text(
-                                products[index].name.toString(),
-                                style: TextStyle(
-                                    fontSize: 13.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "Qty: ${(products[index].quantity).toString()}",
+            ),
+            Expanded(
+              child: Consumer<ProductListProvider>(
+                builder: (context, value, child) {
+                  return ListView.builder(
+                      itemCount: value.productlist.length,
+                      itemBuilder: (context, index) =>
+                          index < value.productlist.length
+                              ? Container(
+                                  color: Colors.white,
+                                  child: ListTile(
+                                    title: Text(
+                                      value.productlist[index].name.toString(),
                                       style: TextStyle(
-                                          fontSize: 11.0,
+                                          fontSize: 13.0,
                                           fontWeight: FontWeight.bold),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "Price: ${products[index].sellingPrice.toString()}",
-                                      style: TextStyle(
-                                          fontSize: 11.0,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              trailing: Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Column(
-                                  children: [
-                                    Text(formatnum
-                                        .format(products[index].lineTotal)
-                                        .toString()),
-                                    Expanded(
-                                      child: IconButton(
-                                          icon: Icon(
-                                            Icons.cancel,
-                                            color: Colors.red,
+                                    subtitle: Row(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "Qty: ${(value.productlist[index].quantity).toString()}",
+                                            style: TextStyle(
+                                                fontSize: 11.0,
+                                                fontWeight: FontWeight.bold),
                                           ),
-                                          onPressed: () {
-                                            setState(() {
-                                              productsData.removeProduct(index);
-                                            });
-                                          }),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                        : Card(
-                            child: Text("Hello"),
-                          )),
-              ),
-              Container(
-                height: 80.0,
-                child: (paymentlist.length == 0)
-                    ? Text("No payment added")
-                    : ListView.builder(
-                        itemCount: paymentlist.length,
-                        itemBuilder: (context, index) =>
-                            index < paymentlist.length
-                                ? Container(
-                                    color: Colors.white,
-                                    child: ListTile(
-                                      title: Text('${paymentlist[index].name}'),
-                                      trailing: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                                "Ksh ${(formatnum.format(paymentlist[index].sumApplied)).toString()}"),
-                                            Expanded(
-                                              child: IconButton(
-                                                  icon: Icon(
-                                                    Icons.cancel,
-                                                    color: Colors.red,
-                                                  ),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      productsData
-                                                          .removePayment(index);
-                                                    });
-                                                  }),
-                                            )
-                                          ],
                                         ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "Price: ${value.productlist[index].sellingPrice.toString()}",
+                                            style: TextStyle(
+                                                fontSize: 11.0,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Column(
+                                        children: [
+                                          Text(formatnum
+                                              .format(value
+                                                  .productlist[index].lineTotal)
+                                              .toString()),
+                                          Expanded(
+                                            child: IconButton(
+                                                icon: Icon(
+                                                  Icons.cancel,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    value.removeProduct(index);
+                                                  });
+                                                }),
+                                          )
+                                        ],
                                       ),
                                     ),
-                                  )
-                                : Card(
-                                    child: Text("Hello"),
-                                  )),
+                                  ),
+                                )
+                              : Card(
+                                  child: Text("Hello"),
+                                ));
+                },
               ),
-              Container(
-                decoration: new BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.vertical(
-                      bottom: Radius.elliptical(
-                          MediaQuery.of(context).size.width, 40.0)),
-                ),
-                padding: EdgeInsets.all(2.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total: Ksh',
-                            style: TextStyle(
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '${formatnum.format(productsData.totalPrice())}',
-                            style: TextStyle(
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: (context
-                                    .read<ProductListProvider>()
-                                    .totalPaymentcalc() >
-                                context
-                                    .read<ProductListProvider>()
-                                    .totalPrice())
-                            ? Text(
-                                'Payment can not be more than the Total',
-                                style: TextStyle(color: Colors.red),
-                              )
-                            : Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Payment: Ksh',
-                                    style: TextStyle(
-                                      fontSize: 13.0,
-                                      fontWeight: FontWeight.bold,
+            ),
+            Consumer<ProductListProvider>(
+              builder: (context, value, child) {
+                return Container(
+                  height: 80.0,
+                  child: (value.paymentlist.length == 0)
+                      ? Text("No payment added")
+                      : ListView.builder(
+                          itemCount: value.paymentlist.length,
+                          itemBuilder: (context, index) => index <
+                                  value.paymentlist.length
+                              ? Container(
+                                  color: Colors.white,
+                                  child: ListTile(
+                                    title: Text(
+                                        '${value.paymentlist[index].name}'),
+                                    trailing: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                              "Ksh ${(formatnum.format(value.paymentlist[index].sumApplied)).toString()}"),
+                                          Expanded(
+                                            child: IconButton(
+                                                icon: Icon(
+                                                  Icons.cancel,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    value.removePayment(index);
+                                                  });
+                                                }),
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                  Text(
-                                    '${formatnum.format(context.read<ProductListProvider>().totalPaymentcalc())}',
-                                    style: TextStyle(
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              )),
-                    Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Balance: Ksh',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '${formatnum.format(context.read<ProductListProvider>().balancepayment())}',
-                            style: TextStyle(
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                                )
+                              : Card(
+                                  child: Text("Hello"),
+                                )),
+                );
+              },
+            ),
+            Container(
+              decoration: new BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.vertical(
+                    bottom: Radius.elliptical(
+                        MediaQuery.of(context).size.width, 40.0)),
+              ),
+              padding: EdgeInsets.all(2.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        /* isloading
+                        Text(
+                          'Total: Ksh',
+                          style: TextStyle(
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Consumer<ProductListProvider>(
+                          builder: (context, value, child) {
+                            return Text(
+                              '${formatnum.format(value.totalPrice())}',
+                              style: TextStyle(
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: (context
+                                  .read<ProductListProvider>()
+                                  .totalPaymentcalc() >
+                              context.read<ProductListProvider>().totalPrice())
+                          ? Text(
+                              'Payment can not be more than the Total',
+                              style: TextStyle(color: Colors.red),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Payment: Ksh',
+                                  style: TextStyle(
+                                    fontSize: 13.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Consumer<ProductListProvider>(
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      '${formatnum.format(value.totalPaymentcalc())}',
+                                      style: TextStyle(
+                                        fontSize: 12.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            )),
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Balance: Ksh',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '${formatnum.format(context.read<ProductListProvider>().balancepayment())}',
+                          style: TextStyle(
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      /* isloading
                             ? CircularProgressIndicator(
                                 strokeWidth: 10.0,
                               )
                             :  */
-                        RaisedButton(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          color: Colors.blue,
-                          child: Text(
-                            'Save',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          onPressed: () async {
-                            /* if (dateInput.text == null ||
+                      RaisedButton(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        color: Colors.blue,
+                        child: Text(
+                          'Save',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () async {
+                          /* if (dateInput.text == null ||
                                 dateInput.text == '') {
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
                                 content: Text("Hi, I am a snack bar!"),
                               ));
                             } */
-                            AlertDialog(
-                              content: Text('success'),
-                            );
-                            if (_formKey.currentState!.validate()) {
-                              // print('Date  ...............${pickeddate}');
-                              salepost.setislodaing();
+                          AlertDialog(
+                            content: Text('success'),
+                          );
+                          if (_formKey.currentState!.validate()) {
+                            // print('Date  ...............${pickeddate}');
 
-                              cache = await _prefs.readCache('Token', 'StoreId',
-                                  'loggedInUserName', 'storename');
-                              if (totalpayment > totalbill) {
-                              } else {
-                                PosSale saleCard = new PosSale(
-                                    ref2: customerNo.toString(),
-                                    objType: 14,
-                                    docNum: 2,
-                                    discSum: 0,
-                                    payments: paymentlist,
-                                    docTotal: totalbill,
-                                    balance: balance,
-                                    docDate: DateFormat('yyyy-MM-dd')
-                                        .parse(dateInput.text),
-                                    rows: products,
-                                    totalPaid: totalpayment,
-                                    userName: cache['loggedInUserName']);
+                            cache = await _prefs.readCache('Token', 'StoreId',
+                                'loggedInUserName', 'storename');
+                            if (productprovider.totalpayment >
+                                productprovider.totabill) {
+                            } else {
+                              final balance = productprovider.balancepayment();
+                              final paymentlist = productprovider.paymentlist;
+                              final totalbill = productprovider.totabill;
+                              final products = productprovider.productlist;
+                              final totalpayment = productprovider.totalpayment;
+                              PosSale saleCard = new PosSale(
+                                  ref2: customerNo.toString(),
+                                  objType: 14,
+                                  docNum: 2,
+                                  discSum: 0,
+                                  payments: paymentlist,
+                                  docTotal: totalbill,
+                                  balance: balance,
+                                  docDate: DateFormat('yyyy-MM-dd')
+                                      .parse(dateInput.text),
+                                  rows: products,
+                                  totalPaid: totalpayment,
+                                  userName: cache['loggedInUserName']);
 
-                                productsData.postsalearray(saleCard);
+                              productprovider.postsalearray(saleCard);
 
-                                //salepost.setislodaing();
+                              //salepost.setislodaing();
 
-                                //var printeraddress = salepost.getPrinterAddress();
-                                // print(
-                                //     'Printer address fron fuction $printeraddress');
-                                try {
-                                  var activedevices =
-                                      await bluetooth.getBondedDevices();
-                                  var existingprinter =
-                                      activedevices.firstWhere((itemToCheck) =>
-                                          itemToCheck.address == macaddress);
-                                  void _connect() {
-                                    if (existingprinter != null) {
-                                      print(
-                                          'Selected device connect method $existingprinter');
-                                      bluetooth.isConnected.then((isConnected) {
-                                        print(isConnected);
-                                        if (isConnected == false) {
-                                          bluetooth
-                                              .connect(existingprinter!)
-                                              .catchError((error) {
-                                            print(error);
-                                            setState(() {
-                                              _connected = false;
-                                              printerErrorMessage =
-                                                  "Set Default Printer ";
-                                            });
-                                          });
-                                          setState(() => _connected = true);
-                                        }
-                                      });
-                                    } else {
-                                      setState(() {
-                                        printerErrorMessage =
-                                            "Set Default Printer ";
-                                      });
-                                    }
-                                  }
+                              //var printeraddress = salepost.getPrinterAddress();
+                              // print(
+                              //     'Printer address fron fuction $printeraddress');
 
-                                  _connect();
-                                } on PlatformException {}
+                              // var existingprinter = null;
 
-                                // var existingprinter = null;
+                              bluetooth.printCustom('2.N.K TELECOM', 1, 1);
+                              bluetooth.printCustom(
+                                  'Mobile Phones & Accessories -Karatina',
+                                  0,
+                                  2);
+                              bluetooth.printCustom('Tel: 0780 048 175', 1, 1);
+                              bluetooth.printCustom(
+                                  'Our promise: If you bought from us then it is original',
+                                  0,
+                                  1);
 
-                                bluetooth.printCustom('2.N.K TELECOM', 1, 1);
+                              if (saleCard.ref2 != null) {
                                 bluetooth.printCustom(
-                                    'Mobile Phones & Accessories -Karatina',
-                                    0,
-                                    2);
-                                bluetooth.printCustom(
-                                    'Tel: 0780 048 175', 1, 1);
-                                bluetooth.printCustom(
-                                    'Our promise: If you bought from us then it is original',
-                                    0,
-                                    1);
-
-                                if (saleCard.ref2 != null) {
-                                  bluetooth.printCustom(
-                                      'Customer No ${saleCard.ref2!}', 0, 0);
-                                }
-                                bluetooth.print3Column(
-                                    '',
-                                    ''
-                                        'Date : ${dateInput.text} ',
-                                    '',
-                                    0);
-                                bluetooth.printNewLine();
-                                bluetooth.print3Column(
-                                    'Qty', 'Price', 'Total', 0);
-                                bluetooth.printCustom(
-                                    '-----------------------------------------',
-                                    0,
-                                    0);
-                                for (var i = 0; i < saleCard.rows.length; i++) {
-                                  //
-                                  var currentElement = saleCard.rows[i];
-                                  bluetooth.printCustom(
-                                      '${currentElement.name}', 0, 0);
-                                  bluetooth.print3Column(
-                                      '${currentElement.quantity}',
-                                      '    ${formatnum.format(currentElement.sellingPrice)}',
-                                      '    ${formatnum.format(currentElement.lineTotal)}',
-                                      0);
-                                  if (currentElement.ref1 != null) {
-                                    bluetooth.printCustom(
-                                        'Ref: ${currentElement.ref1!}', 0, 0);
-                                  }
-                                }
-                                bluetooth.printCustom(
-                                    '------------------------------------------',
-                                    0,
-                                    0);
-                                bluetooth.printNewLine();
-                                bluetooth.print4Column(
-                                    'Total Bill:',
-                                    '',
-                                    ' ',
-                                    '${formatnum.format(saleCard.docTotal)}',
-                                    0);
-
-                                bluetooth.print4Column(
-                                    'Total Paid:',
-                                    '',
-                                    ' ',
-                                    '${formatnum.format(saleCard.totalPaid)}',
-                                    0);
-
-                                bluetooth.print4Column('Total Bal:', '', ' ',
-                                    '${formatnum.format(saleCard.balance)}', 0);
-                                bluetooth.printNewLine();
-                                bluetooth.printCustom(
-                                    'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
-                                    0,
-                                    1);
-                                bluetooth.printNewLine();
-
-                                bluetooth.paperCut();
-                                /*Navigator.of(context).push(MaterialPageRoute( 
-                                builder: (context) => PrintPage(saleCard)));*/
-                                productsData.setprodLIstempty();
-                                productsData.resetCustmerPhone();
-                                productsData.resetCustomerName();
-                                Navigator.pushNamed(context, '/start');
+                                    'Customer No ${saleCard.ref2!}', 0, 0);
                               }
+                              bluetooth.print3Column(
+                                  '',
+                                  ''
+                                      'Date : ${dateInput.text} ',
+                                  '',
+                                  0);
+                              bluetooth.printNewLine();
+                              bluetooth.print3Column(
+                                  'Qty', 'Price', 'Total', 0);
+                              bluetooth.printCustom(
+                                  '-----------------------------------------',
+                                  0,
+                                  0);
+                              for (var i = 0; i < saleCard.rows.length; i++) {
+                                //
+                                var currentElement = saleCard.rows[i];
+                                bluetooth.printCustom(
+                                    '${currentElement.name}', 0, 0);
+                                bluetooth.print3Column(
+                                    '${currentElement.quantity}',
+                                    '    ${formatnum.format(currentElement.sellingPrice)}',
+                                    '    ${formatnum.format(currentElement.lineTotal)}',
+                                    0);
+                                if (currentElement.ref1 != null) {
+                                  bluetooth.printCustom(
+                                      'Ref: ${currentElement.ref1!}', 0, 0);
+                                }
+                              }
+                              bluetooth.printCustom(
+                                  '------------------------------------------',
+                                  0,
+                                  0);
+                              bluetooth.printNewLine();
+                              bluetooth.print4Column('Total Bill:', '', ' ',
+                                  '${formatnum.format(saleCard.docTotal)}', 0);
+
+                              bluetooth.print4Column('Total Paid:', '', ' ',
+                                  '${formatnum.format(saleCard.totalPaid)}', 0);
+
+                              bluetooth.print4Column('Total Bal:', '', ' ',
+                                  '${formatnum.format(saleCard.balance)}', 0);
+                              bluetooth.printNewLine();
+                              bluetooth.printCustom(
+                                  'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
+                                  0,
+                                  1);
+                              bluetooth.printNewLine();
+
+                              bluetooth.paperCut();
+                              /*Navigator.of(context).push(MaterialPageRoute( 
+                                builder: (context) => PrintPage(saleCard)));*/
+                              productprovider.setprodLIstempty();
+                              productprovider.resetCustmerPhone();
+                              productprovider.resetCustomerName();
+                              Navigator.pushNamed(context, '/start');
                             }
-                          },
-                        )
-                      ],
-                    )
-                  ],
-                ),
+                          }
+                        },
+                      )
+                    ],
+                  )
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          ],
+        )),
       ),
     );
+  }
+
+  void _connect() async {
+    var activedevices = await bluetooth.getBondedDevices();
+    var existingprinter = activedevices
+        .firstWhere((itemToCheck) => itemToCheck.address == macaddress);
+    if (existingprinter != null) {
+      print('Selected device connect method $existingprinter');
+      bluetooth.isConnected.then((isConnected) {
+        print(isConnected);
+        if (isConnected == false) {
+          bluetooth.connect(existingprinter).catchError((error) {
+            print(error);
+            setState(() {
+              _connected = false;
+              printerErrorMessage = "Set Default Printer ";
+            });
+          });
+          setState(() => _connected = true);
+        }
+      });
+    } else {
+      setState(() {
+        printerErrorMessage = "Set Default Printer ";
+      });
+    }
+  }
+
+  void _disconnect() {
+    bluetooth.disconnect();
+    setState(() => _connected = false);
   }
 
   final snackBar = SnackBar(
