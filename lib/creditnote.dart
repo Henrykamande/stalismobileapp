@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/previousRoute.dart';
+import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/reusableComponents/bottomNavigation.dart';
 import 'package:testproject/reusableComponents/drawer.dart';
 import 'package:testproject/searchaccount.dart';
@@ -29,11 +30,14 @@ class CustomerCreditNote extends StatefulWidget {
 class _CustomerCreditNoteState extends State<CustomerCreditNote> {
   PrefService _prefs = PrefService();
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  PrinterService _printerService = PrinterService();
+
   final _formKey = GlobalKey<FormState>();
 
   var cache;
   bool _connected = false;
   TextEditingController dateInput = TextEditingController();
+
   String saleType = '';
   bool setdate = true;
   String storename = '';
@@ -48,8 +52,12 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
   void initState() {
     products = [];
     setdate = true;
-    _getPrinterAddress();
-    sethenders();
+
+    _printerService.initPlatformState();
+    _printerService.getPrinterAddress();
+    _printerService.connect();
+    /*  _getPrinterAddress();
+    sethenders(); */
     fetchshopDetails();
     super.initState();
   }
@@ -89,7 +97,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
     print("General Setting Data $_generalSettingDetails ");
   }
 
-  _getPrinterAddress() async {
+/*   _getPrinterAddress() async {
     var headers = await sethenders();
     var url = Uri.https('apoyobackend.softcloudtech.co.ke',
         '/api/v1/store-mac-address/${headers['storeid']}');
@@ -105,34 +113,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
     });
     return data['ResponseData'];
   }
-
-  void _showoutsourcedPane() {
-    showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        context: context,
-        builder: (context) {
-          return Container(
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
-            child: OutsourcedProducts(),
-          );
-        });
-  }
-
-  void _showsearchproductPane() {
-    showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: SearchProduct(),
-          );
-        });
-  }
-
+ */
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductListProvider>(context);
@@ -692,38 +673,6 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               productsData.setCreditNoteListempty();
                               productsData.setTopUpPaymentListEmpty();
 
-                              /* try {
-                                var activedevices =
-                                    await bluetooth.getBondedDevices();
-                                var existingprinter = activedevices.firstWhere(
-                                    (itemToCheck) =>
-                                        itemToCheck.address == macaddress);
-                                void _connect() {
-                                  if (existingprinter != null) {
-                                    print(
-                                        'Selected device connect method $existingprinter');
-                                    bluetooth.isConnected.then((isConnected) {
-                                      print(isConnected);
-                                      if (isConnected == false) {
-                                        bluetooth
-                                            .connect(existingprinter)
-                                            .catchError((error) {
-                                          print(error);
-                                          setState(() => _connected = false);
-                                        });
-                                        setState(() => _connected = true);
-                                      }
-                                    });
-                                  } else {
-                                    show('No device selected.');
-                                  }
-                                }
-
-                                _connect();
-                              } on PlatformException {} */
-
-                              // var existingprinter = null;
-/* 
                               bluetooth.printCustom('Shoe Paradise', 1, 1);
                               bluetooth.printCustom(
                                   'All our shoes are good quality', 0, 2);
@@ -807,7 +756,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               bluetooth.printNewLine();
                               bluetooth.printNewLine();
 
-                              bluetooth.paperCut(); */
+                              bluetooth.paperCut();
 
                               /* Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => PrintPage(saleCard))); */

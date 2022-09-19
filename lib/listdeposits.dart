@@ -224,7 +224,7 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
                             List<dynamic> result = snapshot.data!;
 
                             return (snapshot.connectionState ==
-                                    ConnectionState.waiting)
+                                    ConnectionState.active)
                                 ? Center(
                                     child: Container(
                                       child: CircularProgressIndicator(
@@ -234,7 +234,7 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
                                   )
                                 : ListView.builder(
                                     shrinkWrap: true,
-                                    itemCount: result.length + 1,
+                                    itemCount: result.length,
                                     itemBuilder: (context, index) => Card(
                                       child: ListTile(
                                         leading: Icon(Icons.person),
@@ -343,9 +343,8 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
                           } else if (snapshot.hasError) {
                             return Text('${snapshot.error}');
                           }
-
                           return Center(
-                            child: Center(child: Text('')),
+                            child: CircularProgressIndicator(),
                           );
                         })),
               ),

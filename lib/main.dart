@@ -4,6 +4,7 @@ import 'package:testproject/deposit.dart';
 import 'package:testproject/listdeposits.dart';
 import 'package:testproject/paymentslist.dart';
 import 'package:testproject/providers/defaultprinter.dart';
+import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/retrunedProducts.dart';
 import 'package:testproject/searchaccount.dart';
 import 'package:testproject/addProductForm.dart';
@@ -39,7 +40,10 @@ class Stalisapp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (cxt) => DefaultPrinter(),
-        )
+        ),
+        ChangeNotifierProvider(
+          create: (cxt) => PrinterService(),
+        ),
       ],
       child: MaterialApp(
           initialRoute: '/',

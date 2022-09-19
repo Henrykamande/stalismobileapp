@@ -2,14 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:testproject/addPayment.dart';
-import 'package:testproject/searchaccount.dart';
-import 'package:testproject/main.dart';
+
 import 'package:provider/provider.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/outsourced.dart';
-import 'package:testproject/print_page.dart';
-import 'package:testproject/providers/api_service.dart';
+import 'package:testproject/providers/printservice.dart';
+
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/searchproduct.dart';
@@ -25,6 +23,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   PrefService _prefs = PrefService();
+  PrinterService _printerService = PrinterService();
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   final _formKey = GlobalKey<FormState>();
   var cache;
@@ -37,20 +36,24 @@ class _HomePageState extends State<HomePage> {
   String storename = '';
   List<SaleRow> products = [];
   String customerNo = "";
-
-  var macaddress = '';
   List _devices = [];
+  var macaddress = '';
 
   final formatnum = new NumberFormat("#,##0.00", "en_US");
 
   @override
   void initState() {
+    super.initState();
+
     setdate = true;
-    _getPrinterAddress();
+    //_getPrinterAddress();
+    _printerService.initPlatformState();
+    _printerService.getPrinterAddress();
+    _printerService.connect();
+
     // initPlatformState();
     fetchshopDetails();
-    sethenders();
-    super.initState();
+    // sethenders();
   }
 
   void fetchshopDetails() async {
@@ -70,7 +73,7 @@ class _HomePageState extends State<HomePage> {
     print("General Setting Data $_generalSettingDetails ");
   }
 
-  Future<void> initPlatformState() async {
+  /*  Future<void> initPlatformState() async {
     bool? isConnected = await bluetooth.isConnected;
     List<BluetoothDevice> devices = [];
     try {
@@ -144,7 +147,7 @@ class _HomePageState extends State<HomePage> {
         _connected = true;
       });
     } */
-  }
+  } */
 
   sethenders() async {
     cache = await _prefs.readCache(
@@ -164,7 +167,7 @@ class _HomePageState extends State<HomePage> {
     return headers;
   }
 
-  _getPrinterAddress() async {
+  /*  _getPrinterAddress() async {
     var headers = await sethenders();
     var url = Uri.https('apoyobackend.softcloudtech.co.ke',
         '/api/v1/store-mac-address/${headers['storeid']}');
@@ -179,34 +182,7 @@ class _HomePageState extends State<HomePage> {
       macaddress = data['ResponseData'];
     });
     return data['ResponseData'];
-  }
-
-  void _showoutsourcedPane() {
-    showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        context: context,
-        builder: (context) {
-          return Container(
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
-            child: OutsourcedProducts(),
-          );
-        });
-  }
-
-  void _showsearchproductPane() {
-    showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: SearchProduct(),
-          );
-        });
-  }
+  } */
 
   @override
   Widget build(BuildContext context) {
@@ -238,22 +214,29 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ), */
-
-            FlatButton(
-                onPressed: _connected ? _disconnect : _connect,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.bluetooth,
-                      color: _connected ? Colors.green : Colors.red,
-                    ),
-                    Text(
-                      _connected ? 'On' : 'Off',
-                      style: TextStyle(
-                          color: _connected ? Colors.green : Colors.red),
-                    ),
-                  ],
-                )),
+/* 
+            Consumer<PrinterService>(
+              builder: (context, value, child) {
+                return FlatButton(
+                    onPressed:
+                        value.isconnected ? value.disconnect : value.connect,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.bluetooth,
+                          color: value.isconnected ? Colors.green : Colors.red,
+                        ),
+                        Text(
+                          _connected ? 'On' : 'Off',
+                          style: TextStyle(
+                              color: value.isconnected
+                                  ? Colors.green
+                                  : Colors.red),
+                        ),
+                      ],
+                    ));
+              },
+            ), */
             // button width and height
             /*  Material(
               color: _connected ? Colors.red : Colors.green, // button color
@@ -956,7 +939,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _connect() async {
+  /* void _connect() async {
     var activedevices = await bluetooth.getBondedDevices();
     var existingprinter = activedevices
         .firstWhere((itemToCheck) => itemToCheck.address == macaddress);
@@ -964,7 +947,7 @@ class _HomePageState extends State<HomePage> {
     print('Selected device connect method $existingprinter');
     bluetooth.isConnected.then((isConnected) {
       print(isConnected);
-      if (isConnected == false) {
+      if (isConnected == true) {
         bluetooth.connect(existingprinter).catchError((error) {
           print(error);
           setState(() {
@@ -976,10 +959,10 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
-
-  void _disconnect() {
+ */
+  /* void _disconnect() {
     setState(() => _connected = false);
 
     bluetooth.disconnect();
-  }
+  } */
 }

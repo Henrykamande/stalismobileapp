@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/outsourced.dart';
 import 'package:testproject/providers/api_service.dart';
+import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/searchproduct.dart';
@@ -24,6 +25,8 @@ class CustomerDeposit extends StatefulWidget {
 class _CustomerDepositState extends State<CustomerDeposit> {
   PrefService _prefs = PrefService();
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  PrinterService _printerService = PrinterService();
+
   final _formKey = GlobalKey<FormState>();
 
   var cache;
@@ -43,8 +46,12 @@ class _CustomerDepositState extends State<CustomerDeposit> {
   void initState() {
     products = [];
     setdate = true;
-    _getPrinterAddress();
-    sethenders();
+
+    _printerService.initPlatformState();
+    _printerService.getPrinterAddress();
+    _printerService.connect();
+    /*  _getPrinterAddress();
+    sethenders(); */
     fetchshopDetails();
     super.initState();
   }
@@ -99,33 +106,6 @@ class _CustomerDepositState extends State<CustomerDeposit> {
       macaddress = data['ResponseData'];
     });
     return data['ResponseData'];
-  }
-
-  void _showoutsourcedPane() {
-    showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        context: context,
-        builder: (context) {
-          return Container(
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
-            child: OutsourcedProducts(),
-          );
-        });
-  }
-
-  void _showsearchproductPane() {
-    showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: SearchProduct(),
-          );
-        });
   }
 
   @override
@@ -612,36 +592,6 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                 productsData.resetCustomerName();
                                 productsData.setDepositListempty();
 
-                                try {
-                                  var activedevices =
-                                      await bluetooth.getBondedDevices();
-                                  var existingprinter =
-                                      activedevices.firstWhere((itemToCheck) =>
-                                          itemToCheck.address == macaddress);
-                                  void _connect() {
-                                    if (existingprinter != null) {
-                                      print(
-                                          'Selected device connect method $existingprinter');
-                                      bluetooth.isConnected.then((isConnected) {
-                                        print(isConnected);
-                                        if (isConnected == false) {
-                                          bluetooth
-                                              .connect(existingprinter)
-                                              .catchError((error) {
-                                            print(error);
-                                            setState(() => _connected = false);
-                                          });
-                                          setState(() => _connected = true);
-                                        }
-                                      });
-                                    } else {
-                                      show('No device selected.');
-                                    }
-                                  }
-
-                                  _connect();
-                                } on PlatformException {}
-
                                 // var existingprinter = null;
 
                                 bluetooth.printCustom('Shoe Paradise', 1, 1);
@@ -721,24 +671,6 @@ class _CustomerDepositState extends State<CustomerDeposit> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Future show(
-    String message, {
-    Duration duration: const Duration(seconds: 3),
-  }) async {
-    await new Future.delayed(new Duration(milliseconds: 100));
-    ScaffoldMessenger.of(context).showSnackBar(
-      new SnackBar(
-        content: new Text(
-          message,
-          style: new TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        duration: duration,
       ),
     );
   }

@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:testproject/models/postSale.dart';
 import 'package:testproject/providers/api_service.dart';
-import 'package:testproject/providers/defaultprinter.dart';
 import 'package:testproject/providers/productslist_provider.dart';
-import 'package:testproject/providers/shared_preferences_services.dart';
 
 class PrintPage extends StatefulWidget {
   State<PrintPage> createState() => _PrintPageState();
