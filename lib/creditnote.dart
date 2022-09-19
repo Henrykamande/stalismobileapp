@@ -19,6 +19,7 @@ import 'package:testproject/searchproduct.dart';
 import 'package:intl/intl.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:http/http.dart' as http;
+import 'package:testproject/shared/drawerscreen.dart';
 
 class CustomerCreditNote extends StatefulWidget {
   @override
@@ -36,6 +37,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
   String saleType = '';
   bool setdate = true;
   String storename = '';
+  Map<String, dynamic> _generalSettingDetails = {};
   List<SaleRow> products = [];
   String customerNo = '';
   String customerName = '';
@@ -48,6 +50,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
     setdate = true;
     _getPrinterAddress();
     sethenders();
+    fetchshopDetails();
     super.initState();
   }
 
@@ -67,6 +70,23 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
       storename = cache['storename'];
     });
     return headers;
+  }
+
+  void fetchshopDetails() async {
+    var headers = await sethenders();
+
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/general-settings');
+    var response = await http.get(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      print('Sucessful POst');
+    }
+    _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
+    print("General Setting Data $_generalSettingDetails ");
   }
 
   _getPrinterAddress() async {
@@ -254,7 +274,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                       Navigator.pushNamed(context, '/paymentsearch');
                     },
                     icon: const Icon(
-                      Icons.widgets_outlined,
+                      Icons.money,
                       color: Colors.white,
                       size: 35,
                     ),
@@ -284,99 +304,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
           ],
         ),
       ),
-      drawer: Container(
-        child: Drawer(
-          child: ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  height: 100,
-                  child: DrawerHeader(
-                    child: ListTile(
-                      title: Text(storename),
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.amber,
-                        child: Text(''),
-                      ),
-                      trailing: IconButton(
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/start');
-                        },
-                        icon: Icon(Icons.cancel),
-                      ),
-                    ),
-                    decoration: BoxDecoration(),
-                  ),
-                ),
-              ),
-              ListTile(
-                title: const Text('POS'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pushNamed(context, '/start');
-                },
-              ),
-              /* ListTile(
-                title: const Text('Customer Deposit'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pushNamed(context, '/customerDeposit');
-                },
-              ), */
-              ListTile(
-                title: const Text('Return & Replacement'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pushNamed(context, '/customercreditnote');
-                },
-              ),
-              ListTile(
-                title: const Text('Sold Products'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pushNamed(context, '/soldproducts');
-                },
-              ),
-              ListTile(
-                title: const Text('Payments'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pushNamed(context, '/salepayments');
-                },
-              ),
-              ListTile(
-                title: const Text('Returned Products'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pushNamed(context, '/returnedproducts');
-                },
-              ),
-              ListTile(
-                title: const Text('SetUp Printer'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pushNamed(context, '/defaultprinter');
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      drawer: DrawerScreen(),
       body: SafeArea(
         child: Column(
           children: [
@@ -736,16 +664,6 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                 'loggedInUserName', 'storename');
                             print(cache['loggedInUserName']);
 
-                            if (depositBalance > 0) {
-                              setState(() {
-                                saleType = 'credit';
-                              });
-                            }
-                            if (depositBalance == 0) {
-                              setState(() {
-                                saleType = 'cash';
-                              });
-                            }
                             print('payment List $depositPaymentList');
                             if (totalReturnpayments < 0) {
                             } else {
@@ -759,7 +677,11 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               //var printeraddress = salepost.getPrinterAddress();
                               // print(
                               //     'Printer address fron fuction $printeraddress');
-                              try {
+                              salepost.postCreditMemo(creditMemo);
+                              productsData.setCreditNoteListempty();
+                              productsData.setTopUpPaymentListEmpty();
+
+                              /* try {
                                 var activedevices =
                                     await bluetooth.getBondedDevices();
                                 var existingprinter = activedevices.firstWhere(
@@ -787,20 +709,16 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                 }
 
                                 _connect();
-                              } on PlatformException {}
+                              } on PlatformException {} */
 
                               // var existingprinter = null;
-
-                              salepost.postCreditMemo(creditMemo);
-                              bluetooth.printCustom('2.N.K TELECOM', 1, 1);
+/* 
+                              bluetooth.printCustom('Shoe Paradise', 1, 1);
                               bluetooth.printCustom(
-                                  'Mobile Phones & Accessories -Karatina',
-                                  0,
-                                  2);
-                              bluetooth.printCustom('Tel: 0780 048 175', 1, 1);
+                                  'All our shoes are good quality', 0, 2);
                               bluetooth.printCustom(
-                                  'Our promise: If you bought from us then it is original',
-                                  0,
+                                  '${_generalSettingDetails['Tel: 0752 730 730']}',
+                                  1,
                                   1);
 
                               bluetooth.printCustom(
@@ -819,6 +737,25 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                 //
                                 var currentElement =
                                     creditMemo.returnedProducts[i];
+                                bluetooth.printCustom(
+                                    '${currentElement.productName}', 0, 0);
+                                bluetooth.print3Column(
+                                    '${currentElement.quantity}',
+                                    '    ${formatnum.format(currentElement.sellingPrice)}',
+                                    '    ${formatnum.format(currentElement.lineTotal)}',
+                                    0);
+                                if (currentElement.ref1 != null) {
+                                  bluetooth.printCustom(
+                                      currentElement.ref1!, 0, 0);
+                                }
+                              }
+
+                              for (var i = 0;
+                                  i < creditMemo.replacedProducts.length;
+                                  i++) {
+                                //
+                                var currentElement =
+                                    creditMemo.replacedProducts[i];
                                 bluetooth.printCustom(
                                     '${currentElement.productName}', 0, 0);
                                 bluetooth.print3Column(
@@ -853,16 +790,16 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                   0);
                               bluetooth.printNewLine();
                               bluetooth.printCustom(
-                                  'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
+                                  'If you are happy by our services Call 0722 323 131',
                                   0,
                                   1);
                               bluetooth.printNewLine();
+                              bluetooth.printNewLine();
 
-                              bluetooth.paperCut();
+                              bluetooth.paperCut(); */
 
                               /* Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => PrintPage(saleCard))); */
-                              productsData.setCreditNoteListempty();
 
                               Navigator.pushNamed(
                                   context, '/customercreditnote');

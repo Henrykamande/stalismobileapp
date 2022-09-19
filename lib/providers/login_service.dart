@@ -9,7 +9,6 @@ class UserLogin with ChangeNotifier {
   bool isLoggedIn = false;
 
   Future<bool> loginApi(String password, String email) async {
-    List<dynamic> respData;
     final PrefService _prefs = PrefService();
     var response = await http.post(
       Uri.parse('https://apoyobackend.softcloudtech.co.ke/api/v1/login'),
@@ -24,14 +23,12 @@ class UserLogin with ChangeNotifier {
             new Map<Todo, dynamic>.from(json.decode(response.body));
         print(data.length); */
       Map<String, dynamic> datamap = await json.decode(response.body);
-      print(
-          'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  dddddddddd userdat$datamap');
+      /*   print(
+          'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  dddddddddd userdat$datamap'); */
       String token = datamap['ResponseData']['authToken'];
       int storeid = datamap['ResponseData']['store_id'];
       String storename = datamap['ResponseData']['storename'];
 
-      print(
-          "store id ----------------------------------------------------------------------- $storeid");
       String logineduserName = datamap['ResponseData']['name'];
       _prefs.createCache(token, storeid.toString(), logineduserName, storename);
       isLoggedIn = true;

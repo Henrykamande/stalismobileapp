@@ -1,27 +1,25 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:testproject/models/creditmemo.dart';
 
 import 'package:testproject/models/postSale.dart';
 
-import 'package:testproject/models/product.dart';
 import 'api_service.dart';
 
 class ProductListProvider with ChangeNotifier {
-  int _totalbill = 0;
-  int _totalDepositBill = 0;
-  int _balance = 0;
-  int _depositBalance = 0;
-  int _totalpayment = 0;
+  double _totalbill = 0;
+  double _totalDepositBill = 0;
+  double _balance = 0;
+  double _depositBalance = 0;
+  double _totalpayment = 0;
   List printers = [];
   var _accountSelected;
-  int _totalDepositPayments = 0;
+  double _totalDepositPayments = 0;
   String _previousRoute = '';
   int _totalReturnPayment = 0;
-  int _returnTotalCost = 0;
-  int _totalReplacementCost = 0;
-  int _topUpBalance = 0;
+  double _returnTotalCost = 0;
+  double _totalReplacementCost = 0;
+  double _topUpBalance = 0;
   int _totalTopUpPayment = 0;
   String _customerName = ' ';
   String _customerPhone = " ";
@@ -33,6 +31,7 @@ class ProductListProvider with ChangeNotifier {
   List<Payment> _payments = [];
   List<SaleRow> _productList = [];
   List<Payment> _depositPaymentsList = [];
+  dynamic _depositItem;
 
   List<SaleRow> get productlist {
     return [..._productList];
@@ -66,23 +65,30 @@ class ProductListProvider with ChangeNotifier {
     return _accountSelected;
   }
 
-  int get totabill => _totalbill;
-  int get totaDepositBill => _totalbill;
+  double get totabill => _totalbill;
+  double get totaDepositBill => _totalDepositBill;
   int get totalReturnPayment => _totalReturnPayment;
-  int get billBalance => _balance;
-  int get depositBalance => _depositBalance;
-  int get totalpayment => _totalpayment;
-  int get totalReplacementCost => _totalReplacementCost;
-  int get topUpBalance => _topUpBalance;
+  double get billBalance => _balance;
+  double get depositBalance => _depositBalance;
+  double get totalpayment => _totalpayment;
+  double get totalReplacementCost => _totalReplacementCost;
+  double get topUpBalance => _topUpBalance;
   String get previousRoute => _previousRoute;
   String get customerName => _customerName;
   String get dateSetSale => _saleDate;
   String get customerPhone => _customerPhone;
+  dynamic get selecteddepositItem => _depositItem;
 //Replacement Product functions
 
   void setCreditNoteListempty() {
     _replacementProductList = [];
     _returnProductList = [];
+    _topUpPaymentList = [];
+    _topUpBalance = 0;
+    notifyListeners();
+  }
+
+  void setTopUpPaymentListEmpty() {
     _topUpPaymentList = [];
     notifyListeners();
   }
@@ -92,7 +98,7 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int totalReplacementPrice() {
+  double totalReplacementPrice() {
     _totalReplacementCost = 0;
     _replacementProductList.forEach((item) {
       //calculate the total prices
@@ -109,7 +115,7 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int topUpBalanceCalc() {
+  double topUpBalanceCalc() {
     _topUpBalance =
         (_totalReplacementCost - _returnTotalCost) - _totalTopUpPayment;
     notifyListeners();
@@ -148,7 +154,7 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int totalRetrunPrice() {
+  double totalRetrunPrice() {
     _returnTotalCost = 0;
     _returnProductList.forEach((item) {
       //calculate the total prices
@@ -164,7 +170,7 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int totalPrice() {
+  double totalPrice() {
     _totalbill = 0;
     _productList.forEach((item) {
       //calculate the total prices
@@ -180,7 +186,7 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int totalPaymentcalc() {
+  double totalPaymentcalc() {
     _totalpayment = 0;
     _payments.forEach((item) {
       _totalpayment += item.sumApplied!;
@@ -209,7 +215,7 @@ class ProductListProvider with ChangeNotifier {
   }
 
 // Deposit funttions
-  int totalDepositPrice() {
+  double totalDepositPrice() {
     _totalDepositBill = 0;
     _depositProductsList.forEach((item) {
       //calculate the total prices
@@ -242,7 +248,7 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int totalDepositPaymentcalc() {
+  double totalDepositPaymentcalc() {
     _totalDepositPayments = 0;
     _depositPaymentsList.forEach((item) {
       _totalDepositPayments += item.sumApplied!;
@@ -257,14 +263,14 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int balancepayment() {
+  double balancepayment() {
     _balance = 0;
     _balance = _totalbill - totalPaymentcalc();
     notifyListeners();
     return _balance;
   }
 
-  int depositbalance() {
+  double depositbalance() {
     _depositBalance = _totalDepositBill - totalDepositPaymentcalc();
     notifyListeners();
     return _depositBalance;
@@ -335,6 +341,11 @@ class ProductListProvider with ChangeNotifier {
 
   void setSaleDate(saleDate) {
     _saleDate = saleDate;
+    notifyListeners();
+  }
+
+  void selectedDepositItem(depositItem) {
+    _depositItem = depositItem;
     notifyListeners();
   }
 }

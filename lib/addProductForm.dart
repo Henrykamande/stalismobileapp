@@ -16,8 +16,8 @@ class AddProductForm extends StatefulWidget {
 class _AddProductFormState extends State<AddProductForm> {
   final _formKey = GlobalKey<FormState>();
   int _qtyToSell = 1;
-  int _sellingPrice = 0;
-  int _total = 0;
+  double _sellingPrice = 0;
+  double _total = 0;
   String _productName = "";
   int _linenum = 0;
   String? ref1;
@@ -32,7 +32,7 @@ class _AddProductFormState extends State<AddProductForm> {
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductListProvider>(context);
     final selectedProdp = Provider.of<GetProducts>(context);
-    final _selectedProd = selectedProdp.selectedprod ?? "";
+    final _selectedProd = selectedProdp.selectedprod;
 
     final previousrouteString = productsData.previousRoute;
     final products = productsData.productlist;
@@ -65,7 +65,7 @@ class _AddProductFormState extends State<AddProductForm> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
-                          initialValue: _selectedProd.name,
+                          initialValue: _selectedProd['Name'],
                           readOnly: true,
                           decoration: InputDecoration(
                             hintText: "Enter Product Name",
@@ -76,7 +76,7 @@ class _AddProductFormState extends State<AddProductForm> {
                           validator: (val) =>
                               val!.isEmpty ? 'Please Enter Product Name' : null,
                           onChanged: (val) => setState(() {
-                            _productName = _selectedProd.name;
+                            _productName = _selectedProd['Name'];
                           }),
                         ),
                       ),
@@ -90,6 +90,8 @@ class _AddProductFormState extends State<AddProductForm> {
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                       initialValue: _qtyToSell.toString(),
+                      keyboardType:
+                          TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
                         labelText: 'Qty To Sell',
                         fillColor: Colors.white,
@@ -117,6 +119,8 @@ class _AddProductFormState extends State<AddProductForm> {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
+                      keyboardType:
+                          TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
                         labelText: 'Selling Price',
                         fillColor: Colors.white,
@@ -131,12 +135,12 @@ class _AddProductFormState extends State<AddProductForm> {
                       ),
                       validator: (val) {
                         setState(() {
-                          _sellingPrice = int.parse((val!));
+                          _sellingPrice = double.parse((val!));
                           _total = _qtyToSell * _sellingPrice;
                         });
                       },
                       onChanged: (val) => setState(() {
-                        _sellingPrice = int.parse((val));
+                        _sellingPrice = double.parse((val));
                         _total = _qtyToSell * _sellingPrice;
                       }),
                     ),
@@ -188,79 +192,82 @@ class _AddProductFormState extends State<AddProductForm> {
               ),
 
               Card(
-                child: Text('Total: $_total'),
+                child: Text('Total: ${_total.toString()}'),
               ),
               SizedBox(
                 height: 20.0,
               ),
               //Dropdown
 
-              RaisedButton(
-                color: Colors.pink[400],
-                child: Text(
-                  'Add To List',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    if (productsData.productlist.length == 0) {
-                      setState(() {
-                        _linenum = 0;
-                      });
-                    } else {
-                      _linenum = productsData.productlist.length + 1;
-                    }
+              Container(
+                width: double.infinity,
+                child: RaisedButton(
+                  color: Colors.pink[400],
+                  child: Text(
+                    'Add To List',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      if (productsData.productlist.length == 0) {
+                        setState(() {
+                          _linenum = 0;
+                        });
+                      } else {
+                        _linenum = productsData.productlist.length + 1;
+                      }
 
-                    final newproduct = new SaleRow(
-                      ref1: ref1,
-                      name: _selectedProd.name,
-                      oPLNSId: _selectedProd.o_p_l_n_s_id,
-                      sellingPrice: _sellingPrice,
-                      quantity: _qtyToSell,
-                      oITMSId: _selectedProd.id,
-                      lineTotal: _total,
-                      lineNum: _linenum,
-                      discSum: 0,
-                      commission: 0,
-                      taxId: null,
-                      taxRate: null,
-                      taxAmount: null,
-                    );
-                    if (previousrouteString ==
-                        '/customercreditnotereplacement') {
-                      ReplacedProduct newproduct = new ReplacedProduct(
-                        productName: _selectedProd.name,
-                        productId: _selectedProd.id,
-                        quantity: _qtyToSell,
-                        sellingPrice: _sellingPrice,
-                        lineTotal: _total,
+                      final newproduct = new SaleRow(
                         ref1: ref1,
-                      );
-                      productsData.addReplacementProduct(newproduct);
-                      Navigator.pushNamed(context, '/customercreditnote');
-                    } else {}
-                    if (previousrouteString == '/customercreditnote') {
-                      ReturnedProduct newproduct = new ReturnedProduct(
-                        productName: _selectedProd.name,
-                        productId: _selectedProd.id,
-                        quantity: _qtyToSell,
+                        name: _selectedProd['Name'],
+                        oPLNSId: _selectedProd['o_p_l_n_s_id'],
                         sellingPrice: _sellingPrice,
+                        quantity: _qtyToSell,
+                        oITMSId: _selectedProd['id'],
                         lineTotal: _total,
-                        ref1: ref1,
+                        lineNum: _linenum,
+                        discSum: 0,
+                        commission: 0,
+                        taxId: null,
+                        taxRate: null,
+                        taxAmount: null,
                       );
-                      productsData.addReturnProduct(newproduct);
-                      Navigator.pushNamed(context, '/customercreditnote');
-                    } else {}
-                    if (previousrouteString == '/customerDeposit') {
-                      productsData.addDepositProduct(newproduct);
-                      Navigator.pushNamed(context, '/customerDeposit');
-                    } else {}
-                    if (previousrouteString == '/start') {
-                      productsData.addProduct(newproduct);
-                      Navigator.pushNamed(context, '/start');
-                    } else {}
-                  }
-                },
+                      if (previousrouteString ==
+                          '/customercreditnotereplacement') {
+                        ReplacedProduct newproduct = new ReplacedProduct(
+                          productName: _selectedProd['Name'],
+                          productId: _selectedProd['id'],
+                          quantity: _qtyToSell,
+                          sellingPrice: _sellingPrice,
+                          lineTotal: _total,
+                          ref1: ref1,
+                        );
+                        productsData.addReplacementProduct(newproduct);
+                        Navigator.pushNamed(context, '/customercreditnote');
+                      } else {}
+                      if (previousrouteString == '/customercreditnote') {
+                        ReturnedProduct newproduct = new ReturnedProduct(
+                          productName: _selectedProd['Name'],
+                          productId: _selectedProd['id'],
+                          quantity: _qtyToSell,
+                          sellingPrice: _sellingPrice,
+                          lineTotal: _total,
+                          ref1: ref1,
+                        );
+                        productsData.addReturnProduct(newproduct);
+                        Navigator.pushNamed(context, '/customercreditnote');
+                      } else {}
+                      if (previousrouteString == '/customerDeposit') {
+                        productsData.addDepositProduct(newproduct);
+                        Navigator.pushNamed(context, '/customerDeposit');
+                      } else {}
+                      if (previousrouteString == '/start') {
+                        productsData.addProduct(newproduct);
+                        Navigator.pushNamed(context, '/start');
+                      } else {}
+                    }
+                  },
+                ),
               )
             ],
           ),

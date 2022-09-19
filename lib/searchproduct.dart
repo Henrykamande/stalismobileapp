@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:testproject/addPayment.dart';
 import 'package:testproject/addProductForm.dart';
-import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
 
-import 'package:http/http.dart' as http;
 import 'package:testproject/providers/productslist_provider.dart';
-import 'package:testproject/providers/shared_preferences_services.dart';
-import 'package:testproject/searchaccount.dart';
 
 class SearchProduct extends StatefulWidget {
   @override
@@ -39,18 +35,6 @@ class _SearchProductState extends State<SearchProduct> {
         });
   }
 
-  void _showaddPaymentPane() {
-    showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (context) {
-          return Container(
-            padding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
-            child: AddPaymentForm(),
-          );
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     final selectedProduct = Provider.of<GetProducts>(context);
@@ -60,6 +44,7 @@ class _SearchProductState extends State<SearchProduct> {
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade700,
         title: (previousrouteString == '/customercreditnotereplacement')
             ? Text(
                 'Search Replacement Product',
@@ -119,26 +104,28 @@ class _SearchProductState extends State<SearchProduct> {
 
                           return (_searchquery != '')
                               ? ListView.builder(
+                                  shrinkWrap: true,
                                   itemCount: result.length,
                                   itemBuilder: (context, index) => InkWell(
                                     onTap: () {
                                       //print(result[index]['name']);
 
-                                      final selectedproduct = new ResponseDatum(
-                                        sellingPrice: (result[index]
-                                            ['SellingPrice']),
-                                        availableQty: (result[index]
-                                            ['AvailableQty']),
-                                        o_p_l_n_s_id: (result[index]
-                                            ['o_p_l_n_s_id']),
-                                        id: result[index]['id'],
+                                      print(result[index]);
+                                      /*   final selectedproduct = new ResponseDatum(
                                         name: result[index]['Name'],
-                                      );
+                                        sellingPrice: double.parse(
+                                            result[index]['SellingPrice']),
+                                        id: result[index]['id'],
+                                        availableQty: result[index]
+                                            ['AvailableQty'],
+                                        o_p_l_n_s_id: result[index]
+                                            ['o_p_l_n_s_id'],
+                                      );*/
                                       selectedProduct
-                                          .selectedProduct(selectedproduct);
+                                          .selectedProduct(result[index]);
                                       //_showaddProductPane();
+                                      //print(selectedproduct.id);\
                                       _showaddProductPane();
-                                      print(selectedproduct.id);
                                     },
                                     child: ListTile(
                                       title: Text(result[index]['Name']),

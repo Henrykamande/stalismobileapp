@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:testproject/models/accountmodel.dart';
+
 import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/customermode.dart';
-import 'package:testproject/models/login_requestmodel.dart';
-import 'package:testproject/models/macaddress.dart';
-import 'package:testproject/models/paidamount.dart';
+import 'package:testproject/models/depositPayment.dart';
+
 import 'package:testproject/models/paymentsAccounts.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/models/product.dart';
@@ -22,11 +21,13 @@ class GetProducts with ChangeNotifier {
   var response;
   int totalpayments = 0;
   bool _isloading = false;
-
+  Map<String, dynamic> _generalSettingDetails = {};
   PrefService _prefs = PrefService();
 
   List<ResponseDatum> result = [];
   bool get isloading => _isloading;
+
+  // Map<String, dynamic> get generalSettingDetails => _generalSettingDetails;
 
   setislodaing() {
     _isloading = true;
@@ -204,7 +205,7 @@ class GetProducts with ChangeNotifier {
     );
   }
 
-  void selectedProduct(ResponseDatum productSelected) {
+  void selectedProduct(productSelected) {
     selectedprod = productSelected;
     //print(selectedprod);
   }
@@ -234,6 +235,7 @@ class GetProducts with ChangeNotifier {
     return data;
   }
 
+// Accounts List
   Future<PaymentAccountsResponseData> getanaccount(accountId) async {
     var headers = await sethenders();
     PaymentAccountsResponseData accountsdata;
@@ -449,6 +451,48 @@ class GetProducts with ChangeNotifier {
     var url = Uri.https(
       'apoyobackend.softcloudtech.co.ke',
       '/api/v1/sale-deposit',
+    );
+    try {
+      response = await http.post(
+        url,
+        headers: headers,
+        body: queryparamaeters,
+      );
+      print('Query param Deposit sale Card $queryparamaeters');
+
+      print('response from Deposit Sale ${response.body}');
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<List<dynamic>> fetchDeposits() async {
+    var headers = await sethenders();
+
+    var url =
+        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/deposits-list');
+    response = await http.get(
+      url,
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      print('Customer Fetch ');
+    }
+    data = await jsonDecode(response.body)['ResponseData'];
+    print('data fetch deposits $data');
+    notifyListeners();
+    return data;
+  }
+
+  void postDepositPayment(depositPayment) async {
+    print('Print Sales $depositPayment');
+    var headers = await sethenders();
+    final queryparamaeters = depositPaymentToJson(depositPayment);
+
+    //print(jsonDecode(queryparamaeters));
+    var url = Uri.https(
+      'apoyobackend.softcloudtech.co.ke',
+      '/api/v1/deposit-payment',
     );
     try {
       response = await http.post(

@@ -29,8 +29,8 @@ class PosSale {
   int objType;
   int docNum;
   int? cardCode;
-  int docTotal;
-  int balance;
+  double docTotal;
+  double balance;
   String? ref2;
   String? ref1;
   String? customerName;
@@ -38,7 +38,7 @@ class PosSale {
   int discSum;
   List<Payment> payments;
   List<SaleRow> rows;
-  int totalPaid;
+  double totalPaid;
   String userName;
 
   factory PosSale.fromJson(Map<String, dynamic> json) => PosSale(
@@ -121,12 +121,12 @@ class SaleRow {
   });
   String? name;
   int oPLNSId;
-  int sellingPrice;
+  double sellingPrice;
   int quantity;
   dynamic uomEntry;
   int oITMSId;
   int? discSum;
-  int lineTotal;
+  double lineTotal;
   int lineNum;
   int? commission;
   dynamic? taxId;

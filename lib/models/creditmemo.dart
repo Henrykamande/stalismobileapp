@@ -66,9 +66,9 @@ class ReplacedProduct {
   String? ref1;
   int productId;
   int quantity;
-  int sellingPrice;
+  double sellingPrice;
   int? taxId;
-  int lineTotal;
+  double lineTotal;
 
   factory ReplacedProduct.fromJson(Map<String, dynamic> json) =>
       ReplacedProduct(
@@ -106,8 +106,8 @@ class ReturnedProduct {
   String? ref1;
   int productId;
   int quantity;
-  int sellingPrice;
-  int lineTotal;
+  double sellingPrice;
+  double lineTotal;
 
   factory ReturnedProduct.fromJson(Map<String, dynamic> json) =>
       ReturnedProduct(

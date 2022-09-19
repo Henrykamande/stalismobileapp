@@ -34,6 +34,7 @@ class _InventoryListState extends State<InventoryList> {
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade700,
         title: Container(
           child: Text('Search Prodcut'),
         ),

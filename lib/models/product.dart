@@ -49,11 +49,11 @@ class ResponseDatum {
     this.brand,
   });
 
-  int id;
+  dynamic id;
   String name;
-  int availableQty;
-  int sellingPrice;
-  int o_p_l_n_s_id;
+  dynamic availableQty;
+  double sellingPrice;
+  dynamic o_p_l_n_s_id;
   dynamic itm1;
   dynamic industry;
   dynamic brand;

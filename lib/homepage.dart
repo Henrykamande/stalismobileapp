@@ -16,6 +16,7 @@ import 'package:testproject/searchproduct.dart';
 import 'package:intl/intl.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:http/http.dart' as http;
+import 'package:testproject/shared/drawerscreen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -29,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   final _formKey = GlobalKey<FormState>();
   var cache;
   bool _connected = false;
+  Map<String, dynamic> _generalSettingDetails = {};
   String printerErrorMessage = "";
   TextEditingController dateInput = TextEditingController();
   String saleType = '';
@@ -46,9 +48,27 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     setdate = true;
     _getPrinterAddress();
-    initPlatformState();
+    // initPlatformState();
+    fetchshopDetails();
     sethenders();
     super.initState();
+  }
+
+  void fetchshopDetails() async {
+    var headers = await sethenders();
+
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/general-settings');
+    var response = await http.get(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      print('Sucessful POst');
+    }
+    _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
+    print("General Setting Data $_generalSettingDetails ");
   }
 
   Future<void> initPlatformState() async {
@@ -120,11 +140,11 @@ class _HomePageState extends State<HomePage> {
       _devices = devices;
     });
 
-    if (isConnected == true) {
+    /* if (isConnected == true) {
       setState(() {
         _connected = true;
       });
-    }
+    } */
   }
 
   sethenders() async {
@@ -193,6 +213,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final productprovider =
         Provider.of<ProductListProvider>(context, listen: true);
+
     return MaterialApp(
       home: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -225,12 +246,12 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Icon(
                       Icons.bluetooth,
-                      color: _connected ? Colors.red : Colors.green,
+                      color: _connected ? Colors.green : Colors.red,
                     ),
                     Text(
-                      _connected ? 'Off' : 'On',
+                      _connected ? 'On' : 'Off',
                       style: TextStyle(
-                          color: _connected ? Colors.red : Colors.green),
+                          color: _connected ? Colors.green : Colors.red),
                     ),
                   ],
                 )),
@@ -259,8 +280,8 @@ class _HomePageState extends State<HomePage> {
                 await _prefs.removeCache(
                     'Token', 'StoreId', 'loggedInUserName', 'storename');
                 print(cache);
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => Stalisapp()));
+                Navigator.pushNamedAndRemoveUntil(
+                    context, '/', (route) => false);
               },
               child: Icon(
                 Icons.logout,
@@ -284,7 +305,7 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: Container(
           height: 60,
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
+            color: Colors.blue,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
@@ -334,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pushNamed(context, '/paymentsearch');
                     },
                     icon: const Icon(
-                      Icons.widgets_outlined,
+                      Icons.money,
                       color: Colors.white,
                       size: 35,
                     ),
@@ -363,99 +384,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        drawer: Container(
-          child: Drawer(
-            child: ListView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    height: 100,
-                    child: DrawerHeader(
-                      child: ListTile(
-                        title: Text(storename),
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.amber,
-                          child: Text(''),
-                        ),
-                        trailing: IconButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, '/start');
-                          },
-                          icon: Icon(Icons.cancel),
-                        ),
-                      ),
-                      decoration: BoxDecoration(),
-                    ),
-                  ),
-                ),
-                ListTile(
-                  title: const Text('POS'),
-                  onTap: () {
-                    // Update the state of the app
-                    // ...
-                    // Then close the drawer
-                    Navigator.pushNamed(context, '/start');
-                  },
-                ),
-                /*  ListTile(
-                  title: const Text('Customer Deposit'),
-                  onTap: () {
-                    // Update the state of the app
-                    // ...
-                    // Then close the drawer
-                    Navigator.pushNamed(context, '/customerDeposit');
-                  },
-                ), */
-                ListTile(
-                  title: const Text('Return & Replacement'),
-                  onTap: () {
-                    // Update the state of the app
-                    // ...
-                    // Then close the drawer
-                    Navigator.pushNamed(context, '/customercreditnote');
-                  },
-                ),
-                ListTile(
-                  title: const Text('Sold Products'),
-                  onTap: () {
-                    // Update the state of the app
-                    // ...
-                    // Then close the drawer
-                    Navigator.pushNamed(context, '/soldproducts');
-                  },
-                ),
-                ListTile(
-                  title: const Text('Returned Products'),
-                  onTap: () {
-                    // Update the state of the app
-                    // ...
-                    // Then close the drawer
-                    Navigator.pushNamed(context, '/returnedproducts');
-                  },
-                ),
-                ListTile(
-                  title: const Text('Payments'),
-                  onTap: () {
-                    // Update the state of the app
-                    // ...
-                    // Then close the drawer
-                    Navigator.pushNamed(context, '/salepayments');
-                  },
-                ),
-                ListTile(
-                  title: const Text('SetUp Printer'),
-                  onTap: () {
-                    // Update the state of the app
-                    // ...
-                    // Then close the drawer
-                    Navigator.pushNamed(context, '/defaultprinter');
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
+        drawer: DrawerScreen(),
         body: SafeArea(
             child: Column(
           children: [
@@ -471,7 +400,6 @@ class _HomePageState extends State<HomePage> {
                         child: Consumer<ProductListProvider>(
                           builder: (context, value, child) {
                             return TextFormField(
-                                initialValue: value.customerName,
                                 decoration:
                                     InputDecoration(hintText: 'Customer Phone'),
                                 validator: (value) {
@@ -562,6 +490,7 @@ class _HomePageState extends State<HomePage> {
               child: Consumer<ProductListProvider>(
                 builder: (context, value, child) {
                   return ListView.builder(
+                      shrinkWrap: true,
                       itemCount: value.productlist.length,
                       itemBuilder: (context, index) =>
                           index < value.productlist.length
@@ -682,6 +611,21 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  (context.read<ProductListProvider>().totalPaymentcalc() >
+                          context.read<ProductListProvider>().totalPrice())
+                      ? Text(
+                          'Payment can not be more than the Total',
+                          style: TextStyle(color: Colors.red),
+                        )
+                      : SizedBox(
+                          height: 10.0,
+                        ),
+                  (context.read<ProductListProvider>().balancepayment() > 0)
+                      ? Text(
+                          'Balance can not be more than the 0',
+                          style: TextStyle(color: Colors.red),
+                        )
+                      : Text(''),
                   Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Row(
@@ -710,37 +654,29 @@ class _HomePageState extends State<HomePage> {
                   ),
                   Padding(
                       padding: const EdgeInsets.all(4.0),
-                      child: (context
-                                  .read<ProductListProvider>()
-                                  .totalPaymentcalc() >
-                              context.read<ProductListProvider>().totalPrice())
-                          ? Text(
-                              'Payment can not be more than the Total',
-                              style: TextStyle(color: Colors.red),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Payment: Ksh',
-                                  style: TextStyle(
-                                    fontSize: 13.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Payment: Ksh',
+                            style: TextStyle(
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Consumer<ProductListProvider>(
+                            builder: (context, value, child) {
+                              return Text(
+                                '${formatnum.format(value.totalPaymentcalc())}',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                Consumer<ProductListProvider>(
-                                  builder: (context, value, child) {
-                                    return Text(
-                                      '${formatnum.format(value.totalPaymentcalc())}',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            )),
+                              );
+                            },
+                          ),
+                        ],
+                      )),
                   Padding(
                     padding: const EdgeInsets.all(2.0),
                     child: Row(
@@ -772,135 +708,134 @@ class _HomePageState extends State<HomePage> {
                                 strokeWidth: 10.0,
                               )
                             :  */
-                      RaisedButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        color: Colors.blue,
-                        child: Text(
-                          'Save',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () async {
-                          /* if (dateInput.text == null ||
-                                dateInput.text == '') {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: Text("Hi, I am a snack bar!"),
-                              ));
-                            } */
-                          AlertDialog(
-                            content: Text('success'),
-                          );
-                          if (_formKey.currentState!.validate()) {
-                            // print('Date  ...............${pickeddate}');
+                      Container(
+                        child: RaisedButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          color: Colors.blue,
+                          child: Text(
+                            'Save',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () async {
+                            /* if (dateInput.text == null ||
+                                  dateInput.text == '') {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text("Hi, I am a snack bar!"),
+                                ));
+                              } */
+                            print(
+                                'showdetails -------------------------------------------------${_generalSettingDetails['CompanyName']}_');
+                            AlertDialog(
+                              content: Text('success'),
+                            );
+                            if (_formKey.currentState!.validate()) {
+                              // print('Date  ...............${pickeddate}');
 
-                            cache = await _prefs.readCache('Token', 'StoreId',
-                                'loggedInUserName', 'storename');
-                            if (productprovider.totalpayment >
-                                productprovider.totabill) {
-                            } else {
-                              final balance = productprovider.balancepayment();
-                              final paymentlist = productprovider.paymentlist;
-                              final totalbill = productprovider.totabill;
-                              final products = productprovider.productlist;
-                              final totalpayment = productprovider.totalpayment;
-                              PosSale saleCard = new PosSale(
-                                  ref2: customerNo.toString(),
-                                  objType: 14,
-                                  docNum: 2,
-                                  discSum: 0,
-                                  payments: paymentlist,
-                                  docTotal: totalbill,
-                                  balance: balance,
-                                  docDate: DateFormat('yyyy-MM-dd')
-                                      .parse(dateInput.text),
-                                  rows: products,
-                                  totalPaid: totalpayment,
-                                  userName: cache['loggedInUserName']);
+                              cache = await _prefs.readCache('Token', 'StoreId',
+                                  'loggedInUserName', 'storename');
+                              if (productprovider.totalpayment >
+                                  productprovider.totabill) {
+                                Navigator.pushNamed(context, '/start');
+                              } else {
+                                final balance =
+                                    productprovider.balancepayment();
+                                final paymentlist = productprovider.paymentlist;
+                                final totalbill = productprovider.totabill;
+                                final products = productprovider.productlist;
+                                final totalpayment =
+                                    productprovider.totalpayment;
+                                PosSale saleCard = new PosSale(
+                                    ref2: customerNo.toString(),
+                                    objType: 14,
+                                    docNum: 2,
+                                    discSum: 0,
+                                    payments: paymentlist,
+                                    docTotal: totalbill,
+                                    balance: balance,
+                                    docDate: DateFormat('yyyy-MM-dd')
+                                        .parse(dateInput.text),
+                                    rows: products,
+                                    totalPaid: totalpayment,
+                                    userName: cache['loggedInUserName']);
 
-                              productprovider.postsalearray(saleCard);
+                                productprovider.postsalearray(saleCard);
 
-                              //salepost.setislodaing();
+                                //salepost.setislodaing();
 
-                              //var printeraddress = salepost.getPrinterAddress();
-                              // print(
-                              //     'Printer address fron fuction $printeraddress');
+                                //var printeraddress = salepost.getPrinterAddress();
+                                // print(
+                                //     'Printer address fron fuction $printeraddress');
 
-                              // var existingprinter = null;
+                                // var existingprinter = null;
 
-                              bluetooth.printCustom('2.N.K TELECOM', 1, 1);
-                              bluetooth.printCustom(
-                                  'Mobile Phones & Accessories -Karatina',
-                                  0,
-                                  2);
-                              bluetooth.printCustom('Tel: 0780 048 175', 1, 1);
-                              bluetooth.printCustom(
-                                  'Our promise: If you bought from us then it is original',
-                                  0,
-                                  1);
-
-                              if (saleCard.ref2 != null) {
+                                bluetooth.printCustom('Shoe Paradise', 1, 1);
                                 bluetooth.printCustom(
-                                    'Customer No ${saleCard.ref2!}', 0, 0);
-                              }
-                              bluetooth.print3Column(
-                                  '',
-                                  ''
-                                      'Date : ${dateInput.text} ',
-                                  '',
-                                  0);
-                              bluetooth.printNewLine();
-                              bluetooth.print3Column(
-                                  'Qty', 'Price', 'Total', 0);
-                              bluetooth.printCustom(
-                                  '-----------------------------------------',
-                                  0,
-                                  0);
-                              for (var i = 0; i < saleCard.rows.length; i++) {
-                                //
-                                var currentElement = saleCard.rows[i];
+                                    'All our shoes are good quality', 0, 0);
                                 bluetooth.printCustom(
-                                    '${currentElement.name}', 0, 0);
-                                bluetooth.print3Column(
-                                    '${currentElement.quantity}',
-                                    '    ${formatnum.format(currentElement.sellingPrice)}',
-                                    '    ${formatnum.format(currentElement.lineTotal)}',
-                                    0);
-                                if (currentElement.ref1 != null) {
+                                    'Tel: 0752 730 730', 1, 1);
+
+                                if (saleCard.ref2 != null) {
                                   bluetooth.printCustom(
-                                      'Ref: ${currentElement.ref1!}', 0, 0);
+                                      'Customer No ${saleCard.ref2!}  Date : ${dateInput.text}',
+                                      0,
+                                      0);
                                 }
+
+                                bluetooth.print3Column(
+                                    'Qty', 'Price', 'Total', 0);
+
+                                for (var i = 0; i < saleCard.rows.length; i++) {
+                                  //
+                                  var currentElement = saleCard.rows[i];
+                                  bluetooth.printCustom(
+                                      '${currentElement.name}', 0, 0);
+                                  bluetooth.print3Column(
+                                      '${currentElement.quantity}',
+                                      '${formatnum.format(currentElement.sellingPrice)}',
+                                      '${formatnum.format(currentElement.lineTotal)}',
+                                      1);
+                                  if (currentElement.ref1 != null) {
+                                    bluetooth.printCustom(
+                                        'Ref: ${currentElement.ref1!}', 0, 0);
+                                  }
+                                }
+
+                                bluetooth.printNewLine();
+                                bluetooth.printCustom(
+                                    'Total Bill:  ${formatnum.format(saleCard.docTotal)}',
+                                    0,
+                                    0);
+
+                                bluetooth.printCustom(
+                                    'Total Paid:  ${formatnum.format(saleCard.totalPaid)}',
+                                    0,
+                                    0);
+
+                                bluetooth.printCustom(
+                                    'Total Bal:  ${formatnum.format(saleCard.balance)}',
+                                    0,
+                                    0);
+                                bluetooth.printNewLine();
+                                bluetooth.printCustom(
+                                    'If you are happy by our services Call 0722 323 131',
+                                    0,
+                                    1);
+                                bluetooth.printNewLine();
+                                bluetooth.printNewLine();
+
+                                bluetooth.paperCut();
+                                /*Navigator.of(context).push(MaterialPageRoute( 
+                                  builder: (context) => PrintPage(saleCard)));*/
+                                productprovider.setprodLIstempty();
+                                productprovider.resetCustmerPhone();
+                                productprovider.resetCustomerName();
+                                Navigator.pushNamed(context, '/start');
                               }
-                              bluetooth.printCustom(
-                                  '------------------------------------------',
-                                  0,
-                                  0);
-                              bluetooth.printNewLine();
-                              bluetooth.print4Column('Total Bill:', '', ' ',
-                                  '${formatnum.format(saleCard.docTotal)}', 0);
-
-                              bluetooth.print4Column('Total Paid:', '', ' ',
-                                  '${formatnum.format(saleCard.totalPaid)}', 0);
-
-                              bluetooth.print4Column('Total Bal:', '', ' ',
-                                  '${formatnum.format(saleCard.balance)}', 0);
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  'All phones have guarantee. Guarantee means either change or repair of phone. Dead phones will not be accepted back Whatsoever.Battery,screen, charger,liquid or mechanical damages have no warranty. If not assisted call 0720 222 444',
-                                  0,
-                                  1);
-                              bluetooth.printNewLine();
-
-                              bluetooth.paperCut();
-                              /*Navigator.of(context).push(MaterialPageRoute( 
-                                builder: (context) => PrintPage(saleCard)));*/
-                              productprovider.setprodLIstempty();
-                              productprovider.resetCustmerPhone();
-                              productprovider.resetCustomerName();
-                              Navigator.pushNamed(context, '/start');
                             }
-                          }
-                        },
+                          },
+                        ),
                       )
                     ],
                   )
@@ -917,52 +852,26 @@ class _HomePageState extends State<HomePage> {
     var activedevices = await bluetooth.getBondedDevices();
     var existingprinter = activedevices
         .firstWhere((itemToCheck) => itemToCheck.address == macaddress);
-    if (existingprinter != null) {
-      print('Selected device connect method $existingprinter');
-      bluetooth.isConnected.then((isConnected) {
-        print(isConnected);
-        if (isConnected == false) {
-          bluetooth.connect(existingprinter).catchError((error) {
-            print(error);
-            setState(() {
-              _connected = false;
-              printerErrorMessage = "Set Default Printer ";
-            });
+
+    print('Selected device connect method $existingprinter');
+    bluetooth.isConnected.then((isConnected) {
+      print(isConnected);
+      if (isConnected == false) {
+        bluetooth.connect(existingprinter).catchError((error) {
+          print(error);
+          setState(() {
+            _connected = false;
+            printerErrorMessage = "Set Default Printer ";
           });
-          setState(() => _connected = true);
-        }
-      });
-    } else {
-      setState(() {
-        printerErrorMessage = "Set Default Printer ";
-      });
-    }
+        });
+        setState(() => _connected = true);
+      }
+    });
   }
 
   void _disconnect() {
-    bluetooth.disconnect();
     setState(() => _connected = false);
-  }
 
-  final snackBar = SnackBar(
-    content: Text('Yay! A SnackBar!'),
-  );
-
-  Future show(
-    String message, {
-    Duration duration: const Duration(seconds: 3),
-  }) async {
-    await new Future.delayed(new Duration(milliseconds: 100));
-    ScaffoldMessenger.of(context).showSnackBar(
-      new SnackBar(
-        content: new Text(
-          message,
-          style: new TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        duration: duration,
-      ),
-    );
+    bluetooth.disconnect();
   }
 }

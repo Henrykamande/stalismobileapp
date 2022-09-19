@@ -1,7 +1,8 @@
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:testproject/models/authTokenStoreid.dart';
 
-class PrefService {
+class PrefService extends ChangeNotifier {
   Future createCache(String token, String storeid, String loggedInUserName,
       String storename) async {
     SharedPreferences _preferences = await SharedPreferences.getInstance();
@@ -34,4 +35,6 @@ class PrefService {
     _preferences.remove('loggedInUserName');
     _preferences.remove('storename');
   }
+
+  notifyListeners();
 }

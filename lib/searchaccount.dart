@@ -52,6 +52,7 @@ class _PaymentSearchState extends State<PaymentSearch> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade700,
         title: Container(
           child: Text('Add Payment'),
         ),

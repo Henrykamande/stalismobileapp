@@ -1,13 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:testproject/addProductForm.dart';
-import 'package:testproject/models/product.dart';
+import 'package:flutter/services.dart';
+
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 
-import 'package:http/http.dart' as http;
 import 'package:testproject/providers/shared_preferences_services.dart';
 
 class SoldProducts extends StatefulWidget {
@@ -18,6 +16,9 @@ class SoldProducts extends StatefulWidget {
 }
 
 class _SoldProductsState extends State<SoldProducts> {
+  BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  bool _connected = false;
+
   late Future<List<dynamic>> soldproducts;
   PrefService _prefs = PrefService();
   final formatnum = new NumberFormat("#,##0.00", "en_US");
@@ -25,11 +26,88 @@ class _SoldProductsState extends State<SoldProducts> {
   GetProducts _listbulder = GetProducts();
   TextEditingController dateInput = TextEditingController();
   String _searchquery = DateTime.now().toString();
+  List _devices = [];
 
   @override
   void initState() {
     soldproducts = _listbulder.fetchSoldProducts(_searchquery);
     super.initState();
+  }
+
+  Future<void> initPlatformState() async {
+    bool? isConnected = await bluetooth.isConnected;
+    List<BluetoothDevice> devices = [];
+    try {
+      devices = await bluetooth.getBondedDevices();
+    } on PlatformException {}
+
+    bluetooth.onStateChanged().listen((state) {
+      switch (state) {
+        case BlueThermalPrinter.CONNECTED:
+          setState(() {
+            _connected = true;
+
+            print("bluetooth device state: connected");
+          });
+          break;
+        case BlueThermalPrinter.DISCONNECTED:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: disconnected");
+          });
+          break;
+        case BlueThermalPrinter.DISCONNECT_REQUESTED:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: disconnect requested");
+          });
+          break;
+        case BlueThermalPrinter.STATE_TURNING_OFF:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: bluetooth turning off");
+          });
+          break;
+        case BlueThermalPrinter.STATE_OFF:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: bluetooth off");
+          });
+          break;
+        case BlueThermalPrinter.STATE_ON:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: bluetooth on");
+          });
+          break;
+        case BlueThermalPrinter.STATE_TURNING_ON:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: bluetooth turning on");
+          });
+          break;
+        case BlueThermalPrinter.ERROR:
+          setState(() {
+            _connected = false;
+            print("bluetooth device state: error");
+          });
+          break;
+        default:
+          print(state);
+          break;
+      }
+    });
+
+    if (!mounted) return;
+    setState(() {
+      _devices = devices;
+    });
+
+    if (isConnected == true) {
+      setState(() {
+        _connected = true;
+      });
+    }
   }
 
   @override
@@ -40,6 +118,7 @@ class _SoldProductsState extends State<SoldProducts> {
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade700,
         title: Container(
           child: Text('Sold Products'),
         ),
@@ -98,9 +177,6 @@ class _SoldProductsState extends State<SoldProducts> {
               SizedBox(
                 height: 20.0,
               ),
-              SizedBox(
-                height: 20.0,
-              ),
               Expanded(
                 child: Container(
                   child: FutureBuilder<List<dynamic>>(
@@ -114,12 +190,24 @@ class _SoldProductsState extends State<SoldProducts> {
 
                           return (result != [])
                               ? ListView.builder(
+                                  shrinkWrap: true,
                                   itemCount: result.length,
                                   itemBuilder: (context, index) => Card(
                                     child: ListTile(
-                                      title: Text(result[index]['product']
-                                              ['Name']
-                                          .toString()),
+                                      title: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(result[index]['product']['Name']
+                                              .toString()),
+                                          (result[index]['ref1'] != null)
+                                              ? Text(
+                                                  "Serial/Ref: ${result[index]['ref1'].toString()}")
+                                              : Text(''),
+                                        ],
+                                      ),
                                       subtitle: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -136,8 +224,120 @@ class _SoldProductsState extends State<SoldProducts> {
                                           )
                                         ],
                                       ),
-                                      trailing: Text(
-                                          "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}"),
+                                      trailing: Column(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                                "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}"),
+                                          ),
+                                          Expanded(
+                                            child: IconButton(
+                                              onPressed: () {
+                                                print(
+                                                    'Sold item ------------------------------------------${result[index]['product']}');
+
+                                                bluetooth.printCustom(
+                                                    'Shoe Paradise', 1, 1);
+                                                bluetooth.printCustom(
+                                                    'All our shoes are good quality',
+                                                    0,
+                                                    2);
+                                                bluetooth.printCustom(
+                                                    'Tel: 0752 730 730', 1, 1);
+
+                                                if (result[index]['ref2'] !=
+                                                    null) {
+                                                  bluetooth.printCustom(
+                                                      'Customer No ${result[index]['ref2']}  Date : ${dateInput.text}',
+                                                      0,
+                                                      0);
+                                                }
+
+                                                bluetooth.print3Column(
+                                                    'Qty', 'Price', 'Total', 0);
+
+                                                bluetooth.printCustom(
+                                                    '${result[index]['product']['Name']}',
+                                                    0,
+                                                    0);
+                                                bluetooth.printCustom(
+                                                    '${result[index]['ref1']}',
+                                                    0,
+                                                    0);
+                                                bluetooth.print3Column(
+                                                    '${result[index]['Quantity']}',
+                                                    '${result[index]['Price']}',
+                                                    '${result[index]['LineTotal']}',
+                                                    0);
+                                                /* for (var i = 0;
+                                                    i <
+                                                        result[index]
+                                                            .rows
+                                                            .length;
+                                                    i++) {
+                                                  //
+                                                  var currentElement =
+                                                      result[index].rows[i];
+                                                  bluetooth.printCustom(
+                                                      '${currentElement.name}',
+                                                      0,
+                                                      0);
+                                                  bluetooth.print3Column(
+                                                      '${currentElement.quantity}',
+                                                      '${formatnum.format(currentElement['sellingPrice'])}',
+                                                      '${formatnum.format(currentElement['lineTotal]'])}',
+                                                      1);
+                                                  if (currentElement['ref1'] !=
+                                                      null) {
+                                                    bluetooth.printCustom(
+                                                        'Ref: ${currentElement['ref1']}',
+                                                        0,
+                                                        0);
+                                                  }
+                                                }
+ */
+                                                print(result[index]['document']
+                                                    ['DocTotal']);
+                                                bluetooth.print3Column(
+                                                    'Total Bill: ',
+                                                    '${formatnum.format(result[index]['document']['DocTotal']).toString()}',
+                                                    '',
+                                                    0);
+
+                                                bluetooth.print3Column(
+                                                    'Total Paid: ',
+                                                    '${formatnum.format(result[index]['document']['PaidSum']).toString()}',
+                                                    '',
+                                                    0);
+
+                                                bluetooth.print3Column(
+                                                    'Total Bal: ',
+                                                    '${formatnum.format(result[index]['document']['Balance']).toString()}',
+                                                    '',
+                                                    0);
+
+                                                bluetooth.printCustom(
+                                                    'If you are happy by our services Call 0722 323 131',
+                                                    0,
+                                                    1);
+                                                bluetooth.printNewLine();
+                                                bluetooth.printNewLine();
+
+                                                bluetooth.paperCut();
+                                              },
+                                              icon: Column(
+                                                children: [
+                                                  Expanded(
+                                                    child: Icon(
+                                                      Icons.print,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 )
