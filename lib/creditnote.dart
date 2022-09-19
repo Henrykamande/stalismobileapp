@@ -143,7 +143,6 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
 
     print('mac addresssssssssssss$macaddress');
     //final paymentlist = productsData.paymentlist;
-    final depositBalance = productsData.depositbalance();
     final totalReturnpayments = productsData.totalReturnPayment;
     final totalReturncost = productsData.totalRetrunPrice();
     final totalReplacementCost = productsData.totalReplacementPrice();
@@ -304,7 +303,9 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
           ],
         ),
       ),
-      drawer: DrawerScreen(),
+      drawer: DrawerScreen(
+        storename: storename,
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -589,12 +590,16 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            'Total Return: Ksh ${formatnum.format(totalReturncost).toString()}',
-                            style: TextStyle(
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Consumer<ProductListProvider>(
+                            builder: (context, value, child) {
+                              return Text(
+                                'Total Return: Ksh ${formatnum.format(totalReturncost).toString()}',
+                                style: TextStyle(
+                                  fontSize: 14.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
                           ),
                         ),
                         Expanded(
@@ -615,12 +620,16 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            'Top up: Ksh ${formatnum.format(topUpBalance).toString()}',
-                            style: TextStyle(
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Consumer<ProductListProvider>(
+                            builder: (context, value, child) {
+                              return Text(
+                                'Top up: Ksh ${formatnum.format(topUpBalance).toString()}',
+                                style: TextStyle(
+                                  fontSize: 14.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
                           ),
                         ),
                         Expanded(
@@ -678,6 +687,8 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               // print(
                               //     'Printer address fron fuction $printeraddress');
                               salepost.postCreditMemo(creditMemo);
+                              _formKey.currentState?.reset();
+
                               productsData.setCreditNoteListempty();
                               productsData.setTopUpPaymentListEmpty();
 

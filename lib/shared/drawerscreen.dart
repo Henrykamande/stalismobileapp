@@ -1,40 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:testproject/providers/login_service.dart';
-import 'package:provider/provider.dart';
-import 'package:testproject/providers/shared_preferences_services.dart';
 
-class DrawerScreen extends StatefulWidget {
-  @override
-  _DrawerScreenState createState() => _DrawerScreenState();
-}
-
-class _DrawerScreenState extends State<DrawerScreen> {
-  PrefService _prefs = PrefService();
-  var cache;
-  String storename = '';
-  @override
-  void initState() {
-    sethenders();
-    super.initState();
-  }
-
-  sethenders() async {
-    cache = await _prefs.readCache(
-        'Token', 'StoreId', 'loggedinUserName', 'storename');
-
-    String token = cache['Token'];
-    String storeId = cache['StoreId'];
-
-    Map<String, String> headers = {
-      'Content-Type': 'application/json',
-      "Authorization": "Bearer $token",
-      "storeid": "$storeId"
-    };
-    setState(() {
-      storename = cache['storename'];
-    });
-    return headers;
-  }
+class DrawerScreen extends StatelessWidget {
+  final String storename;
+  DrawerScreen({required this.storename});
 
   @override
   Widget build(BuildContext context) {

@@ -264,7 +264,9 @@ class _CustomerDepositState extends State<CustomerDeposit> {
           ],
         ),
       ),
-      drawer: DrawerScreen(),
+      drawer: DrawerScreen(
+        storename: storename,
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -284,8 +286,11 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                   decimal: false),
                               decoration:
                                   InputDecoration(hintText: 'Cust Phone No'),
-                              onChanged: (val) =>
-                                  productsData.setCustomerPhone(val),
+                              onChanged: (val) {
+                                setState(() {
+                                  customerNo = val;
+                                });
+                              },
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please Enter Customer Phone';
@@ -346,7 +351,11 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                     height: 30.0,
                     child: TextFormField(
                       decoration: InputDecoration(hintText: 'Cust Name'),
-                      onChanged: (val) => productsData.setCustomerName(val),
+                      onChanged: (val) {
+                        setState(() {
+                          customerName = val;
+                        });
+                      },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please Enter Customer Name';
@@ -580,8 +589,8 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                               if (totalDepositpayments > totalDepositBill) {
                               } else {
                                 PosSale saleCard = new PosSale(
-                                    ref2: productsData.customerPhone,
-                                    customerName: productsData.customerName,
+                                    ref2: customerNo,
+                                    customerName: customerName,
                                     objType: 14,
                                     docNum: 2,
                                     discSum: 0,
@@ -597,6 +606,8 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                 // print(
                                 //     'Printer address fron fuction $printeraddress');
                                 salepost.postDepositSale(saleCard);
+                                _formKey.currentState?.reset();
+
                                 productsData.resetCustmerPhone();
                                 productsData.resetCustomerName();
                                 productsData.setDepositListempty();

@@ -16,7 +16,6 @@ import 'package:testproject/searchproduct.dart';
 import 'package:intl/intl.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:http/http.dart' as http;
-import 'package:testproject/shared/drawerscreen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -384,7 +383,116 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        drawer: DrawerScreen(),
+        drawer: Container(
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              canvasColor: Colors
+                  .grey[300], //This will change the drawer background to blue.
+              //other styles
+            ),
+            child: Drawer(
+              child: ListView(
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        child: DrawerHeader(
+                          child: ListTile(
+                            title: Text(storename),
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.amber,
+                              child: Icon(Icons.shop),
+                            ),
+                            trailing: IconButton(
+                              onPressed: () {
+                                Navigator.pushReplacementNamed(
+                                    context, '/start');
+                              },
+                              icon: Icon(Icons.cancel),
+                            ),
+                          ),
+                          decoration: BoxDecoration(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('POS'),
+                    onTap: () {
+                      // Update the state of the app
+                      // ...
+                      // Then close the drawer
+                      Navigator.pushNamed(context, '/start');
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('Sold Products'),
+                    onTap: () {
+                      // Update the state of the app
+                      // ...
+                      // Then close the drawer
+                      Navigator.pushNamed(context, '/soldproducts');
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('Payments'),
+                    onTap: () {
+                      // Update the state of the app
+                      // ...
+                      // Then close the drawer
+                      Navigator.pushNamed(context, '/salepayments');
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('Returned Products'),
+                    onTap: () {
+                      // Update the state of the app
+                      // ...
+                      // Then close the drawer
+                      Navigator.pushNamed(context, '/returnedproducts');
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('Create Deposit'),
+                    onTap: () {
+                      // Update the state of the app
+                      // ...
+                      // Then close the drawer
+                      Navigator.pushNamed(context, '/customerDeposit');
+                    },
+                  ),
+                  ListTile(
+                      title: Text('Deposits'),
+                      onTap: () {
+                        // Update the state of the app
+                        // ...
+                        // Then close the drawer
+                        Navigator.pushNamed(context, '/customerdepositlist');
+                      }),
+                  ListTile(
+                    title: const Text('Return & Replacement'),
+                    onTap: () {
+                      // Update the state of the app
+                      // ...
+                      // Then close the drawer
+                      Navigator.pushNamed(context, '/customercreditnote');
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('SetUp Printer'),
+                    onTap: () {
+                      // Update the state of the app
+                      // ...
+                      // Then close the drawer
+                      Navigator.pushNamed(context, '/defaultprinter');
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
         body: SafeArea(
             child: Column(
           children: [

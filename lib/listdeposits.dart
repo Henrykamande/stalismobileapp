@@ -160,7 +160,9 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
         ),
         elevation: 0.0,
       ),
-      drawer: DrawerScreen(),
+      drawer: DrawerScreen(
+        storename: storename,
+      ),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Container(
