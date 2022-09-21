@@ -127,8 +127,8 @@ class PrinterService with ChangeNotifier {
   }
 
   void connect() async {
-    var activedevices = await bluetooth.getBondedDevices();
-    var existingprinter = activedevices
+    var _activedevices = await bluetooth.getBondedDevices();
+    var existingprinter = _activedevices
         .firstWhere((itemToCheck) => itemToCheck.address == macaddress);
 
     print('Selected device connect method $existingprinter');

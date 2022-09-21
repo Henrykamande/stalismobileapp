@@ -5,12 +5,11 @@ import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
 import 'package:testproject/models/postSale.dart';
-import 'package:testproject/outsourced.dart';
+import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/printservice.dart';
 
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
-import 'package:testproject/searchproduct.dart';
 import 'package:intl/intl.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:http/http.dart' as http;
@@ -46,11 +45,11 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     setdate = true;
-    //_getPrinterAddress();
-    _printerService.initPlatformState();
+    _getPrinterAddress();
+    /* _printerService.initPlatformState();
     _printerService.getPrinterAddress();
     _printerService.connect();
-
+ */
     // initPlatformState();
     fetchshopDetails();
     // sethenders();
@@ -73,7 +72,7 @@ class _HomePageState extends State<HomePage> {
     print("General Setting Data $_generalSettingDetails ");
   }
 
-  /*  Future<void> initPlatformState() async {
+  Future<void> initPlatformState() async {
     bool? isConnected = await bluetooth.isConnected;
     List<BluetoothDevice> devices = [];
     try {
@@ -142,12 +141,12 @@ class _HomePageState extends State<HomePage> {
       _devices = devices;
     });
 
-    /* if (isConnected == true) {
+    if (isConnected == true) {
       setState(() {
         _connected = true;
       });
-    } */
-  } */
+    }
+  }
 
   sethenders() async {
     cache = await _prefs.readCache(
@@ -167,7 +166,7 @@ class _HomePageState extends State<HomePage> {
     return headers;
   }
 
-  /*  _getPrinterAddress() async {
+  _getPrinterAddress() async {
     var headers = await sethenders();
     var url = Uri.https('apoyobackend.softcloudtech.co.ke',
         '/api/v1/store-mac-address/${headers['storeid']}');
@@ -182,13 +181,10 @@ class _HomePageState extends State<HomePage> {
       macaddress = data['ResponseData'];
     });
     return data['ResponseData'];
-  } */
+  }
 
   @override
   Widget build(BuildContext context) {
-    final productprovider =
-        Provider.of<ProductListProvider>(context, listen: true);
-
     return MaterialApp(
       home: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -201,19 +197,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           actions: [
-            /*  SizedBox(
-              height: 0.0,
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                color: _connected ? Colors.red : Colors.green,
-                onPressed: _connected ? _disconnect : _connect,
-                child: Text(
-                  _connected ? 'Disconnect' : 'Connect',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ), */
 /* 
             Consumer<PrinterService>(
               builder: (context, value, child) {
@@ -826,17 +809,28 @@ class _HomePageState extends State<HomePage> {
 
                               cache = await _prefs.readCache('Token', 'StoreId',
                                   'loggedInUserName', 'storename');
-                              if (productprovider.totalpayment >
-                                  productprovider.totabill) {
-                                Navigator.pushNamed(context, '/start');
+                              if (context
+                                      .read<ProductListProvider>()
+                                      .totalpayment >
+                                  context
+                                      .read<ProductListProvider>()
+                                      .totabill) {
                               } else {
-                                final balance =
-                                    productprovider.balancepayment();
-                                final paymentlist = productprovider.paymentlist;
-                                final totalbill = productprovider.totabill;
-                                final products = productprovider.productlist;
-                                final totalpayment =
-                                    productprovider.totalpayment;
+                                final balance = context
+                                    .read<ProductListProvider>()
+                                    .balancepayment();
+                                final paymentlist = context
+                                    .read<ProductListProvider>()
+                                    .paymentlist;
+                                final totalbill = context
+                                    .read<ProductListProvider>()
+                                    .totabill;
+                                final products = context
+                                    .read<ProductListProvider>()
+                                    .productlist;
+                                final totalpayment = context
+                                    .read<ProductListProvider>()
+                                    .totalpayment;
                                 PosSale saleCard = new PosSale(
                                     ref2: customerNo.toString(),
                                     objType: 14,
@@ -851,7 +845,7 @@ class _HomePageState extends State<HomePage> {
                                     totalPaid: totalpayment,
                                     userName: cache['loggedInUserName']);
 
-                                productprovider.postsalearray(saleCard);
+                                context.read<GetProducts>().postsale(saleCard);
 
                                 //salepost.setislodaing();
 
@@ -860,7 +854,6 @@ class _HomePageState extends State<HomePage> {
                                 //     'Printer address fron fuction $printeraddress');
 
                                 // var existingprinter = null;
-
                                 bluetooth.printCustom('Shoe Paradise', 1, 1);
                                 bluetooth.printCustom(
                                     'All our shoes are good quality', 0, 0);
@@ -919,9 +912,15 @@ class _HomePageState extends State<HomePage> {
                                 bluetooth.paperCut();
                                 /*Navigator.of(context).push(MaterialPageRoute( 
                                   builder: (context) => PrintPage(saleCard)));*/
-                                productprovider.setprodLIstempty();
-                                productprovider.resetCustmerPhone();
-                                productprovider.resetCustomerName();
+                                context
+                                    .read<ProductListProvider>()
+                                    .setprodLIstempty();
+                                context
+                                    .read<ProductListProvider>()
+                                    .resetCustmerPhone();
+                                context
+                                    .read<ProductListProvider>()
+                                    .resetCustomerName();
                                 Navigator.pushNamed(context, '/start');
                               }
                             }
@@ -939,7 +938,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /* void _connect() async {
+  void _connect() async {
     var activedevices = await bluetooth.getBondedDevices();
     var existingprinter = activedevices
         .firstWhere((itemToCheck) => itemToCheck.address == macaddress);
@@ -947,7 +946,7 @@ class _HomePageState extends State<HomePage> {
     print('Selected device connect method $existingprinter');
     bluetooth.isConnected.then((isConnected) {
       print(isConnected);
-      if (isConnected == true) {
+      if (isConnected == false) {
         bluetooth.connect(existingprinter).catchError((error) {
           print(error);
           setState(() {
@@ -959,10 +958,10 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
- */
-  /* void _disconnect() {
+
+  void _disconnect() {
     setState(() => _connected = false);
 
     bluetooth.disconnect();
-  } */
+  }
 }

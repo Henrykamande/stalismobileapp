@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:testproject/addProductForm.dart';
+import 'package:testproject/pages/productsPages/addProductForm.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +22,7 @@ class _InventoryListState extends State<InventoryList> {
 
   @override
   void initState() {
-    _todolistbulder.getTodoList(_searchquery);
+    _todolistbulder.getProductsList(_searchquery);
     super.initState();
   }
 
@@ -30,7 +30,7 @@ class _InventoryListState extends State<InventoryList> {
   @override
   Widget build(BuildContext context) {
     final selectedProduct = Provider.of<GetProducts>(context);
-    productlistdata = _todolistbulder.getTodoList(_searchquery);
+    productlistdata = _todolistbulder.getProductsList(_searchquery);
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
       appBar: AppBar(

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/postSale.dart';
-import 'package:testproject/models/previousRoute.dart';
-import 'package:testproject/models/product.dart';
 
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';

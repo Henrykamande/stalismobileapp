@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
+import 'package:testproject/pages/printerPages/testprint.dart';
 
 class PrintPage extends StatefulWidget {
   State<PrintPage> createState() => _PrintPageState();
@@ -12,6 +13,7 @@ class PrintPage extends StatefulWidget {
 
 class _PrintPageState extends State<PrintPage> {
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+  TestPrint _testPrint = TestPrint();
   List<BluetoothDevice> _devices = [];
   BluetoothDevice? _selecteddevice;
   bool _connected = false;
@@ -105,96 +107,96 @@ class _PrintPageState extends State<PrintPage> {
       appBar: AppBar(
         title: Text("Select Printer"),
       ),
-      body: ListView(
-        children: <Widget>[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              SizedBox(
-                width: 10,
-              ),
-              Text(
-                'Device:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Container(
+            child: ListView(
+              children: <Widget>[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      'Device:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 30,
+                    ),
+                    Expanded(
+                      child: DropdownButton(
+                        items: _getDeviceItems(),
+                        onChanged: (BluetoothDevice? value) => setState(() {
+                          _selecteddevice = value;
+                          print('On change selected printer $_selecteddevice');
+                          defaultPrinter
+                              .defaultPrinterAddress(_selecteddevice!.address);
+                        }),
+                        value: _selecteddevice,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(
-                width: 30,
-              ),
-              Expanded(
-                child: DropdownButton(
-                  items: _getDeviceItems(),
-                  onChanged: (BluetoothDevice? value) => setState(() {
-                    _selecteddevice = value;
-                    print('On change selected printer $_selecteddevice');
-                    defaultPrinter
-                        .defaultPrinterAddress(_selecteddevice!.address);
-                  }),
-                  value: _selecteddevice,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(primary: Colors.brown),
+                      onPressed: () {
+                        initPlatformState();
+                      },
+                      child: Text(
+                        'Refresh',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 10.0,
+                    ),
+                    RaisedButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      color: _connected ? Colors.green : Colors.red,
+                      onPressed: _connected ? _disconnect : _connect,
+                      child: Text(
+                        _connected ? 'connected' : 'Disconnected',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(primary: Colors.brown),
-                onPressed: () {
-                  initPlatformState();
-                },
-                child: Text(
-                  'Refresh',
-                  style: TextStyle(color: Colors.white),
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(primary: Colors.brown),
+                    onPressed: () {
+                      /* bluetooth.printCustom('Shop Name', 1, 2);
+                      bluetooth.printCustom('', 1, 2);
+
+                      bluetooth.print3Column('Qty', 'Price', 'Total', 0);
+
+                      bluetooth.printNewLine();
+                      bluetooth.printNewLine();
+                      bluetooth.printNewLine();
+
+                      bluetooth.paperCut(); */
+                      _testPrint.sample();
+                    },
+                    child: Text('Test Print'),
+                  ),
                 ),
-              ),
-              SizedBox(
-                width: 20,
-              ),
-            ],
-          ),
-          /* Padding(
-            padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(primary: Colors.brown),
-              onPressed: () {
-                /* bluetooth.printCustom('Victoria Hardware', 1, 2);
-                bluetooth.printCustom('0724961618', 1, 2);
-
-                bluetooth.print3Column('Qty', 'Price', 'Total', 0);
-                for (var i = 0; i < widget.saleCard.rows.length; i++) {
-                  //
-                  var currentElement = widget.saleCard.rows[i];
-                  bluetooth.printCustom('${currentElement.name}', 0, 0);
-                  bluetooth.print3Column(
-                      '${currentElement.quantity}',
-                      '${currentElement.sellingPrice}',
-                      '${currentElement.lineTotal}',
-                      0);
-                }
-                bluetooth.print4Column(
-                    '', '', 'Total Bill', '${widget.saleCard.docTotal}', 0);
-
-                bluetooth.print4Column(
-                    '', '', 'Total Paid', '${widget.saleCard.totalPaid}', 0);
-
-                bluetooth.print4Column(
-                    '', '', 'Total Balance', '${widget.saleCard.balance}', 0);
-                bluetooth.printNewLine();
-                bluetooth.printNewLine();
-                bluetooth.printNewLine();
-
-                bluetooth.paperCut();
-                //testPrint.sample();
-
-                Navigator.pushNamed(context, '/start'); */
-              },
+              ],
             ),
-          ), */
-        ],
+          ),
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:testproject/addPayment.dart';
+import 'package:testproject/pages/payment/addPayment.dart';
 import 'package:testproject/models/depositPayment.dart';
 
 import 'package:testproject/providers/api_service.dart';
@@ -57,18 +57,6 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
       storename = cache['storename'];
     });
     return headers;
-  }
-
-  void _showaddPaymentPane() {
-    showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (context) {
-          return Container(
-            padding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
-            child: AddPaymentForm(),
-          );
-        });
   }
 
   Future<void> initPlatformState() async {
@@ -236,106 +224,147 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
                                     shrinkWrap: true,
                                     itemCount: result.length,
                                     itemBuilder: (context, index) => Card(
-                                      child: ListTile(
-                                        leading: Icon(Icons.person),
-                                        title: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            // for (var i = 0;
-                                            //     i > result[index]['rows'].length;
-                                            //     i++)
-                                            (result[index]['ref1'] != null)
-                                                ? Text(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ListTile(
+                                          //leading: Icon(Icons.person),
+                                          title: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              (result[index]['customerName'] !=
+                                                      null)
+                                                  ? Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.person,
+                                                          color: Colors.orange,
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                "${result[index]['customerName'].toString()}",
+                                                              ),
+                                                              (result[index][
+                                                                          'ref2'] !=
+                                                                      null)
+                                                                  ? Text(
+                                                                      "${result[index]['ref2'].toString()}")
+                                                                  : Text(''),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  : Text(''),
+                                              // for (var i = 0;
+                                              //     i > result[index]['rows'].length;
+                                              //     i++)
+
+                                              for (var item in result[index]
+                                                  ['rows'])
+                                                Text(
+                                                  item['product']['Name']
+                                                      .toString(),
+                                                  style: TextStyle(
+                                                      color: Colors.green[500]),
+                                                ),
+                                              if (result[index]['ref1'] != null)
+                                                Text(
                                                     "Serial/Ref: ${result[index]['ref1'].toString()}")
-                                                : Text(''),
-                                            (result[index]['ref2'] != null)
-                                                ? Text(
-                                                    "Phone Number: ${result[index]['ref2'].toString()}")
-                                                : Text(''),
-                                            for (var item in result[index]
-                                                ['rows'])
-                                              Text(
-                                                item['product']['Name']
-                                                    .toString(),
-                                                style: TextStyle(
-                                                    color: Colors.green[500]),
+
+                                              /* Text(result[index]['rows']['product']
+                                                      ['Name']
+                                                  .toString()), */
+                                            ],
+                                          ),
+                                          subtitle: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                height: 10.0,
                                               ),
-                                            /* Text(result[index]['rows']['product']
-                                                    ['Name']
-                                                .toString()), */
-                                          ],
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              height: 10.0,
-                                            ),
-                                            Text(
-                                              "Total Ksh ${formatnum.format(result[index]['DocTotal']).toString()}",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13.0),
-                                            ),
-                                            Text(
-                                              "Deposit Ksh ${formatnum.format(result[index]['PaidSum']).toString()}",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13.0),
-                                            ),
-                                            Text(
-                                                "Balance Ksh ${formatnum.format(result[index]['Balance']).toString()}",
+                                              Text(
+                                                "Total Ksh ${formatnum.format(result[index]['DocTotal']).toString()}",
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 13.0)),
-                                            /*  Text(
-                                                "Quantity Sold: ${result[index]['Quantity'].toString()}"),
-                                            Row(
-                                              children: [
-                                                (result[index]['ref2'] != null)
-                                                    ? Text(
-                                                        "Customer No: ${result[index]['ref2'].toString()}")
-                                                    : Text(''),
-                                              ],
-                                            ),
-                                            Text(
-                                              "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            
-                                            
-                                            ), */
-                                          ],
-                                        ),
-                                        trailing: Column(
-                                          children: [
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                primary:
-                                                    Colors.blue, // background
-                                                onPrimary:
-                                                    Colors.white, // foreground
+                                                    fontSize: 13.0),
                                               ),
-                                              onPressed: () {
-                                                context
-                                                    .read<ProductListProvider>()
-                                                    .selectedDepositItem(
-                                                        result[index]);
-                                                context
-                                                    .read<ProductListProvider>()
-                                                    .setPreviousRoute(
-                                                        '/customerdepositlist');
-                                                Navigator.pushNamed(
-                                                    context, '/paymentsearch');
-                                              },
-                                              child: Text('Add Payment'),
-                                            )
-                                          ],
+                                              Text(
+                                                "Deposit Ksh ${formatnum.format(result[index]['PaidSum']).toString()}",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13.0),
+                                              ),
+                                              Text(
+                                                  "Balance Ksh ${formatnum.format(result[index]['Balance']).toString()}",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 13.0)),
+                                              /*  Text(
+                                                  "Quantity Sold: ${result[index]['Quantity'].toString()}"),
+                                              Row(
+                                                children: [
+                                                  (result[index]['ref2'] != null)
+                                                      ? Text(
+                                                          "Customer No: ${result[index]['ref2'].toString()}")
+                                                      : Text(''),
+                                                ],
+                                              ),
+                                              Text(
+                                                "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold),
+                                              ),
+                                              
+                                              
+                                              ), */
+                                            ],
+                                          ),
+                                          trailing: Column(
+                                            children: [
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  primary:
+                                                      Colors.blue, // background
+                                                  onPrimary: Colors
+                                                      .white, // foreground
+                                                ),
+                                                onPressed: () {
+                                                  context
+                                                      .read<
+                                                          ProductListProvider>()
+                                                      .selectedDepositItem(
+                                                          result[index]);
+                                                  context
+                                                      .read<
+                                                          ProductListProvider>()
+                                                      .setPreviousRoute(
+                                                          '/customerdepositlist');
+                                                  Navigator.pushNamed(context,
+                                                      '/paymentsearch');
+                                                },
+                                                child: Text('Add Payment'),
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),

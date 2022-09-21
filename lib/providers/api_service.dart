@@ -57,7 +57,7 @@ class GetProducts with ChangeNotifier {
     return headers;
   }
 
-  Future<List<dynamic>> getTodoList(String? query) async {
+  Future<List<dynamic>> getProductsList(String? query) async {
     final queryparamaeters = jsonEncode({
       "searchText": "$query",
     });
@@ -290,7 +290,7 @@ class GetProducts with ChangeNotifier {
     return data;
   }
 
-  Future<String> defaultPrinterAddress(printerAddress) async {
+  Future defaultPrinterAddress(printerAddress) async {
     var headers = await sethenders();
     print(printerAddress);
     print(headers['storeid']);

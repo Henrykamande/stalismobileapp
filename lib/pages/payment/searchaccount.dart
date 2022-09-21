@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:testproject/addPayment.dart';
+import 'package:testproject/pages/payment/addPayment.dart';
 import 'package:testproject/models/accountmodel.dart';
 import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/paymentsAccounts.dart';
@@ -9,7 +9,7 @@ import 'package:testproject/models/product.dart';
 import 'package:snippet_coder_utils/FormHelper.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
-import 'addProductForm.dart';
+import '../productsPages/addProductForm.dart';
 
 class PaymentSearch extends StatefulWidget {
   @override
