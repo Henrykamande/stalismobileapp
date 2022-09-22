@@ -21,8 +21,8 @@ class ProductListProvider with ChangeNotifier {
   double _totalReplacementCost = 0;
   double _topUpBalance = 0;
   int _totalTopUpPayment = 0;
-  String _customerName = ' ';
-  String _customerPhone = " ";
+  String _customerName = '';
+  String _customerPhone = '';
   String _saleDate = DateFormat('yyyy-MM-dd').format(DateTime.now()).toString();
   List<SaleRow> _depositProductsList = [];
   List<TopupPayment> _topUpPaymentList = [];
@@ -32,7 +32,7 @@ class ProductListProvider with ChangeNotifier {
   List<SaleRow> _productList = [];
   List<Payment> _depositPaymentsList = [];
   dynamic _depositItem;
-
+  String _selecteddate = '';
   List<SaleRow> get productlist {
     return [..._productList];
   }
@@ -78,6 +78,7 @@ class ProductListProvider with ChangeNotifier {
   String get dateSetSale => _saleDate;
   String get customerPhone => _customerPhone;
   dynamic get selecteddepositItem => _depositItem;
+  String get selectedDate => _selecteddate;
 //Replacement Product functions
 
   void setCreditNoteListempty() {
@@ -323,20 +324,19 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  setCustomerPhone(customerno) {
+  void setCustomerPhone(customerno) {
     _customerPhone = customerno;
-    return _customerPhone;
+    notifyListeners();
   }
 
-  resetCustmerPhone() {
-    _customerPhone = '';
-
-    return _customerPhone;
+  void resetCustmerPhone() {
+    _customerPhone = ' ';
+    notifyListeners();
   }
 
-  resetCustomerName() {
-    _customerName = '';
-    return _customerName;
+  void resetCustomerName() {
+    _customerName = ' ';
+    notifyListeners();
   }
 
   void setSaleDate(saleDate) {
@@ -347,5 +347,13 @@ class ProductListProvider with ChangeNotifier {
   void selectedDepositItem(depositItem) {
     _depositItem = depositItem;
     notifyListeners();
+  }
+
+  void setselectedDate(selectedDateString) {
+    _selecteddate = selectedDateString;
+  }
+
+  void resetSelectedDate() {
+    _selecteddate = '';
   }
 }

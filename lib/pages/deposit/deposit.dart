@@ -6,12 +6,12 @@ import 'package:testproject/models/previousRoute.dart';
 import 'package:testproject/main.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/models/postSale.dart';
-import 'package:testproject/pages/outsourced/outsourced.dart';
+
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
-import 'package:testproject/pages/productsPages/searchproduct.dart';
+
 import 'package:intl/intl.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:http/http.dart' as http;
@@ -50,6 +50,8 @@ class _CustomerDepositState extends State<CustomerDeposit> {
     _printerService.initPlatformState();
     _printerService.getPrinterAddress();
     _printerService.connect();
+    context.read<GetProducts>().fetchshopDetails();
+    _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
     /*  _getPrinterAddress();
     sethenders(); */
     fetchshopDetails();
@@ -91,7 +93,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
     print("General Setting Data $_generalSettingDetails ");
   }
 
-  _getPrinterAddress() async {
+  /* _getPrinterAddress() async {
     var headers = await sethenders();
     var url = Uri.https('apoyobackend.softcloudtech.co.ke',
         '/api/v1/store-mac-address/${headers['storeid']}');
@@ -107,22 +109,10 @@ class _CustomerDepositState extends State<CustomerDeposit> {
     });
     return data['ResponseData'];
   }
-
+ */
   @override
   Widget build(BuildContext context) {
-    final productsData = Provider.of<ProductListProvider>(context);
-
-    final salepost = Provider.of<GetProducts>(context);
-    List<SaleRow> depositProductsList = productsData.depositProductsList;
-
-    print('mac addresssssssssssss$macaddress');
-    //final paymentlist = productsData.paymentlist;
-    final totalDepositBill = productsData.totalDepositPrice();
-    final depositBalance = productsData.depositbalance();
-    final totalDepositpayments = productsData.totalDepositPaymentcalc();
-    final List<Payment> depositPaymentList = productsData.depositPaymentList;
-    final printers = productsData.printers;
-
+    final productData = Provider.of<ProductListProvider>(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -186,7 +176,9 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                   child: IconButton(
                     enableFeedback: false,
                     onPressed: () {
-                      productsData.setPreviousRoute("/customerDeposit");
+                      context
+                          .read<ProductListProvider>()
+                          .setPreviousRoute("/customerDeposit");
                       Navigator.pushNamed(context, '/searchproduct',
                           arguments:
                               PreviousRoute(routeString: "/customerDeposit"));
@@ -210,7 +202,9 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                   child: IconButton(
                     enableFeedback: false,
                     onPressed: () {
-                      productsData.setPreviousRoute("/customerDeposit");
+                      context
+                          .read<ProductListProvider>()
+                          .setPreviousRoute("/customerDeposit");
                       Navigator.pushNamed(context, '/paymentsearch');
                     },
                     icon: const Icon(
@@ -253,28 +247,27 @@ class _CustomerDepositState extends State<CustomerDeposit> {
             Form(
               key: _formKey,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(3.0),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: TextFormField(
-                              keyboardType: TextInputType.numberWithOptions(
-                                  decimal: false),
-                              decoration:
-                                  InputDecoration(hintText: 'Cust Phone No'),
-                              onChanged: (val) {
-                                setState(() {
-                                  customerNo = val;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please Enter Customer Phone';
-                                }
+                            child: Consumer<ProductListProvider>(
+                              builder: (context, value, child) {
+                                return TextFormField(
+                                  decoration: InputDecoration(
+                                      hintText: 'Cust Phone No'),
+                                  validator: (val) =>
+                                      val!.isEmpty ? 'Customer Phone' : null,
+                                  onChanged: (val) => setState(() {
+                                    customerNo = val;
+                                  }),
+                                );
                               },
                             ),
                           ),
@@ -327,19 +320,18 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                           ),
                         ]),
                   ),
-                  Container(
-                    height: 30.0,
-                    child: TextFormField(
-                      decoration: InputDecoration(hintText: 'Cust Name'),
-                      onChanged: (val) {
-                        setState(() {
-                          customerName = val;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please Enter Customer Name';
-                        }
+                  Padding(
+                    padding: const EdgeInsets.all(3.0),
+                    child: Consumer<ProductListProvider>(
+                      builder: (context, value, child) {
+                        return TextFormField(
+                          decoration: InputDecoration(hintText: 'Cust Name'),
+                          validator: (val) =>
+                              val!.isEmpty ? 'Customer Name' : null,
+                          onChanged: (val) => setState(() {
+                            customerName = val;
+                          }),
+                        );
                       },
                     ),
                   ),
@@ -352,109 +344,111 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                     style: TextStyle(color: Colors.red),
                   )
                 : Text(''),
-            Expanded(
-              child: ListView.builder(
-                  itemCount: depositProductsList.length,
-                  itemBuilder: (context, index) => index <
-                          depositProductsList.length
-                      ? ListTile(
-                          title: Text(
-                            depositProductsList[index].name.toString(),
-                            style: TextStyle(
-                                fontSize: 16.0, fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Text(
-                                  "Qty: ${(depositProductsList[index].quantity).toString()}",
-                                  style: TextStyle(
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Text(
-                                  "Price: ${depositProductsList[index].sellingPrice.toString()}",
-                                  style: TextStyle(
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ],
-                          ),
-                          trailing: Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: Column(
-                              children: [
-                                Text(formatnum
-                                    .format(
-                                        depositProductsList[index].lineTotal)
-                                    .toString()),
-                                Expanded(
-                                  child: IconButton(
-                                      icon: Icon(
-                                        Icons.cancel,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          productsData
-                                              .removeDepositProduct(index);
-                                        });
-                                      }),
-                                )
-                              ],
+            Expanded(child: Consumer<ProductListProvider>(
+              builder: (context, value, child) {
+                return ListView.builder(
+                    itemCount: value.depositProductsList.length,
+                    itemBuilder: (context, index) => index <
+                            value.depositProductsList.length
+                        ? ListTile(
+                            title: Text(
+                              value.depositProductsList[index].name.toString(),
+                              style: TextStyle(
+                                  fontSize: 16.0, fontWeight: FontWeight.bold),
                             ),
-                          ),
-                        )
-                      : Card(
-                          child: Text("Hello"),
-                        )),
-            ),
-            Container(
-              height: 100.0,
-              child: (depositPaymentList.length == 0)
-                  ? Text("No payment added")
-                  : ListView.builder(
-                      itemCount: depositPaymentList.length,
-                      itemBuilder: (context, index) => index <
-                              depositPaymentList.length
-                          ? Container(
-                              color: Colors.white,
-                              child: ListTile(
-                                title:
-                                    Text('${depositPaymentList[index].name}'),
-                                trailing: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                          "Ksh ${(formatnum.format(depositPaymentList[index].sumApplied)).toString()}"),
-                                      Expanded(
-                                        child: IconButton(
-                                            icon: Icon(
-                                              Icons.cancel,
-                                              color: Colors.red,
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                productsData
-                                                    .removeDepositPayment(
-                                                        index);
-                                              });
-                                            }),
-                                      )
-                                    ],
+                            subtitle: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Text(
+                                    "Qty: ${(value.depositProductsList[index].quantity).toString()}",
+                                    style: TextStyle(
+                                        fontSize: 12.0,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
+                                Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Text(
+                                    "Price: ${value.depositProductsList[index].sellingPrice.toString()}",
+                                    style: TextStyle(
+                                        fontSize: 12.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            trailing: Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: Column(
+                                children: [
+                                  Text(formatnum
+                                      .format(value
+                                          .depositProductsList[index].lineTotal)
+                                      .toString()),
+                                  Expanded(
+                                    child: IconButton(
+                                        icon: Icon(
+                                          Icons.cancel,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          context
+                                              .read<ProductListProvider>()
+                                              .removeDepositProduct(index);
+                                        }),
+                                  )
+                                ],
                               ),
-                            )
-                          : Card(
-                              child: Text("Hello"),
-                            )),
+                            ),
+                          )
+                        : Card(
+                            child: Text("Hello"),
+                          ));
+              },
+            )),
+            Consumer<ProductListProvider>(
+              builder: (context, value, child) {
+                return Container(
+                  height: 100.0,
+                  child: (value.depositPaymentList.length == 0)
+                      ? Text("No payment added")
+                      : ListView.builder(
+                          itemCount: value.depositPaymentList.length,
+                          itemBuilder: (context, index) => index <
+                                  value.depositPaymentList.length
+                              ? Container(
+                                  color: Colors.white,
+                                  child: ListTile(
+                                    title: Text(
+                                        '${value.depositPaymentList[index].name}'),
+                                    trailing: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                              "Ksh ${(formatnum.format(value.depositPaymentList[index].sumApplied)).toString()}"),
+                                          Expanded(
+                                            child: IconButton(
+                                                icon: Icon(
+                                                  Icons.cancel,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  value.removeDepositPayment(
+                                                      index);
+                                                }),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Card(
+                                  child: Text("Hello"),
+                                )),
+                );
+              },
             ),
             Container(
               decoration: new BoxDecoration(
@@ -479,19 +473,28 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          '${formatnum.format(totalDepositBill)}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Consumer<ProductListProvider>(
+                          builder: (context, value, child) {
+                            return Text(
+                              '${formatnum.format(value.totalDepositPrice())}',
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
                   Padding(
                       padding: const EdgeInsets.all(10.0),
-                      child: (totalDepositpayments > totalDepositBill)
+                      child: (context
+                                  .read<ProductListProvider>()
+                                  .totalDepositPaymentcalc() >
+                              context
+                                  .read<ProductListProvider>()
+                                  .totalDepositPrice())
                           ? Text(
                               'Payment can not be more than the Total',
                               style: TextStyle(color: Colors.red),
@@ -506,12 +509,16 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Text(
-                                  '${formatnum.format(totalDepositpayments)}',
-                                  style: TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Consumer<ProductListProvider>(
+                                  builder: (context, value, child) {
+                                    return Text(
+                                      '${formatnum.format(value.totalDepositPaymentcalc())}',
+                                      style: TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             )),
@@ -528,12 +535,16 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          '${formatnum.format(depositBalance)}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Consumer<ProductListProvider>(
+                          builder: (context, value, child) {
+                            return Text(
+                              '${formatnum.format(value.depositbalance())}',
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -548,26 +559,42 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
                               // print('Date  ...............${pickeddate}');
-                              print(' Printer list on device  $printers');
                               print('Mac Address $macaddress');
 
                               cache = await _prefs.readCache('Token', 'StoreId',
                                   'loggedInUserName', 'storename');
-                              print(cache['loggedInUserName']);
 
-                              if (depositBalance > 0) {
-                                setState(() {
-                                  saleType = 'credit';
-                                });
-                              }
-                              if (depositBalance == 0) {
-                                setState(() {
-                                  saleType = 'cash';
-                                });
-                              }
-                              print('payment List $depositPaymentList');
-                              if (totalDepositpayments > totalDepositBill) {
+                              if (context
+                                      .read<ProductListProvider>()
+                                      .totalDepositPaymentcalc() >
+                                  context
+                                      .read<ProductListProvider>()
+                                      .totalDepositPrice()) {
                               } else {
+                                /* final customerNo = context
+                                    .read<ProductListProvider>()
+                                    .customerPhone; */
+                                final depositProductsList = context
+                                    .read<ProductListProvider>()
+                                    .depositProductsList;
+                                final totalDepositpayments = context
+                                    .read<ProductListProvider>()
+                                    .totalDepositPaymentcalc();
+
+                                final totalDepositBill = context
+                                    .read<ProductListProvider>()
+                                    .totalDepositPrice();
+
+                                /* final customerName = context
+                                    .read<ProductListProvider>()
+                                    .customerName; */
+                                final depositBalance = context
+                                    .read<ProductListProvider>()
+                                    .depositbalance();
+
+                                final depositPaymentList = context
+                                    .read<ProductListProvider>()
+                                    .depositPaymentList;
                                 PosSale saleCard = new PosSale(
                                     ref2: customerNo,
                                     customerName: customerName,
@@ -585,20 +612,32 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                 //var printeraddress = salepost.getPrinterAddress();
                                 // print(
                                 //     'Printer address fron fuction $printeraddress');
-                                salepost.postDepositSale(saleCard);
-                                _formKey.currentState?.reset();
+                                context
+                                    .read<GetProducts>()
+                                    .postDepositSale(saleCard);
+                                context
+                                    .read<ProductListProvider>()
+                                    .setDepositListempty();
+                                productData.resetCustmerPhone();
 
-                                productsData.resetCustmerPhone();
-                                productsData.resetCustomerName();
-                                productsData.setDepositListempty();
+                                productData.resetCustomerName();
+                                context
+                                    .read<ProductListProvider>()
+                                    .setDepositListempty();
+                                _formKey.currentState?.reset();
 
                                 // var existingprinter = null;
 
-                                bluetooth.printCustom('Shoe Paradise', 1, 1);
                                 bluetooth.printCustom(
-                                    'All our shoes are good quality', 0, 2);
+                                    "${cache['storename']}", 1, 1);
                                 bluetooth.printCustom(
-                                    'Tel: 0752 730 730', 1, 1);
+                                    '${_generalSettingDetails['NotificationEmail']}',
+                                    0,
+                                    2);
+                                bluetooth.printCustom(
+                                    "Tel: ${_generalSettingDetails['CompanyPhone']}",
+                                    1,
+                                    1);
 
                                 if (saleCard.ref2 != null) {
                                   bluetooth.printCustom(
@@ -643,17 +682,19 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                     '${formatnum.format(saleCard.balance)}', 0);
                                 bluetooth.printNewLine();
                                 bluetooth.printCustom(
-                                    'If you are happy by our services Call 0722 323 131',
+                                    "${_generalSettingDetails['PhysicalAddress']}",
                                     0,
                                     1);
 
                                 bluetooth.paperCut();
                                 /* Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => PrintPage(saleCard))); */
-                                salepost.postDepositSale(saleCard);
-                                productsData.resetCustmerPhone();
-                                productsData.resetCustomerName();
-                                productsData.setDepositListempty();
+                                productData.resetCustmerPhone();
+
+                                productData.resetCustomerName();
+                                context
+                                    .read<ProductListProvider>()
+                                    .setDepositListempty();
 
                                 Navigator.pushNamed(
                                     context, '/customerdeposit');

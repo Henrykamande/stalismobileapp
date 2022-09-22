@@ -26,7 +26,7 @@ class GetProducts with ChangeNotifier {
 
   List<ResponseDatum> result = [];
   bool get isloading => _isloading;
-
+  Map<String, dynamic> get generalSettingsDetails => _generalSettingDetails;
   // Map<String, dynamic> get generalSettingDetails => _generalSettingDetails;
 
   setislodaing() {
@@ -506,5 +506,23 @@ class GetProducts with ChangeNotifier {
     } catch (e) {
       print(e);
     }
+  }
+
+  void fetchshopDetails() async {
+    var headers = await sethenders();
+
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/general-settings');
+    var response = await http.get(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      print('Sucessful POst');
+    }
+    _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
+    notifyListeners();
+    print("General Setting Data $_generalSettingDetails ");
   }
 }

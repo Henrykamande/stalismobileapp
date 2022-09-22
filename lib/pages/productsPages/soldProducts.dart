@@ -94,106 +94,102 @@ class _SoldProductsState extends State<SoldProducts> {
               ),
               Expanded(
                 child: Container(
-                  child: Consumer<GetProducts>(
-                    builder: (context, value, child) {
-                      return FutureBuilder<List<dynamic>>(
-                          future: value.fetchSoldProducts(_searchquery),
-                          builder: (context, snapshot) {
-                            if (snapshot.data == null) {}
-                            if (snapshot.hasData) {
-                              List<dynamic> result = snapshot.data!;
-                              print(result);
-                              print('rSold Products $result');
+                    child: FutureBuilder<List<dynamic>>(
+                        future: context
+                            .read<GetProducts>()
+                            .fetchSoldProducts(_searchquery),
+                        builder: (context, snapshot) {
+                          if (snapshot.data == null) {}
+                          if (snapshot.hasData) {
+                            List<dynamic> result = snapshot.data!;
+                            print(result);
+                            print('rSold Products $result');
 
-                              return (result != [])
-                                  ? ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount: result.length,
-                                      itemBuilder: (context, index) => Card(
-                                        child: ListTile(
-                                          title: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(result[index]['product']
-                                                      ['Name']
-                                                  .toString()),
-                                              (result[index]['ref1'] != null)
-                                                  ? Text(
-                                                      "Serial/Ref: ${result[index]['ref1'].toString()}")
-                                                  : Text(''),
-                                            ],
-                                          ),
-                                          subtitle: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                  "Quantity Sold: ${result[index]['Quantity'].toString()}"),
-                                              Row(
-                                                children: [
-                                                  (result[index]['ref2'] !=
-                                                          null)
-                                                      ? Text(
-                                                          "Customer No: ${result[index]['ref2'].toString()}")
-                                                      : Text(''),
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                          trailing: Column(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                    "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}"),
-                                              ),
-                                              Expanded(
-                                                child: IconButton(
-                                                  onPressed: () {
-                                                    print(
-                                                        'Sold item ------------------------------------------${result[index]['product']}');
+                            return (result != [])
+                                ? ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: result.length,
+                                    itemBuilder: (context, index) => Card(
+                                      child: ListTile(
+                                        title: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(result[index]['product']
+                                                    ['Name']
+                                                .toString()),
+                                            (result[index]['ref1'] != null)
+                                                ? Text(
+                                                    "Serial/Ref: ${result[index]['ref1'].toString()}")
+                                                : Text(''),
+                                          ],
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                "Quantity Sold: ${result[index]['Quantity'].toString()}"),
+                                            Row(
+                                              children: [
+                                                (result[index]['ref2'] != null)
+                                                    ? Text(
+                                                        "Customer No: ${result[index]['ref2'].toString()}")
+                                                    : Text(''),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                        trailing: Column(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                  "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}"),
+                                            ),
+                                            Expanded(
+                                              child: IconButton(
+                                                onPressed: () {
+                                                  print(
+                                                      'Sold item ------------------------------------------${result[index]['product']}');
 
+                                                  bluetooth.printCustom(
+                                                      'Shoe Paradise', 1, 1);
+                                                  bluetooth.printCustom(
+                                                      'All our shoes are good quality',
+                                                      0,
+                                                      2);
+                                                  bluetooth.printCustom(
+                                                      'Tel: 0752 730 730',
+                                                      1,
+                                                      1);
+
+                                                  if (result[index]['ref2'] !=
+                                                      null) {
                                                     bluetooth.printCustom(
-                                                        'Shoe Paradise', 1, 1);
-                                                    bluetooth.printCustom(
-                                                        'All our shoes are good quality',
-                                                        0,
-                                                        2);
-                                                    bluetooth.printCustom(
-                                                        'Tel: 0752 730 730',
-                                                        1,
-                                                        1);
-
-                                                    if (result[index]['ref2'] !=
-                                                        null) {
-                                                      bluetooth.printCustom(
-                                                          'Customer No ${result[index]['ref2']}  Date : ${dateInput.text}',
-                                                          0,
-                                                          0);
-                                                    }
-
-                                                    bluetooth.print3Column(
-                                                        'Qty',
-                                                        'Price',
-                                                        'Total',
-                                                        0);
-
-                                                    bluetooth.printCustom(
-                                                        '${result[index]['product']['Name']}',
+                                                        'Customer No ${result[index]['ref2']}  Date : ${dateInput.text}',
                                                         0,
                                                         0);
-                                                    bluetooth.printCustom(
-                                                        '${result[index]['ref1']}',
-                                                        0,
-                                                        0);
-                                                    bluetooth.print3Column(
-                                                        '${result[index]['Quantity']}',
-                                                        '${result[index]['Price']}',
-                                                        '${result[index]['LineTotal']}',
-                                                        0);
-                                                    /* for (var i = 0;
+                                                  }
+
+                                                  bluetooth.print3Column('Qty',
+                                                      'Price', 'Total', 0);
+
+                                                  bluetooth.printCustom(
+                                                      '${result[index]['product']['Name']}',
+                                                      0,
+                                                      0);
+                                                  bluetooth.printCustom(
+                                                      '${result[index]['ref1']}',
+                                                      0,
+                                                      0);
+                                                  bluetooth.print3Column(
+                                                      '${result[index]['Quantity']}',
+                                                      '${result[index]['Price']}',
+                                                      '${result[index]['LineTotal']}',
+                                                      0);
+                                                  /* for (var i = 0;
                                                       i <
                                                           result[index]
                                                               .rows
@@ -219,69 +215,67 @@ class _SoldProductsState extends State<SoldProducts> {
                                                           0);
                                                     } */
 
-                                                    print(result[index]
-                                                            ['document']
-                                                        ['DocTotal']);
-                                                    bluetooth.print3Column(
-                                                        'Total Bill: ',
-                                                        '${formatnum.format(result[index]['document']['DocTotal']).toString()}',
-                                                        '',
-                                                        0);
+                                                  print(result[index]
+                                                      ['document']['DocTotal']);
+                                                  bluetooth.print3Column(
+                                                      'Total Bill: ',
+                                                      '${formatnum.format(result[index]['document']['DocTotal']).toString()}',
+                                                      '',
+                                                      0);
 
-                                                    bluetooth.print3Column(
-                                                        'Total Paid: ',
-                                                        '${formatnum.format(result[index]['document']['PaidSum']).toString()}',
-                                                        '',
-                                                        0);
+                                                  bluetooth.print3Column(
+                                                      'Total Paid: ',
+                                                      '${formatnum.format(result[index]['document']['PaidSum']).toString()}',
+                                                      '',
+                                                      0);
 
-                                                    bluetooth.print3Column(
-                                                        'Total Bal: ',
-                                                        '${formatnum.format(result[index]['document']['Balance']).toString()}',
-                                                        '',
-                                                        0);
+                                                  bluetooth.print3Column(
+                                                      'Total Bal: ',
+                                                      '${formatnum.format(result[index]['document']['Balance']).toString()}',
+                                                      '',
+                                                      0);
 
-                                                    bluetooth.printCustom(
-                                                        'If you are happy by our services Call 0722 323 131',
-                                                        0,
-                                                        1);
-                                                    bluetooth.printNewLine();
-                                                    bluetooth.printNewLine();
+                                                  bluetooth.printCustom(
+                                                      'If you are happy by our services Call 0722 323 131',
+                                                      0,
+                                                      1);
+                                                  bluetooth.printNewLine();
+                                                  bluetooth.printNewLine();
 
-                                                    bluetooth.paperCut();
-                                                  },
-                                                  icon: Column(
-                                                    children: [
-                                                      Expanded(
-                                                        child: Icon(
-                                                          Icons.print,
-                                                        ),
+                                                  bluetooth.paperCut();
+                                                },
+                                                icon: Column(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Icon(
+                                                        Icons.print,
                                                       ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              )
-                                            ],
-                                          ),
+                                              ),
+                                            )
+                                          ],
                                         ),
                                       ),
-                                    )
-                                  : Text('Select Date');
-                            } else if (snapshot.hasError) {
-                              return Text('${snapshot.error}');
-                            }
+                                    ),
+                                  )
+                                : Text('Select Date');
+                          } else if (snapshot.hasError) {
+                            return Text('${snapshot.error}');
+                          }
 
-                            return Center(
-                              child: Center(child: Text('')),
-                            );
-                          });
-                    },
-                  ),
-                ),
+                          return Center(
+                            child: Center(child: Text('')),
+                          );
+                        })),
               ),
               Consumer<GetProducts>(
                 builder: (context, value, child) {
                   return FutureBuilder<int>(
-                      future: value.getsoldtotals(_searchquery),
+                      future: context
+                          .read<GetProducts>()
+                          .getsoldtotals(_searchquery),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           print(snapshot.hasData);

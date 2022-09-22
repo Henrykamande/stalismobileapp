@@ -56,6 +56,8 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
     _printerService.initPlatformState();
     _printerService.getPrinterAddress();
     _printerService.connect();
+    context.read<GetProducts>().fetchshopDetails();
+    _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
     /*  _getPrinterAddress();
     sethenders(); */
     fetchshopDetails();
@@ -150,7 +152,11 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
           FlatButton(
             onPressed: () async {
               cache = await _prefs.readCache(
-                  'Token', 'StoreId', 'loggedInUserName', 'storename');
+                'Token',
+                'StoreId',
+                'loggedInUserName',
+                'storename',
+              );
               print(cache['Token']);
               await _prefs.removeCache(
                   'Token', 'StoreId', 'loggedInUserName', 'storename');
@@ -673,11 +679,14 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               productsData.setCreditNoteListempty();
                               productsData.setTopUpPaymentListEmpty();
 
-                              bluetooth.printCustom('Shoe Paradise', 1, 1);
                               bluetooth.printCustom(
-                                  'All our shoes are good quality', 0, 2);
+                                  "${cache['storename']}", 1, 1);
                               bluetooth.printCustom(
-                                  '${_generalSettingDetails['Tel: 0752 730 730']}',
+                                  '${_generalSettingDetails['NotificationEmail']}',
+                                  0,
+                                  1);
+                              bluetooth.printCustom(
+                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
                                   1,
                                   1);
 
@@ -750,7 +759,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                   0);
                               bluetooth.printNewLine();
                               bluetooth.printCustom(
-                                  'If you are happy by our services Call 0722 323 131',
+                                  "${_generalSettingDetails['PhysicalAddress']}",
                                   0,
                                   1);
                               bluetooth.printNewLine();

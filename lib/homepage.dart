@@ -46,12 +46,14 @@ class _HomePageState extends State<HomePage> {
 
     setdate = true;
     _getPrinterAddress();
+    context.read<GetProducts>().fetchshopDetails();
+    _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
     /* _printerService.initPlatformState();
     _printerService.getPrinterAddress();
     _printerService.connect();
  */
     // initPlatformState();
-    fetchshopDetails();
+    //fetchshopDetails();
     // sethenders();
   }
 
@@ -474,8 +476,16 @@ class _HomePageState extends State<HomePage> {
                         child: Consumer<ProductListProvider>(
                           builder: (context, value, child) {
                             return TextFormField(
-                                decoration:
-                                    InputDecoration(hintText: 'Customer Phone'),
+                                initialValue: (context
+                                            .read<ProductListProvider>()
+                                            .customerPhone !=
+                                        '')
+                                    ? context
+                                        .read<ProductListProvider>()
+                                        .customerPhone
+                                    : '',
+                                decoration: InputDecoration(
+                                    labelText: 'Customer Phone'),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please Enter Customer Phone';
@@ -483,7 +493,7 @@ class _HomePageState extends State<HomePage> {
                                   return null;
                                 },
                                 onChanged: (val) {
-                                  customerNo = context
+                                  context
                                       .read<ProductListProvider>()
                                       .setCustomerPhone(val);
                                 }
@@ -500,6 +510,14 @@ class _HomePageState extends State<HomePage> {
                           builder: (context, value, child) {
                             return TextFormField(
                               controller: dateInput,
+                              /* initialValue: (context
+                                          .read<ProductListProvider>()
+                                          .selectedDate !=
+                                      '')
+                                  ? context
+                                      .read<ProductListProvider>()
+                                      .selectedDate
+                                  : '', */
 
                               //editing controller of this TextField
                               decoration: InputDecoration(
@@ -531,7 +549,7 @@ class _HomePageState extends State<HomePage> {
                                   setState(() {
                                     dateInput.text = formattedDate;
                                     setdate = false;
-                                    value.setSaleDate(dateInput.text);
+                                    value.setselectedDate(dateInput.text);
                                     //set output date to TextField value.
                                   });
                                 } else {
@@ -831,6 +849,9 @@ class _HomePageState extends State<HomePage> {
                                 final totalpayment = context
                                     .read<ProductListProvider>()
                                     .totalpayment;
+                                final customerNo = context
+                                    .read<ProductListProvider>()
+                                    .customerPhone;
                                 PosSale saleCard = new PosSale(
                                     ref2: customerNo.toString(),
                                     objType: 14,
@@ -846,6 +867,9 @@ class _HomePageState extends State<HomePage> {
                                     userName: cache['loggedInUserName']);
 
                                 context.read<GetProducts>().postsale(saleCard);
+                                context
+                                    .read<ProductListProvider>()
+                                    .resetCustmerPhone();
 
                                 //salepost.setislodaing();
 
@@ -854,11 +878,16 @@ class _HomePageState extends State<HomePage> {
                                 //     'Printer address fron fuction $printeraddress');
 
                                 // var existingprinter = null;
-                                bluetooth.printCustom('Shoe Paradise', 1, 1);
                                 bluetooth.printCustom(
-                                    'All our shoes are good quality', 0, 0);
+                                    "${cache['storename']}", 1, 1);
                                 bluetooth.printCustom(
-                                    'Tel: 0752 730 730', 1, 1);
+                                    '${_generalSettingDetails['NotificationEmail']}',
+                                    0,
+                                    0);
+                                bluetooth.printCustom(
+                                    "Tel: ${_generalSettingDetails['CompanyPhone']}",
+                                    1,
+                                    1);
 
                                 if (saleCard.ref2 != null) {
                                   bluetooth.printCustom(
@@ -903,7 +932,7 @@ class _HomePageState extends State<HomePage> {
                                     0);
                                 bluetooth.printNewLine();
                                 bluetooth.printCustom(
-                                    'If you are happy by our services Call 0722 323 131',
+                                    "${_generalSettingDetails['PhysicalAddress']}",
                                     0,
                                     1);
                                 bluetooth.printNewLine();
@@ -918,9 +947,7 @@ class _HomePageState extends State<HomePage> {
                                 context
                                     .read<ProductListProvider>()
                                     .resetCustmerPhone();
-                                context
-                                    .read<ProductListProvider>()
-                                    .resetCustomerName();
+
                                 Navigator.pushNamed(context, '/start');
                               }
                             }

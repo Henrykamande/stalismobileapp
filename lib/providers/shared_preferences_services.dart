@@ -22,6 +22,7 @@ class PrefService extends ChangeNotifier {
     cache['StoreId'] = _preferences.getString('StoreId');
     cache['loggedInUserName'] = _preferences.getString('loggedInUserName');
     cache['storename'] = _preferences.getString('storename');
+    cache['companypPhone'] = _preferences.getString('companyPhone');
 
     return cache;
   }

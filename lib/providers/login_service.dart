@@ -28,6 +28,7 @@ class UserLogin with ChangeNotifier {
       String token = datamap['ResponseData']['authToken'];
       int storeid = datamap['ResponseData']['store_id'];
       String storename = datamap['ResponseData']['storename'];
+      // String companyPhone = datamap['ResponseData']['CompanyPhone'].toString();
 
       String logineduserName = datamap['ResponseData']['name'];
       _prefs.createCache(token, storeid.toString(), logineduserName, storename);
