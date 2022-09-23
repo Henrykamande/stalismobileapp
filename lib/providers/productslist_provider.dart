@@ -324,9 +324,11 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setCustomerPhone(customerno) {
+  setCustomerPhone(customerno) {
     _customerPhone = customerno;
+
     notifyListeners();
+    return _customerPhone;
   }
 
   void resetCustmerPhone() {

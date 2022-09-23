@@ -235,7 +235,10 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               (result[index]['customerName'] !=
-                                                      null)
+                                                          null) ||
+                                                      (result[index][
+                                                              'customerPhone'] !=
+                                                          null)
                                                   ? Row(
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
@@ -260,12 +263,8 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
                                                               Text(
                                                                 "${result[index]['customerName'].toString()}",
                                                               ),
-                                                              (result[index][
-                                                                          'ref2'] !=
-                                                                      null)
-                                                                  ? Text(
-                                                                      "${result[index]['ref2'].toString()}")
-                                                                  : Text(''),
+                                                              Text(
+                                                                  "${result[index]['ref2'].toString()}")
                                                             ],
                                                           ),
                                                         ),
