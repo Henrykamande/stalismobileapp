@@ -12,7 +12,7 @@ import 'package:testproject/main.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/pages/outsourced/outsourced.dart';
-import 'package:testproject/pages/printerPages/print_page.dart';
+import 'package:testproject/pages/printerPages/general_settings.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
@@ -149,7 +149,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
           ),
         ),
         actions: [
-          FlatButton(
+          TextButton(
             onPressed: () async {
               cache = await _prefs.readCache(
                 'Token',
@@ -635,10 +635,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      RaisedButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        color: Colors.blue,
+                      ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             /* if (dateInput.text == null ||

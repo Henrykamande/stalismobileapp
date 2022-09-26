@@ -241,7 +241,7 @@ class _GasSaleState extends State<GasSale> {
               ),
             ), */
 
-          FlatButton(
+          TextButton(
             onPressed: () async {
               cache = await _prefs.readCache(
                   'Token', 'StoreId', 'loggedInUserName', 'storename');
@@ -694,10 +694,7 @@ class _GasSaleState extends State<GasSale> {
                               )
                             :  */
                     Container(
-                      child: RaisedButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        color: Colors.blue,
+                      child: ElevatedButton(
                         child: Text(
                           'Save',
                           style: TextStyle(color: Colors.white),

@@ -22,6 +22,7 @@ class _AddProductFormState extends State<AddProductForm> {
   int _linenum = 0;
   String? ref1;
   GasSellTypeEnum? _gasSellTypeEnum;
+  var _dropDownValue;
 
   /* double _totalPrice() {Products
     setState(() {
@@ -92,6 +93,7 @@ class _AddProductFormState extends State<AddProductForm> {
                             child: RadioListTile<GasSellTypeEnum>(
                                 value: GasSellTypeEnum.Refill,
                                 groupValue: _gasSellTypeEnum,
+                                title: Text(GasSellTypeEnum.Refill.name),
                                 onChanged: (val) {
                                   setState(() {
                                     _gasSellTypeEnum = val;
@@ -101,7 +103,7 @@ class _AddProductFormState extends State<AddProductForm> {
                             child: RadioListTile<GasSellTypeEnum>(
                                 value: GasSellTypeEnum.Full,
                                 groupValue: _gasSellTypeEnum,
-                                //title: Text(GasSellTypeEnum.Full.),
+                                title: Text(GasSellTypeEnum.Full.name),
                                 onChanged: (val) {
                                   setState(() {
                                     _gasSellTypeEnum = val;
@@ -110,6 +112,52 @@ class _AddProductFormState extends State<AddProductForm> {
                       ],
                     )
                   : Text(''),
+              Consumer<ProductListProvider>(
+                builder: (context, value, child) {
+                  return (value.multiplePriceList == true)
+                      ? Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [Text('Select Price List')],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: DropdownButton(
+                                hint: _dropDownValue == null
+                                    ? Text('Price List')
+                                    : Text(
+                                        _dropDownValue,
+                                        style: TextStyle(color: Colors.blue),
+                                      ),
+                                isExpanded: true,
+                                iconSize: 30.0,
+                                style: TextStyle(color: Colors.blue),
+                                items: ['Retail', 'WholeSale'].map(
+                                  (val) {
+                                    return DropdownMenuItem<String>(
+                                      value: val,
+                                      child: Text(val),
+                                    );
+                                  },
+                                ).toList(),
+                                onChanged: (val) {
+                                  setState(
+                                    () {
+                                      _dropDownValue = val;
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        )
+                      : Text('');
+                },
+              ),
+
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Expanded(
                   child: Padding(
@@ -232,8 +280,7 @@ class _AddProductFormState extends State<AddProductForm> {
 
               Container(
                 width: double.infinity,
-                child: RaisedButton(
-                  color: Colors.pink[400],
+                child: ElevatedButton(
                   child: Text(
                     'Add To List',
                     style: TextStyle(color: Colors.white),

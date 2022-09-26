@@ -11,7 +11,7 @@ import 'package:testproject/pages/creditmemo/retrunedProducts.dart';
 import 'package:testproject/pages/payment/searchaccount.dart';
 import 'package:testproject/pages/productsPages/inventorylist.dart';
 
-import 'package:testproject/pages/printerPages/print_page.dart';
+import 'package:testproject/pages/printerPages/general_settings.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/login_service.dart';
 import 'package:testproject/pages/productsPages/searchproduct.dart';
@@ -55,7 +55,7 @@ class Stalisapp extends StatelessWidget {
             '/soldproducts': (context) => SoldProducts(),
             '/paymentsearch': (context) => PaymentSearch(),
             '/salepayments': (context) => SalePayment(),
-            '/defaultprinter': (context) => PrintPage(),
+            '/generalsettings': (context) => PrintPage(),
             '/customerDeposit': (context) => CustomerDeposit(),
             '/customercreditnote': (context) => CustomerCreditNote(),
             '/returnedproducts': (context) => ReturnProducts(),

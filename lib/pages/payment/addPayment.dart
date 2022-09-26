@@ -139,8 +139,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
 
               Container(
                 width: double.infinity,
-                child: RaisedButton(
-                  color: Colors.pink[400],
+                child: ElevatedButton(
                   child: (previousrouteString == '/customercreditnote')
                       ? Text(
                           'Add Top Up Payment',

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/pages/printerPages/testprint.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 
 class PrintPage extends StatefulWidget {
   State<PrintPage> createState() => _PrintPageState();
@@ -17,6 +18,7 @@ class _PrintPageState extends State<PrintPage> {
   List<BluetoothDevice> _devices = [];
   BluetoothDevice? _selecteddevice;
   bool _connected = false;
+  bool status = false;
   List<BluetoothDevice> _activedevices = [];
   @override
   void initState() {
@@ -160,10 +162,10 @@ class _PrintPageState extends State<PrintPage> {
                     SizedBox(
                       width: 10.0,
                     ),
-                    RaisedButton(
-                      shape: RoundedRectangleBorder(
+                    ElevatedButton(
+                      /* shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
-                      color: _connected ? Colors.green : Colors.red,
+                      color: _connected ? Colors.green : Colors.red, */
                       onPressed: _connected ? _disconnect : _connect,
                       child: Text(
                         _connected ? 'connected' : 'Disconnected',
@@ -192,6 +194,39 @@ class _PrintPageState extends State<PrintPage> {
                     },
                     child: Text('Test Print'),
                   ),
+                ),
+                SizedBox(
+                  height: 10.0,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Multiple Price Lists',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Consumer<ProductListProvider>(
+                      builder: (context, value, child) {
+                        return FlutterSwitch(
+                          width: 80.0,
+                          height: 40.0,
+                          valueFontSize: 15.0,
+                          toggleSize: 45.0,
+                          value: value.multiplePriceList,
+                          borderRadius: 30.0,
+                          padding: 8.0,
+                          showOnOff: true,
+                          onToggle: (val) {
+                            setState(() {
+                              status = val;
+                              value.setMultiplePriceList(val);
+                              print(val);
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),

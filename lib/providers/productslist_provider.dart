@@ -33,6 +33,7 @@ class ProductListProvider with ChangeNotifier {
   List<Payment> _depositPaymentsList = [];
   dynamic _depositItem;
   String _selecteddate = '';
+  bool _multiplePriceList = false;
   List<SaleRow> get productlist {
     return [..._productList];
   }
@@ -79,6 +80,7 @@ class ProductListProvider with ChangeNotifier {
   String get customerPhone => _customerPhone;
   dynamic get selecteddepositItem => _depositItem;
   String get selectedDate => _selecteddate;
+  bool get multiplePriceList => _multiplePriceList;
 //Replacement Product functions
 
   void setCreditNoteListempty() {
@@ -357,5 +359,9 @@ class ProductListProvider with ChangeNotifier {
 
   void resetSelectedDate() {
     _selecteddate = '';
+  }
+
+  void setMultiplePriceList(value) {
+    _multiplePriceList = value;
   }
 }

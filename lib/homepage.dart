@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ), */
 
-          FlatButton(
+          TextButton(
             onPressed: () async {
               cache = await _prefs.readCache(
                   'Token', 'StoreId', 'loggedInUserName', 'storename');
@@ -694,10 +694,10 @@ class _HomePageState extends State<HomePage> {
                               )
                             :  */
                     Container(
-                      child: RaisedButton(
-                        shape: RoundedRectangleBorder(
+                      child: ElevatedButton(
+                        /*  shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
-                        color: Colors.blue,
+                        color: Colors.blue, */
                         child: Text(
                           'Save',
                           style: TextStyle(color: Colors.white),

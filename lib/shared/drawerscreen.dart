@@ -105,12 +105,12 @@ class DrawerScreen extends StatelessWidget {
             },
           ),
           ListTile(
-            title: const Text('SetUp Printer'),
+            title: const Text('General Settings'),
             onTap: () {
               // Update the state of the app
               // ...
               // Then close the drawer
-              Navigator.pushNamed(context, '/defaultprinter');
+              Navigator.pushNamed(context, '/generalsettings');
             },
           ),
           ListTile(

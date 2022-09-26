@@ -147,8 +147,7 @@ class _OutsourcedProducts extends State<OutsourcedProducts> {
               ),
               //Dropdown
 
-              RaisedButton(
-                color: Colors.pink[400],
+              ElevatedButton(
                 child: Text(
                   'Update',
                   style: TextStyle(color: Colors.white),

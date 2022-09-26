@@ -241,7 +241,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
               ),
             ), */
 
-          FlatButton(
+          TextButton(
             onPressed: () async {
               cache = await _prefs.readCache(
                   'Token', 'StoreId', 'loggedInUserName', 'storename');
@@ -726,10 +726,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                               )
                             :  */
                     Container(
-                      child: RaisedButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        color: Colors.blue,
+                      child: ElevatedButton(
                         child: Text(
                           'Save',
                           style: TextStyle(color: Colors.white),
