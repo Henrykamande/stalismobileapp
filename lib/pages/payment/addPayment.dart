@@ -158,15 +158,18 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       Payment newpayment = Payment(
-                          sumApplied: _amountPaid,
-                          oACTSId: accountSelected.oACTSId,
-                          name: accountSelected.name);
+                        sumApplied: _amountPaid,
+                        oACTSId: accountSelected.oACTSId,
+                        name: accountSelected.name,
+                        paymentRemarks: remarks,
+                      );
 
                       if (previousrouteString == '/customercreditnote') {
                         TopupPayment topnewpayment = new TopupPayment(
                           paymentMode: accountSelected.name,
                           SumApplied: _amountPaid,
                           o_a_c_t_s_id: accountSelected.oACTSId,
+                          paymentRemarks: remarks,
                         );
                         productsData.addTopUpPayment(topnewpayment);
                         Navigator.pushNamed(context, '/customercreditnote');

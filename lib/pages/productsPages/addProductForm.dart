@@ -6,6 +6,8 @@ import 'package:testproject/models/postSale.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 
+enum GasSellTypeEnum { Refill, Full }
+
 class AddProductForm extends StatefulWidget {
   @override
   State<AddProductForm> createState() => _AddProductFormState();
@@ -19,6 +21,7 @@ class _AddProductFormState extends State<AddProductForm> {
   String _productName = "";
   int _linenum = 0;
   String? ref1;
+  GasSellTypeEnum? _gasSellTypeEnum;
 
   /* double _totalPrice() {Products
     setState(() {
@@ -82,6 +85,31 @@ class _AddProductFormState extends State<AddProductForm> {
                   ],
                 ),
               ),
+              (previousrouteString == '/gassale')
+                  ? Row(
+                      children: [
+                        Expanded(
+                            child: RadioListTile<GasSellTypeEnum>(
+                                value: GasSellTypeEnum.Refill,
+                                groupValue: _gasSellTypeEnum,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _gasSellTypeEnum = val;
+                                  });
+                                })),
+                        Expanded(
+                            child: RadioListTile<GasSellTypeEnum>(
+                                value: GasSellTypeEnum.Full,
+                                groupValue: _gasSellTypeEnum,
+                                //title: Text(GasSellTypeEnum.Full.),
+                                onChanged: (val) {
+                                  setState(() {
+                                    _gasSellTypeEnum = val;
+                                  });
+                                }))
+                      ],
+                    )
+                  : Text(''),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Expanded(
                   child: Padding(
@@ -166,28 +194,33 @@ class _AddProductFormState extends State<AddProductForm> {
                   ),
                 ), */
               ]),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    hintText: "Enter Ref/Serial No",
-                    labelText: 'Ref/Serial No',
-                    fillColor: Colors.white,
-                    filled: true,
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red, width: 1.0),
+
+              (previousrouteString == '/gassale')
+                  ? Text('')
+                  : Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          hintText: "Enter Ref/Serial No",
+                          labelText: 'Ref/Serial No',
+                          fillColor: Colors.white,
+                          filled: true,
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.red, width: 1.0),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.blue, width: 1.0),
+                          ),
+                        ),
+                        validator: (val) =>
+                            val!.isEmpty ? 'Please Ref/Serial No' : null,
+                        onChanged: (val) => setState(() {
+                          ref1 = val;
+                        }),
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 1.0),
-                    ),
-                  ),
-                  validator: (val) =>
-                      val!.isEmpty ? 'Please Ref/Serial No' : null,
-                  onChanged: (val) => setState(() {
-                    ref1 = val;
-                  }),
-                ),
-              ),
 
               Card(
                 child: Text('Total: ${_total.toString()}'),
@@ -263,6 +296,12 @@ class _AddProductFormState extends State<AddProductForm> {
                         productsData.addProduct(newproduct);
                         Navigator.pushNamed(context, '/start');
                       } else {}
+
+                      if (previousrouteString == '/gassale') {
+                        productsData.addProduct(newproduct);
+
+                        Navigator.pushNamed(context, '/gassale');
+                      }
                     }
                   },
                 ),

@@ -134,21 +134,25 @@ class TopupPayment {
     this.paymentMode,
     this.o_a_c_t_s_id,
     this.SumApplied,
+    this.paymentRemarks,
   });
 
   String? paymentMode;
   int? o_a_c_t_s_id;
   int? SumApplied;
+  String? paymentRemarks;
 
   factory TopupPayment.fromJson(Map<String, dynamic> json) => TopupPayment(
         paymentMode: json["paymentMode"],
         o_a_c_t_s_id: json["o_a_c_t_s_id"],
         SumApplied: json["SumApplied"],
+        paymentRemarks: json['paymentRemarks'],
       );
 
   Map<String, dynamic> toJson() => {
         "paymentMode": paymentMode,
         "o_a_c_t_s_id": o_a_c_t_s_id,
         "SumApplied": SumApplied,
+        "PaymentRemarks": paymentRemarks,
       };
 }

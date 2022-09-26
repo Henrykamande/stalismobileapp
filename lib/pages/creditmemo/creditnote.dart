@@ -700,6 +700,8 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                   0);
                               bluetooth.print3Column(
                                   'Qty', 'Price', 'Total', 0);
+
+                              bluetooth.printCustom('Returned Product', 0, 1);
                               for (var i = 0;
                                   i < creditMemo.returnedProducts.length;
                                   i++) {
@@ -718,7 +720,8 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                       currentElement.ref1!, 0, 0);
                                 }
                               }
-
+                              bluetooth.printCustom(
+                                  'Replacement Product', 0, 1);
                               for (var i = 0;
                                   i < creditMemo.replacedProducts.length;
                                   i++) {

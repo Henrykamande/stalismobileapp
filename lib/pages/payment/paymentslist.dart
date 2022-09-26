@@ -178,6 +178,11 @@ class _SalePaymentState extends State<SalePayment> {
                               child: ListTile(
                                 title: Text(
                                     "${result[index]['oact']['Name'].toString()}"),
+                                subtitle: (result[index]['PaymentRemarks'] !=
+                                        null)
+                                    ? Text(
+                                        "${result[index]['PaymentRemarks'].toString()}")
+                                    : Text(''),
                                 /* subtitle: Text(
                                           "Amount: ${result[index]['SumApplied'].toString()}"), */
                                 trailing: Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:testproject/pages/creditmemo/creditnote.dart';
 import 'package:testproject/pages/deposit/deposit.dart';
 import 'package:testproject/pages/deposit/listdeposits.dart';
+import 'package:testproject/pages/gassale/gasSale.dart';
 import 'package:testproject/pages/login/loginPage.dart';
 import 'package:testproject/pages/payment/paymentslist.dart';
 import 'package:testproject/providers/defaultprinter.dart';
@@ -58,6 +59,7 @@ class Stalisapp extends StatelessWidget {
             '/customerDeposit': (context) => CustomerDeposit(),
             '/customercreditnote': (context) => CustomerCreditNote(),
             '/returnedproducts': (context) => ReturnProducts(),
+            '/gassale': (context) => GasSale(),
             '/customerdepositlist': (context) => CustomerDepositsList(),
           },
           title: title,

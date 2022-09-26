@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DrawerScreen extends StatelessWidget {
   final String storename;
@@ -95,6 +96,15 @@ class DrawerScreen extends StatelessWidget {
             },
           ),
           ListTile(
+            title: const Text('Gas Sale'),
+            onTap: () {
+              // Update the state of the app
+              // ...
+              // Then close the drawer
+              Navigator.pushNamed(context, '/gassale');
+            },
+          ),
+          ListTile(
             title: const Text('SetUp Printer'),
             onTap: () {
               // Update the state of the app
@@ -103,6 +113,13 @@ class DrawerScreen extends StatelessWidget {
               Navigator.pushNamed(context, '/defaultprinter');
             },
           ),
+          ListTile(
+              title: const Text('Web Portal'),
+              onTap:
+                  // Update the state of the app
+                  // ...
+                  // Then close the drawer
+                  () => launch('https://stalis.softcloudtech.co.ke/login')),
         ],
       ),
     ));

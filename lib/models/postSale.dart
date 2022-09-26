@@ -79,26 +79,25 @@ class PosSale {
 }
 
 class Payment {
-  Payment({
-    this.sumApplied,
-    required this.oACTSId,
-    this.name,
-  });
+  Payment(
+      {this.sumApplied, required this.oACTSId, this.name, this.paymentRemarks});
 
   int? sumApplied;
   int oACTSId;
   String? name;
+  String? paymentRemarks;
 
   factory Payment.fromJson(Map<String, dynamic> json) => Payment(
-        sumApplied: json["SumApplied"],
-        oACTSId: json["o_a_c_t_s_id"],
-        name: json['name'],
-      );
+      sumApplied: json["SumApplied"],
+      oACTSId: json["o_a_c_t_s_id"],
+      name: json['name'],
+      paymentRemarks: json['paymentRemarks']);
 
   Map<String, dynamic> toJson() => {
         "SumApplied": sumApplied,
         "o_a_c_t_s_id": oACTSId,
         "name": name,
+        "PaymentRemarks": paymentRemarks,
       };
 }
 
