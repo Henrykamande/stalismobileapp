@@ -38,18 +38,6 @@ class ProductListProvider with ChangeNotifier {
     return [..._productList];
   }
 
-  List<ReplacedProduct> get replacementProductList {
-    return [..._replacementProductList];
-  }
-
-  List<ReturnedProduct> get returnProductList {
-    return [..._returnProductList];
-  }
-
-  List<TopupPayment> get topUpPaymentList {
-    return [..._topUpPaymentList];
-  }
-
   List<Payment> get depositPaymentList {
     return [..._depositPaymentsList];
   }
@@ -68,12 +56,9 @@ class ProductListProvider with ChangeNotifier {
 
   double get totabill => _totalbill;
   double get totaDepositBill => _totalDepositBill;
-  int get totalReturnPayment => _totalReturnPayment;
   double get billBalance => _balance;
   double get depositBalance => _depositBalance;
   double get totalpayment => _totalpayment;
-  double get totalReplacementCost => _totalReplacementCost;
-  double get topUpBalance => _topUpBalance;
   String get previousRoute => _previousRoute;
   String get customerName => _customerName;
   String get dateSetSale => _saleDate;
@@ -81,6 +66,30 @@ class ProductListProvider with ChangeNotifier {
   dynamic get selecteddepositItem => _depositItem;
   String get selectedDate => _selecteddate;
   bool get multiplePriceList => _multiplePriceList;
+
+  /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
+              CREDT MEMO 
+  
+  
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   */
+  List<ReplacedProduct> get replacementProductList {
+    return [..._replacementProductList];
+  }
+
+  List<ReturnedProduct> get returnProductList {
+    return [..._returnProductList];
+  }
+
+  List<TopupPayment> get topUpPaymentList {
+    return [..._topUpPaymentList];
+  }
+
+  int get totalReturnPayment => _totalReturnPayment;
+  double get totalReplacementCost => _totalReplacementCost;
+  double get topUpBalance => _topUpBalance;
+
 //Replacement Product functions
 
   void setCreditNoteListempty() {
@@ -167,6 +176,16 @@ class ProductListProvider with ChangeNotifier {
     return _returnTotalCost;
   }
 
+/* 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+              NEW SALE FUNCTIONS 
+
+
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  */
 //Add products new sale funttions
   void addProduct(item) {
     _productList.add(item);
@@ -216,6 +235,163 @@ class ProductListProvider with ChangeNotifier {
     _productList.removeAt(index);
     notifyListeners();
   }
+
+  void removePayment(index) {
+    _totalpayment = _totalpayment - _payments[index].sumApplied!;
+    _payments.removeAt(index);
+    notifyListeners();
+  }
+
+  void setprodLIstempty() {
+    _productList = [];
+    _payments = [];
+    notifyListeners();
+  }
+
+  void postsalearray(salecard) {
+    GetProducts _salebody = GetProducts();
+    print('PostSalearray Method Sale Card $salecard');
+    _salebody.postsale(salecard);
+  }
+
+  /*  
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+                  GAS SALE FUNCTIONS 
+
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*/
+
+  List<SaleRow> _gasProductList = [];
+  double _totalGasBill = 0;
+  List<Payment> _gasPaymentsList = [];
+  double billGasBalance = 0;
+  double _totalGasPayment = 0;
+  double _gasBalance = 0;
+  double _gasPrice = 0;
+
+  List<SaleRow> get gasProductList => _gasProductList;
+  double get totalGasBill => _totalGasBill;
+
+  List<Payment> get gasPaymentsList {
+    return [..._gasPaymentsList];
+  }
+
+  List<Payment> get gasPaymentList {
+    return [..._gasPaymentsList];
+  }
+
+  double get totalGasPayment => _totalGasPayment;
+  double get gasBalance => _gasBalance;
+  double get selectedGasPrice => _gasPrice;
+
+  setselectededGasPrice(gasPrice) {
+    _gasPrice = gasPrice;
+    notifyListeners();
+    return _gasPrice;
+  }
+
+  resetsetselectededGasPrice() {
+    _gasPrice = 0;
+    notifyListeners();
+    return _gasPrice;
+  }
+
+  void addGasProduct(item) {
+    _gasProductList.add(item);
+    notifyListeners();
+  }
+
+  double totalGasPrice() {
+    _totalGasBill = 0;
+    _gasProductList.forEach((item) {
+      //calculate the total prices
+      _totalGasBill = _totalGasBill + item.lineTotal;
+    });
+    notifyListeners();
+    return _totalGasBill;
+  }
+
+  void addGasPayment(payment) {
+    _gasPaymentsList.add(payment);
+
+    notifyListeners();
+  }
+
+  void removeGasProduct(index) {
+    print('Remove Gas Procud $index');
+    if (billGasBalance == 0) {
+      _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
+      _gasProductList.removeAt(index);
+    }
+    if (_totalGasPayment == 0.0 && billGasBalance == 0.0) {
+      _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
+      _gasProductList.removeAt(index);
+    }
+    if (_totalGasPayment == 0.0 && billGasBalance == 0.0) {
+      _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
+      _gasProductList.removeAt(index);
+    }
+
+    _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
+    _gasProductList.removeAt(index);
+    notifyListeners();
+  }
+
+  void removeGasPayment(index) {
+    _totalGasPayment = _totalGasPayment - _gasPaymentsList[index].sumApplied!;
+    _gasPaymentsList.removeAt(index);
+    notifyListeners();
+  }
+
+  void setGasProdListEmpty() {
+    _gasProductList = [];
+    _gasPaymentsList = [];
+    notifyListeners();
+  }
+
+  void postGasSale(salecard) {
+    GetProducts _salebody = GetProducts();
+    print('PostSalearray Method Sale Card $salecard');
+    _salebody.postsale(salecard);
+  }
+
+  double totalGasPaymentcalc() {
+    _totalGasPayment = 0;
+    _gasPaymentsList.forEach((item) {
+      _totalGasPayment += item.sumApplied!;
+    });
+    notifyListeners();
+    return _totalGasPayment;
+  }
+
+  double balanceGasPayment() {
+    _gasBalance = 0;
+    _gasBalance = _totalGasBill - totalGasPaymentcalc();
+    notifyListeners();
+    return _gasBalance;
+  }
+
+  void resetGasCustmerPhone() {
+    _customerPhone = '';
+    notifyListeners();
+  }
+  /* 
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
+
+
+                    DEPOSIT FUNCTIONS
+
+
+
+
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  */
 
 // Deposit funttions
   double totalDepositPrice() {
@@ -279,12 +455,6 @@ class ProductListProvider with ChangeNotifier {
     return _depositBalance;
   }
 
-  void postsalearray(salecard) {
-    GetProducts _salebody = GetProducts();
-    print('PostSalearray Method Sale Card $salecard');
-    _salebody.postsale(salecard);
-  }
-
   void postDepositarray(salecard) {
     GetProducts _salebody = GetProducts();
     print('PostSalearray Method Sale Card $salecard');
@@ -293,18 +463,15 @@ class ProductListProvider with ChangeNotifier {
     _salebody.postsale(salecard);
   }
 
-  void removePayment(index) {
-    _totalpayment = _totalpayment - _payments[index].sumApplied!;
-    _payments.removeAt(index);
-    notifyListeners();
-  }
+/* 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  void setprodLIstempty() {
-    _productList = [];
-    _payments = [];
-    notifyListeners();
-  }
 
+                    GENERAL SETTINGS FUNCTIONS
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  */
   accountchoice(accountUserSelected) {
     _accountSelected = accountUserSelected;
     notifyListeners();
@@ -334,7 +501,7 @@ class ProductListProvider with ChangeNotifier {
   }
 
   void resetCustmerPhone() {
-    _customerPhone = ' ';
+    _customerPhone = '';
     notifyListeners();
   }
 

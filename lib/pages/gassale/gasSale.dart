@@ -37,7 +37,7 @@ class _GasSaleState extends State<GasSale> {
   bool setdate = true;
   String storename = '';
   List<SaleRow> products = [];
-  String customerNo = "";
+  String _customerNo = "";
   List _devices = [];
   var macaddress = '';
 
@@ -190,6 +190,8 @@ class _GasSaleState extends State<GasSale> {
 
   @override
   Widget build(BuildContext context) {
+    final responseCode = Provider.of<GetProducts>(context).responseCode;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -367,37 +369,30 @@ class _GasSaleState extends State<GasSale> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Consumer<ProductListProvider>(
-                        builder: (context, value, child) {
-                          return TextFormField(
-                              initialValue: (context
-                                          .read<ProductListProvider>()
-                                          .customerPhone !=
-                                      '')
-                                  ? context
-                                      .read<ProductListProvider>()
-                                      .customerPhone
-                                  : '',
-                              decoration:
-                                  InputDecoration(labelText: 'Customer Phone'),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please Enter Customer Phone';
-                                }
-                                return null;
-                              },
-                              onChanged: (val) {
-                                context
-                                    .read<ProductListProvider>()
-                                    .setCustomerPhone(val);
-                              }
+                      child: TextFormField(
+                          /* initialValue: (value.customerPhone != '')
+                                  ? value.customerPhone
+                                  : '', */
+                          decoration:
+                              InputDecoration(labelText: 'Customer Phone'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please Enter Customer Phone';
+                            }
+                            return null;
+                          },
+                          onChanged: (val) {
+                            setState(() {
+                              context
+                                  .read<ProductListProvider>()
+                                  .setCustomerPhone(val);
+                            });
+                          }
 
-                              /* setState(() {
+                          /* setState(() {
                                 customerNo = val;
                               }), */
-                              );
-                        },
-                      ),
+                          ),
                     ),
                     Expanded(
                       child: Consumer<ProductListProvider>(
@@ -476,68 +471,67 @@ class _GasSaleState extends State<GasSale> {
               builder: (context, value, child) {
                 return ListView.builder(
                     shrinkWrap: true,
-                    itemCount: value.productlist.length,
-                    itemBuilder: (context, index) => index <
-                            value.productlist.length
-                        ? Container(
-                            color: Colors.white,
-                            child: ListTile(
-                              title: Text(
-                                value.productlist[index].name.toString(),
-                                style: TextStyle(
-                                    fontSize: 13.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "Qty: ${(value.productlist[index].quantity).toString()}",
-                                      style: TextStyle(
-                                          fontSize: 11.0,
-                                          fontWeight: FontWeight.bold),
+                    itemCount: value.gasProductList.length,
+                    itemBuilder: (context, index) =>
+                        index < value.gasProductList.length
+                            ? Container(
+                                color: Colors.white,
+                                child: ListTile(
+                                  title: Text(
+                                    value.gasProductList[index].name.toString(),
+                                    style: TextStyle(
+                                        fontSize: 13.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "Qty: ${(value.gasProductList[index].quantity).toString()}",
+                                          style: TextStyle(
+                                              fontSize: 11.0,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "Price: ${value.gasProductList[index].sellingPrice.toString()}",
+                                          style: TextStyle(
+                                              fontSize: 11.0,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Column(
+                                      children: [
+                                        Text(formatnum
+                                            .format(value.gasProductList[index]
+                                                .lineTotal)
+                                            .toString()),
+                                        Expanded(
+                                          child: IconButton(
+                                              icon: Icon(
+                                                Icons.cancel,
+                                                color: Colors.red,
+                                              ),
+                                              onPressed: () {
+                                                print(index);
+                                                value.removeGasProduct(index);
+                                              }),
+                                        )
+                                      ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "Price: ${value.productlist[index].sellingPrice.toString()}",
-                                      style: TextStyle(
-                                          fontSize: 11.0,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              trailing: Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Column(
-                                  children: [
-                                    Text(formatnum
-                                        .format(
-                                            value.productlist[index].lineTotal)
-                                        .toString()),
-                                    Expanded(
-                                      child: IconButton(
-                                          icon: Icon(
-                                            Icons.cancel,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              value.removeProduct(index);
-                                            });
-                                          }),
-                                    )
-                                  ],
                                 ),
-                              ),
-                            ),
-                          )
-                        : Card(
-                            child: Text("Hello"),
-                          ));
+                              )
+                            : Card(
+                                child: Text("Hello"),
+                              ));
               },
             ),
           ),
@@ -545,23 +539,23 @@ class _GasSaleState extends State<GasSale> {
             builder: (context, value, child) {
               return Container(
                 height: 80.0,
-                child: (value.paymentlist.length == 0)
+                child: (value.gasPaymentsList.length == 0)
                     ? Text("No payment added")
                     : ListView.builder(
-                        itemCount: value.paymentlist.length,
+                        itemCount: value.gasPaymentsList.length,
                         itemBuilder: (context, index) => index <
-                                value.paymentlist.length
+                                value.gasPaymentsList.length
                             ? Container(
                                 color: Colors.white,
                                 child: ListTile(
-                                  title:
-                                      Text('${value.paymentlist[index].name}'),
+                                  title: Text(
+                                      '${value.gasPaymentsList[index].name}'),
                                   trailing: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Column(
                                       children: [
                                         Text(
-                                            "Ksh ${(formatnum.format(value.paymentlist[index].sumApplied)).toString()}"),
+                                            "Ksh ${(formatnum.format(value.gasPaymentsList[index].sumApplied)).toString()}"),
                                         Expanded(
                                           child: IconButton(
                                               icon: Icon(
@@ -570,7 +564,7 @@ class _GasSaleState extends State<GasSale> {
                                               ),
                                               onPressed: () {
                                                 setState(() {
-                                                  value.removePayment(index);
+                                                  value.removeGasPayment(index);
                                                 });
                                               }),
                                         )
@@ -596,8 +590,8 @@ class _GasSaleState extends State<GasSale> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                (context.read<ProductListProvider>().totalPaymentcalc() >
-                        context.read<ProductListProvider>().totalPrice())
+                (context.read<ProductListProvider>().totalGasPaymentcalc() >
+                        context.read<ProductListProvider>().totalGasPrice())
                     ? Text(
                         'Payment can not be more than the Total',
                         style: TextStyle(color: Colors.red),
@@ -605,7 +599,7 @@ class _GasSaleState extends State<GasSale> {
                     : SizedBox(
                         height: 10.0,
                       ),
-                (context.read<ProductListProvider>().balancepayment() > 0)
+                (context.read<ProductListProvider>().balanceGasPayment() > 0)
                     ? Text(
                         'Balance can not be more than the 0',
                         style: TextStyle(color: Colors.red),
@@ -626,7 +620,7 @@ class _GasSaleState extends State<GasSale> {
                       Consumer<ProductListProvider>(
                         builder: (context, value, child) {
                           return Text(
-                            '${formatnum.format(value.totalPrice())}',
+                            '${formatnum.format(value.totalGasPrice())}',
                             style: TextStyle(
                               fontSize: 13.0,
                               fontWeight: FontWeight.bold,
@@ -652,7 +646,7 @@ class _GasSaleState extends State<GasSale> {
                         Consumer<ProductListProvider>(
                           builder: (context, value, child) {
                             return Text(
-                              '${formatnum.format(value.totalPaymentcalc())}',
+                              '${formatnum.format(value.totalGasPaymentcalc())}',
                               style: TextStyle(
                                 fontSize: 12.0,
                                 fontWeight: FontWeight.bold,
@@ -676,7 +670,7 @@ class _GasSaleState extends State<GasSale> {
                         ),
                       ),
                       Text(
-                        '${formatnum.format(context.read<ProductListProvider>().balancepayment())}',
+                        '${formatnum.format(context.read<ProductListProvider>().balanceGasPayment())}',
                         style: TextStyle(
                           fontSize: 13.0,
                           fontWeight: FontWeight.bold,
@@ -719,44 +713,94 @@ class _GasSaleState extends State<GasSale> {
                                 'loggedInUserName', 'storename');
                             if (context
                                     .read<ProductListProvider>()
-                                    .totalpayment >
-                                context.read<ProductListProvider>().totabill) {
+                                    .totalGasPayment >
+                                context
+                                    .read<ProductListProvider>()
+                                    .totalGasBill) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Payment cannot be more than the total bill',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
                             } else {
-                              final balance = context
+                              final gasBalance = context
                                   .read<ProductListProvider>()
-                                  .balancepayment();
-                              final paymentlist = context
+                                  .balanceGasPayment();
+                              final gasPaymentList = context
                                   .read<ProductListProvider>()
-                                  .paymentlist;
-                              final totalbill =
-                                  context.read<ProductListProvider>().totabill;
-                              final products = context
+                                  .gasPaymentList;
+                              final totalGasBill = context
                                   .read<ProductListProvider>()
-                                  .productlist;
-                              final totalpayment = context
+                                  .totalGasBill;
+                              final gasProductslist = context
                                   .read<ProductListProvider>()
-                                  .totalpayment;
-                              final customerNo = context
+                                  .gasProductList;
+                              final totalGasPayment = context
+                                  .read<ProductListProvider>()
+                                  .totalGasPayment;
+                              final _customerNo = context
                                   .read<ProductListProvider>()
                                   .customerPhone;
                               PosSale saleCard = new PosSale(
-                                  ref2: customerNo.toString(),
+                                  ref2: _customerNo.toString(),
                                   objType: 14,
                                   docNum: 2,
                                   discSum: 0,
-                                  payments: paymentlist,
-                                  docTotal: totalbill,
-                                  balance: balance,
+                                  payments: gasPaymentList,
+                                  docTotal: totalGasBill,
+                                  balance: gasBalance,
                                   docDate: DateFormat('yyyy-MM-dd')
                                       .parse(dateInput.text),
-                                  rows: products,
-                                  totalPaid: totalpayment,
+                                  rows: gasProductslist,
+                                  totalPaid: totalGasPayment,
                                   userName: cache['loggedInUserName']);
 
                               context.read<GetProducts>().postsale(saleCard);
-                              context
-                                  .read<ProductListProvider>()
-                                  .resetCustmerPhone();
+                              if (responseCode == 1200) {
+                                context
+                                    .read<ProductListProvider>()
+                                    .setGasProdListEmpty();
+                                context
+                                    .read<ProductListProvider>()
+                                    .resetCustmerPhone();
+
+                                _formKey.currentState?.reset();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(20),
+                                          )),
+                                      height: 90.0,
+                                      child: Center(
+                                        child: Text(
+                                          'Sale Posted Succesfully .',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                );
+                              } else {}
 
                               //salepost.setislodaing();
 
@@ -770,7 +814,7 @@ class _GasSaleState extends State<GasSale> {
                               bluetooth.printCustom(
                                   '${_generalSettingDetails['NotificationEmail']}',
                                   0,
-                                  0);
+                                  1);
                               bluetooth.printCustom(
                                   "Tel: ${_generalSettingDetails['CompanyPhone']}",
                                   1,
@@ -778,24 +822,23 @@ class _GasSaleState extends State<GasSale> {
 
                               if (saleCard.ref2 != null) {
                                 bluetooth.printCustom(
-                                    'Customer No ${saleCard.ref2!}  Date : ${dateInput.text}',
-                                    0,
-                                    0);
+                                    'Customer No ${saleCard.ref2!}', 0, 1);
                               }
-
-                              bluetooth.print3Column(
-                                  'Qty', 'Price', 'Total', 0);
+                              bluetooth.printCustom(
+                                  ' Date : ${dateInput.text}', 0, 1);
+                              bluetooth.printNewLine();
+                              bluetooth.printCustom(
+                                  'Qty              Price    Total', 1, 0);
 
                               for (var i = 0; i < saleCard.rows.length; i++) {
                                 //
                                 var currentElement = saleCard.rows[i];
                                 bluetooth.printCustom(
                                     '${currentElement.name}', 0, 0);
-                                bluetooth.print3Column(
-                                    '${currentElement.quantity}',
-                                    '${formatnum.format(currentElement.sellingPrice)}',
-                                    '${formatnum.format(currentElement.lineTotal)}',
-                                    1);
+                                bluetooth.printCustom(
+                                    "${currentElement.quantity}                      ${currentElement.sellingPrice}      ${currentElement.lineTotal}",
+                                    0,
+                                    0);
                                 if (currentElement.ref1 != null) {
                                   bluetooth.printCustom(
                                       'Ref: ${currentElement.ref1!}', 0, 0);
@@ -823,6 +866,9 @@ class _GasSaleState extends State<GasSale> {
                                   0,
                                   1);
                               bluetooth.printNewLine();
+                              bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
+
+                              bluetooth.printNewLine();
                               bluetooth.printNewLine();
 
                               bluetooth.paperCut();
@@ -830,12 +876,16 @@ class _GasSaleState extends State<GasSale> {
                                   builder: (context) => PrintPage(saleCard)));*/
                               context
                                   .read<ProductListProvider>()
-                                  .setprodLIstempty();
+                                  .setGasProdListEmpty();
                               context
                                   .read<ProductListProvider>()
-                                  .resetCustmerPhone();
+                                  .resetGasCustmerPhone();
 
-                              Navigator.pushNamed(context, '/start');
+                              context
+                                  .read<ProductListProvider>()
+                                  .resetsetselectededGasPrice();
+
+                              Navigator.pushNamed(context, '/gassale');
                             }
                           }
                         },

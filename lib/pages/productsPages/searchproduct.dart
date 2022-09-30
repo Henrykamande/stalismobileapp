@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:testproject/pages/payment/addPayment.dart';
+import 'package:testproject/pages/productsPages/addGasProductForm.dart';
 import 'package:testproject/pages/productsPages/addProductForm.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
@@ -34,8 +35,23 @@ class _SearchProductState extends State<SearchProduct> {
         });
   }
 
+  void _gasaddProductPane() {
+    showModalBottomSheet(
+        isScrollControlled: true,
+        context: context,
+        builder: (context) {
+          return Container(
+            padding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+            child: AddGasProductForm(),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final productsData = Provider.of<ProductListProvider>(context);
+    final previousrouteString = productsData.previousRoute;
+
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
       appBar: AppBar(
@@ -110,6 +126,7 @@ class _SearchProductState extends State<SearchProduct> {
                                           //print(result[index]['name']);
 
                                           print(result[index]);
+
                                           /*   final selectedproduct = new ResponseDatum(
                                           name: result[index]['Name'],
                                           sellingPrice: double.parse(
@@ -123,7 +140,12 @@ class _SearchProductState extends State<SearchProduct> {
                                           value.selectedProduct(result[index]);
                                           //_showaddProductPane();
                                           //print(selectedproduct.id);\
-                                          _showaddProductPane();
+                                          if (previousrouteString ==
+                                              '/gassale') {
+                                            _gasaddProductPane();
+                                          } else {
+                                            _showaddProductPane();
+                                          }
                                         },
                                         child: ListTile(
                                           title: Text(result[index]['Name']),

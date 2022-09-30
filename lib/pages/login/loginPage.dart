@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
-import 'package:provider/provider.dart';
-import 'package:provider/provider.dart';
-import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/login_service.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 
@@ -99,6 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                               .loginApi(passwordController.text.toString(),
                                   emailController.text.toString())
                               .then((response) {
+                            print('Login Response $response');
                             if (response) {
                               print('THis is login response $response');
                               Navigator.pushNamedAndRemoveUntil(
@@ -107,10 +105,24 @@ class _LoginPageState extends State<LoginPage> {
                             if (response == false) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                    content: Text(
-                                        'Check your Emial and Password and try again !')),
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Check your Email and Password',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
                               );
-                              SnackBar(content: Text('Invalid credentials'));
                             }
                           });
                           /* Navigator.push(

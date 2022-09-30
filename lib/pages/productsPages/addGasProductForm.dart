@@ -9,12 +9,12 @@ import 'package:testproject/providers/productslist_provider.dart';
 
 enum GasSellTypeEnum { Refill, Full }
 
-class AddProductForm extends StatefulWidget {
+class AddGasProductForm extends StatefulWidget {
   @override
-  State<AddProductForm> createState() => _AddProductFormState();
+  State<AddGasProductForm> createState() => _AddGasProductFormState();
 }
 
-class _AddProductFormState extends State<AddProductForm> {
+class _AddGasProductFormState extends State<AddGasProductForm> {
   final _formKey = GlobalKey<FormState>();
   int _qtyToSell = 1;
   double _sellingPrice = 0;
@@ -24,6 +24,7 @@ class _AddProductFormState extends State<AddProductForm> {
   List priceListsNames = [];
   String? ref1;
   Map<String, dynamic> _generalSettingDetails = {};
+
   GasSellTypeEnum? _gasSellTypeEnum;
   int gasPrice = 0;
   String gasType = '';
@@ -72,7 +73,11 @@ class _AddProductFormState extends State<AddProductForm> {
             ),
             child: Column(
               children: [
-                (previousrouteString == '/customercreditnotereplacement')
+                Text("Add Gas",
+                    style: TextStyle(
+                      fontSize: 20.0,
+                    )),
+                /*  (previousrouteString == '/customercreditnotereplacement')
                     ? Text(
                         'Add Replacement',
                         style: TextStyle(fontSize: 20.0),
@@ -85,7 +90,7 @@ class _AddProductFormState extends State<AddProductForm> {
                         : Text(
                             'Add Product',
                             style: TextStyle(fontSize: 20.0),
-                          ),
+                          ), */
 
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -115,34 +120,33 @@ class _AddProductFormState extends State<AddProductForm> {
                     ],
                   ),
                 ),
-                (previousrouteString == '/gassale')
-                    ? Row(
-                        children: [
-                          Expanded(
-                              child: RadioListTile<GasSellTypeEnum>(
-                                  value: GasSellTypeEnum.Refill,
-                                  groupValue: _gasSellTypeEnum,
-                                  title: Text(GasSellTypeEnum.Refill.name),
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _gasSellTypeEnum = val;
-                                      gasType = val!.name;
-                                    });
-                                  })),
-                          Expanded(
-                              child: RadioListTile<GasSellTypeEnum>(
-                                  value: GasSellTypeEnum.Full,
-                                  groupValue: _gasSellTypeEnum,
-                                  title: Text(GasSellTypeEnum.Full.name),
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _gasSellTypeEnum = val;
-                                      gasType = val!.name;
-                                    });
-                                  }))
-                        ],
-                      )
-                    : Text(''),
+                Row(
+                  children: [
+                    Expanded(
+                        child: RadioListTile<GasSellTypeEnum>(
+                            value: GasSellTypeEnum.Refill,
+                            groupValue: _gasSellTypeEnum,
+                            title: Text(GasSellTypeEnum.Refill.name),
+                            onChanged: (val) {
+                              setState(() {
+                                _gasSellTypeEnum = val;
+                                gasType = val!.name;
+                              });
+                            })),
+                    Expanded(
+                        child: RadioListTile<GasSellTypeEnum>(
+                            value: GasSellTypeEnum.Full,
+                            groupValue: _gasSellTypeEnum,
+                            title: Text(GasSellTypeEnum.Full.name),
+                            onChanged: (val) {
+                              setState(() {
+                                _gasSellTypeEnum = val;
+                                gasType = val!.name;
+                              });
+                            }))
+                  ],
+                ),
+
                 Consumer<ProductListProvider>(
                   builder: (context, value, child) {
                     return (_generalSettingDetails['enablePriceList'] == 'Y')
@@ -204,13 +208,10 @@ class _AddProductFormState extends State<AddProductForm> {
                                                   gasPrice.toDouble());
                                           print(_sellingPrice); */
                                         } else {
-                                          gasPrice =
-                                              existingItm4['SellingPrice'];
-                                          setState(() {
-                                            _sellingPrice = gasPrice.toDouble();
-                                          });
-                                          value.setselectededGasPrice(
-                                              gasPrice.toDouble());
+                                          final _sellingPrice =
+                                              value.setselectededGasPrice(
+                                                  gasPrice.toDouble());
+                                          print(_sellingPrice);
                                         }
 
                                         setState(
@@ -283,7 +284,6 @@ class _AddProductFormState extends State<AddProductForm> {
                                                 initialValue: value
                                                     .selectedGasPrice
                                                     .toString(),
-
                                                 /*  (value
                                                         .selectedGasPrice
                                                         .toInt())
@@ -321,10 +321,12 @@ class _AddProductFormState extends State<AddProductForm> {
                                                   setState(() {
                                                     _sellingPrice =
                                                         double.parse((val));
-
-                                                    _total = _qtyToSell *
-                                                        _sellingPrice;
                                                   });
+
+                                                  /*  value.setselectededGasPrice(
+                                                      _sellingPrice);
+                                                  _total = _qtyToSell *
+                                                      value.selectedGasPrice; */
                                                 },
                                               )),
                                         );
@@ -502,44 +504,9 @@ class _AddProductFormState extends State<AddProductForm> {
                           taxRate: null,
                           taxAmount: null,
                         );
-                        if (previousrouteString ==
-                            '/customercreditnotereplacement') {
-                          ReplacedProduct newproduct = new ReplacedProduct(
-                            productName: _selectedProd['Name'],
-                            productId: _selectedProd['id'],
-                            quantity: _qtyToSell,
-                            sellingPrice: _sellingPrice,
-                            lineTotal: _total,
-                            ref1: ref1,
-                          );
-                          productsData.addReplacementProduct(newproduct);
-                          Navigator.pushNamed(context, '/customercreditnote');
-                        } else {}
-                        if (previousrouteString == '/customercreditnote') {
-                          ReturnedProduct newproduct = new ReturnedProduct(
-                            productName: _selectedProd['Name'],
-                            productId: _selectedProd['id'],
-                            quantity: _qtyToSell,
-                            sellingPrice: _sellingPrice,
-                            lineTotal: _total,
-                            ref1: ref1,
-                          );
-                          productsData.addReturnProduct(newproduct);
-                          Navigator.pushNamed(context, '/customercreditnote');
-                        } else {}
-                        if (previousrouteString == '/customerDeposit') {
-                          productsData.addDepositProduct(newproduct);
-                          Navigator.pushNamed(context, '/customerDeposit');
-                        } else {}
-                        if (previousrouteString == '/start') {
-                          productsData.addProduct(newproduct);
-                          Navigator.pushNamed(context, '/start');
-                        } else {}
 
-                        if (previousrouteString == '/gassale') {
-                          productsData.addGasProduct(newproduct);
-                          Navigator.pushNamed(context, '/gassale');
-                        }
+                        productsData.addGasProduct(newproduct);
+                        Navigator.pushNamed(context, '/gassale');
                       }
                     },
                   ),

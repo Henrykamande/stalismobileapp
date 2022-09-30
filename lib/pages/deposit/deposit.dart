@@ -49,6 +49,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
 
     setdate = true;
     _getPrinterAddress();
+    sethenders();
     context.read<GetProducts>().fetchshopDetails();
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
     /* _printerService.initPlatformState();
@@ -823,6 +824,16 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                               //     'Printer address fron fuction $printeraddress');
 
                               // var existingprinter = null;
+                              /* bluetooth.printCustom(
+                                  "${cache['storename']}", 1, 1);
+                             /*  bluetooth.printCustom(
+                                  '${_generalSettingDetails['NotificationEmail']}',
+                                  0,
+                                  1); */
+                              bluetooth.printCustom(
+                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
+                                  1,
+                                  1); */
                               bluetooth.printCustom(
                                   "${cache['storename']}", 1, 1);
                               bluetooth.printCustom(
@@ -836,24 +847,22 @@ class _CustomerDepositState extends State<CustomerDeposit> {
 
                               if (saleCard.ref2 != null) {
                                 bluetooth.printCustom(
-                                    'Customer No ${saleCard.ref2!}  Date : ${dateInput.text}',
-                                    0,
-                                    0);
+                                    'Customer No ${saleCard.ref2!}', 0, 1);
                               }
-
-                              bluetooth.print3Column(
-                                  'Qty', 'Price', 'Total', 0);
-
+                              bluetooth.printCustom(
+                                  ' Date : ${dateInput.text}', 0, 1);
+                              bluetooth.printNewLine();
+                              bluetooth.printCustom(
+                                  'Qty              Price    Total', 1, 0);
                               for (var i = 0; i < saleCard.rows.length; i++) {
                                 //
                                 var currentElement = saleCard.rows[i];
                                 bluetooth.printCustom(
                                     '${currentElement.name}', 0, 0);
-                                bluetooth.print3Column(
-                                    '${currentElement.quantity}',
-                                    '${formatnum.format(currentElement.sellingPrice)}',
-                                    '${formatnum.format(currentElement.lineTotal)}',
-                                    1);
+                                bluetooth.printCustom(
+                                    "${currentElement.quantity}                      ${currentElement.sellingPrice}      ${currentElement.lineTotal}",
+                                    0,
+                                    0);
                                 if (currentElement.ref1 != null) {
                                   bluetooth.printCustom(
                                       'Ref: ${currentElement.ref1!}', 0, 0);
@@ -876,10 +885,18 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                   0,
                                   0);
                               bluetooth.printNewLine();
+                              /* bluetooth.printCustom(
+                                  "${_generalSettingDetails['PhysicalAddress']}",
+                                  0,
+                                  1); */
+
                               bluetooth.printCustom(
                                   "${_generalSettingDetails['PhysicalAddress']}",
                                   0,
                                   1);
+                              bluetooth.printNewLine();
+                              bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
+
                               bluetooth.printNewLine();
                               bluetooth.printNewLine();
 

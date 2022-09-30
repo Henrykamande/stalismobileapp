@@ -19,6 +19,7 @@ class GetProducts with ChangeNotifier {
   var selectedprod;
   var accountsdata;
   var response;
+  var _responseCode;
   int totalpayments = 0;
   bool _isloading = false;
   Map<String, dynamic> _generalSettingDetails = {};
@@ -27,6 +28,8 @@ class GetProducts with ChangeNotifier {
   List<ResponseDatum> result = [];
   bool get isloading => _isloading;
   Map<String, dynamic> get generalSettingsDetails => _generalSettingDetails;
+
+  get responseCode => _responseCode;
   // Map<String, dynamic> get generalSettingDetails => _generalSettingDetails;
 
   setislodaing() {
@@ -186,9 +189,18 @@ class GetProducts with ChangeNotifier {
         headers: headers,
         body: queryparamaeters,
       );
-
-      if (response.statusCode == 200) {
-      } else {}
+      data = await jsonDecode(response.body);
+      print(
+          'rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr $data');
+      if (data['ResultCode'] == 1200) {
+        _responseCode = data['ResultCode'];
+        print('Response Code ${data['ResultCode']}');
+        return _responseCode;
+      } else {
+        _responseCode = data['ResultCode'];
+        notifyListeners();
+        return _responseCode;
+      }
     } catch (e) {
       print(e);
     }
@@ -525,4 +537,30 @@ class GetProducts with ChangeNotifier {
     notifyListeners();
     print("General Setting Data $_generalSettingDetails ");
   }
+
+  /*  Future<Map<String, dynamic>> fetchPriceList(productId, o_p_l_n_s_id) async {
+    var headers = await sethenders();
+    final queryparameters = jsonEncode({
+      "product_id": productId,
+      "store_id": headers['storeid'],
+      "o_p_l_n_s_id": o_p_l_n_s_id
+    });
+    var url = Uri.https(
+        'apoyobackend.softcloudtech.co.ke', '/api/v1/price-calculation');
+    response = await http.post(
+      url,
+      headers: headers,
+      body: queryparameters,
+    );
+    if (response.statusCode == 200) {
+      print('Customer Fetch ');
+    }
+    data = await jsonDecode(response.body)['ResponseData'];
+    print('fecth PriceList $data');
+    notifyListeners();
+    return data;
+  }
+}
+ */
+
 }

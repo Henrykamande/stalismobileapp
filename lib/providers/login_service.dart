@@ -23,8 +23,9 @@ class UserLogin with ChangeNotifier {
             new Map<Todo, dynamic>.from(json.decode(response.body));
         print(data.length); */
       Map<String, dynamic> datamap = await json.decode(response.body);
-      /*   print(
-          'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  dddddddddd userdat$datamap'); */
+      if (datamap['ResultCode'] == 1500) {}
+      print(
+          'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  dddddddddd userdat  $datamap');
       String token = datamap['ResponseData']['authToken'];
       int storeid = datamap['ResponseData']['store_id'];
       String storename = datamap['ResponseData']['storename'];

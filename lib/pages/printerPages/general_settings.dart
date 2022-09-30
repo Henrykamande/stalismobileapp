@@ -23,8 +23,6 @@ class _PrintPageState extends State<PrintPage> {
   @override
   void initState() {
     super.initState();
-
-    initPlatformState();
   }
 
   Future<void> initPlatformState() async {
@@ -168,7 +166,7 @@ class _PrintPageState extends State<PrintPage> {
                       color: _connected ? Colors.green : Colors.red, */
                       onPressed: _connected ? _disconnect : _connect,
                       child: Text(
-                        _connected ? 'connected' : 'Disconnected',
+                        _connected ? 'connected' : 'connect',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -197,36 +195,6 @@ class _PrintPageState extends State<PrintPage> {
                 ),
                 SizedBox(
                   height: 10.0,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Multiple Price Lists',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Consumer<ProductListProvider>(
-                      builder: (context, value, child) {
-                        return FlutterSwitch(
-                          width: 80.0,
-                          height: 40.0,
-                          valueFontSize: 15.0,
-                          toggleSize: 45.0,
-                          value: value.multiplePriceList,
-                          borderRadius: 30.0,
-                          padding: 8.0,
-                          showOnOff: true,
-                          onToggle: (val) {
-                            setState(() {
-                              status = val;
-                              value.setMultiplePriceList(val);
-                              print(val);
-                            });
-                          },
-                        );
-                      },
-                    ),
-                  ],
                 ),
               ],
             ),

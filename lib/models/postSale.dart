@@ -103,6 +103,7 @@ class Payment {
 
 class SaleRow {
   SaleRow({
+    this.gasType,
     this.name,
     this.ref1,
     required this.oPLNSId,
@@ -119,6 +120,7 @@ class SaleRow {
     this.taxAmount,
   });
   String? name;
+  String? gasType;
   int oPLNSId;
   double sellingPrice;
   int quantity;
@@ -134,21 +136,21 @@ class SaleRow {
   String? ref1;
 
   factory SaleRow.fromJson(Map<String, dynamic> json) => SaleRow(
-        name: json["name"],
-        oPLNSId: json["o_p_l_n_s_id"],
-        sellingPrice: json["SellingPrice"],
-        quantity: json["Quantity"],
-        uomEntry: json["UomEntry"],
-        oITMSId: json["o_i_t_m_s_id"],
-        discSum: json["DiscSum"],
-        lineTotal: json["LineTotal"],
-        lineNum: json["LineNum"],
-        commission: json["Commission"],
-        taxId: json["TaxId"],
-        taxRate: json["TaxRate"],
-        taxAmount: json["TaxAmount"],
-        ref1: json["ref1"],
-      );
+      name: json["name"],
+      oPLNSId: json["o_p_l_n_s_id"],
+      sellingPrice: json["SellingPrice"],
+      quantity: json["Quantity"],
+      uomEntry: json["UomEntry"],
+      oITMSId: json["o_i_t_m_s_id"],
+      discSum: json["DiscSum"],
+      lineTotal: json["LineTotal"],
+      lineNum: json["LineNum"],
+      commission: json["Commission"],
+      taxId: json["TaxId"],
+      taxRate: json["TaxRate"],
+      taxAmount: json["TaxAmount"],
+      ref1: json["ref1"],
+      gasType: json['gasType']);
 
   Map<String, dynamic> toJson() => {
         "name": name,
@@ -165,5 +167,6 @@ class SaleRow {
         "TaxRate": taxRate,
         "TaxAmount": taxAmount,
         "ref1": ref1,
+        "gasType": gasType,
       };
 }

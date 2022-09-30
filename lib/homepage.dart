@@ -190,6 +190,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final responseCode = Provider.of<GetProducts>(context).responseCode;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -607,7 +608,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                 (context.read<ProductListProvider>().balancepayment() > 0)
                     ? Text(
-                        'Balance can not be more than the 0',
+                        'Balance can not be more than 0',
                         style: TextStyle(color: Colors.red),
                       )
                     : Text(''),
@@ -724,6 +725,74 @@ class _HomePageState extends State<HomePage> {
                                     .read<ProductListProvider>()
                                     .totalpayment >
                                 context.read<ProductListProvider>().totabill) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Payment cannot be more than the total bill',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
+                            } else if (context
+                                    .read<ProductListProvider>()
+                                    .totalpayment <=
+                                0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Add Payment',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
+                            } else if (context
+                                    .read<ProductListProvider>()
+                                    .totalpayment <
+                                context.read<ProductListProvider>().totabill) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Payment canot be less than the total bill.',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
                             } else {
                               final balance = context
                                   .read<ProductListProvider>()
@@ -757,6 +826,32 @@ class _HomePageState extends State<HomePage> {
                                   userName: cache['loggedInUserName']);
 
                               context.read<GetProducts>().postsale(saleCard);
+
+                              if (responseCode == 1200) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(20),
+                                          )),
+                                      height: 90.0,
+                                      child: Center(
+                                        child: Text(
+                                          'Sale Posted Succesfully .',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                );
+                              } else {}
+
+                              print(
+                                  "############################################################################ $responseCode");
                               context
                                   .read<ProductListProvider>()
                                   .resetCustmerPhone();
@@ -768,37 +863,57 @@ class _HomePageState extends State<HomePage> {
                               //     'Printer address fron fuction $printeraddress');
 
                               // var existingprinter = null;
-                              bluetooth.printCustom(
-                                  "${cache['storename']}", 1, 1);
+                              /* bluetooth.printCustom(
+                                  "${cache['storename']}", 1, 1); */
+
+                              bluetooth.printCustom("$storename", 1, 1);
+
                               bluetooth.printCustom(
                                   '${_generalSettingDetails['NotificationEmail']}',
                                   0,
-                                  0);
+                                  1);
+                              /*   bluetooth.printCustom(
+                                  'Mobile Phones & Accessories', 0, 1); */
+
                               bluetooth.printCustom(
                                   "Tel: ${_generalSettingDetails['CompanyPhone']}",
                                   1,
                                   1);
+                              /* bluetooth.printCustom("Tel: 0732 568 835", 1, 1); */
 
                               if (saleCard.ref2 != null) {
+                                bluetooth.printCustom(
+                                    'Customer No ${saleCard.ref2!}', 0, 1);
+                              }
+                              bluetooth.printCustom(
+                                  ' Date : ${dateInput.text}', 0, 1);
+
+                              /*  if (saleCard.ref2 != null) {
                                 bluetooth.printCustom(
                                     'Customer No ${saleCard.ref2!}  Date : ${dateInput.text}',
                                     0,
                                     0);
-                              }
+                              } */
 
-                              bluetooth.print3Column(
-                                  'Qty', 'Price', 'Total', 0);
+                              bluetooth.printCustom(
+                                  'Qty              Price    Total', 1, 0);
 
                               for (var i = 0; i < saleCard.rows.length; i++) {
                                 //
                                 var currentElement = saleCard.rows[i];
                                 bluetooth.printCustom(
                                     '${currentElement.name}', 0, 0);
-                                bluetooth.print3Column(
+
+                                bluetooth.printCustom(
+                                    "${currentElement.quantity}                      ${currentElement.sellingPrice}        ${currentElement.lineTotal}",
+                                    0,
+                                    0);
+                                /*  bluetooth.print4Column(
                                     '${currentElement.quantity}',
-                                    '${formatnum.format(currentElement.sellingPrice)}',
-                                    '${formatnum.format(currentElement.lineTotal)}',
-                                    1);
+                                    '   ${currentElement.sellingPrice}',
+                                    '   ${currentElement.lineTotal}',
+                                    '',
+                                    0); */
                                 if (currentElement.ref1 != null) {
                                   bluetooth.printCustom(
                                       'Ref: ${currentElement.ref1!}', 0, 0);
@@ -821,10 +936,17 @@ class _HomePageState extends State<HomePage> {
                                   0,
                                   0);
                               bluetooth.printNewLine();
-                              bluetooth.printCustom(
+                              /*   bluetooth.printCustom(
                                   "${_generalSettingDetails['PhysicalAddress']}",
                                   0,
+                                  1); */
+
+                              bluetooth.printCustom(
+                                  '${_generalSettingDetails['PhysicalAddress']}',
+                                  0,
                                   1);
+                              bluetooth.printNewLine();
+                              bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
                               bluetooth.printNewLine();
                               bluetooth.printNewLine();
 

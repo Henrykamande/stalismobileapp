@@ -676,7 +676,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               productsData.setCreditNoteListempty();
                               productsData.setTopUpPaymentListEmpty();
 
-                              bluetooth.printCustom(
+                              /*   bluetooth.printCustom(
                                   "${cache['storename']}", 1, 1);
                               bluetooth.printCustom(
                                   '${_generalSettingDetails['NotificationEmail']}',
@@ -685,18 +685,30 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               bluetooth.printCustom(
                                   "Tel: ${_generalSettingDetails['CompanyPhone']}",
                                   1,
-                                  1);
-
+                                  1); */
                               bluetooth.printCustom(
-                                  'Customer Name: ${creditMemo.customerName} Date : ${dateInput.text}',
+                                  "${cache['storename']}", 1, 1);
+                              bluetooth.printCustom(
+                                  '${_generalSettingDetails['NotificationEmail']}',
+                                  0,
+                                  0);
+                              bluetooth.printCustom(
+                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
+                                  1,
+                                  1);
+                              bluetooth.printCustom(
+                                  'Customer Name: ${creditMemo.customerName}',
                                   0,
                                   1);
                               bluetooth.printCustom(
                                   'Customer No: ${creditMemo.customerPhone}',
                                   0,
-                                  0);
-                              bluetooth.print3Column(
-                                  'Qty', 'Price', 'Total', 0);
+                                  1);
+                              bluetooth.printCustom(
+                                  ' Date : ${dateInput.text}', 0, 1);
+                              bluetooth.printNewLine();
+                              bluetooth.printCustom(
+                                  'Qty              Price    Total', 1, 0);
 
                               bluetooth.printCustom('Returned Product', 0, 1);
                               for (var i = 0;
@@ -737,31 +749,32 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                                       currentElement.ref1!, 0, 0);
                                 }
                               }
-                              bluetooth.print4Column(
-                                  'Total Return Cost:',
-                                  '',
-                                  'Ksh ${formatnum.format(totalReturncost)}',
-                                  '',
+                              bluetooth.printCustom(
+                                  'Total Return Cost: Ksh ${formatnum.format(totalReturncost)}',
+                                  0,
                                   0);
 
-                              bluetooth.print4Column(
-                                  'Total Replacement: ',
-                                  '',
-                                  'Ksh ${formatnum.format(totalReplacementCost)}',
-                                  '',
+                              bluetooth.printCustom(
+                                  'Total Replacement: Ksh ${formatnum.format(totalReplacementCost)}',
+                                  0,
                                   0);
 
-                              bluetooth.print4Column(
-                                  'Top Up Payment :',
-                                  '',
-                                  'Ksh ${formatnum.format(totalTopUpPayment)}',
-                                  '',
+                              bluetooth.printCustom(
+                                  'Top Up Payment : Ksh ${formatnum.format(totalTopUpPayment)}',
+                                  0,
                                   0);
                               bluetooth.printNewLine();
+                              /*       bluetooth.printCustom(
+                                  "${_generalSettingDetails['PhysicalAddress']}",
+                                  0,
+                                  1); */
                               bluetooth.printCustom(
                                   "${_generalSettingDetails['PhysicalAddress']}",
                                   0,
                                   1);
+                              bluetooth.printNewLine();
+                              bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
+
                               bluetooth.printNewLine();
                               bluetooth.printNewLine();
 
