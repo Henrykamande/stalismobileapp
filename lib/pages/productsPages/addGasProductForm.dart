@@ -24,7 +24,7 @@ class _AddGasProductFormState extends State<AddGasProductForm> {
   List priceListsNames = [];
   String? ref1;
   Map<String, dynamic> _generalSettingDetails = {};
-
+  String errorMessage = "";
   GasSellTypeEnum? _gasSellTypeEnum;
   int gasPrice = 0;
   String gasType = '';
@@ -120,6 +120,12 @@ class _AddGasProductFormState extends State<AddGasProductForm> {
                     ],
                   ),
                 ),
+                (gasType == '')
+                    ? Text(
+                        errorMessage,
+                        style: TextStyle(color: Colors.red),
+                      )
+                    : Text(''),
                 Row(
                   children: [
                     Expanded(
@@ -480,33 +486,39 @@ class _AddGasProductFormState extends State<AddGasProductForm> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        if (productsData.productlist.length == 0) {
+                        if (gasType == '') {
                           setState(() {
-                            _linenum = 0;
+                            errorMessage = "Kindly Select Gas Type ";
                           });
                         } else {
-                          _linenum = productsData.productlist.length + 1;
+                          if (productsData.productlist.length == 0) {
+                            setState(() {
+                              _linenum = 0;
+                            });
+                          } else {
+                            _linenum = productsData.productlist.length + 1;
+                          }
+
+                          final newproduct = new SaleRow(
+                            gasType: gasType,
+                            ref1: ref1,
+                            name: _selectedProd['Name'],
+                            oPLNSId: _selectedProd['o_p_l_n_s_id'],
+                            sellingPrice: _sellingPrice,
+                            quantity: _qtyToSell,
+                            oITMSId: _selectedProd['id'],
+                            lineTotal: _total,
+                            lineNum: _linenum,
+                            discSum: 0,
+                            commission: 0,
+                            taxId: null,
+                            taxRate: null,
+                            taxAmount: null,
+                          );
+
+                          productsData.addGasProduct(newproduct);
+                          Navigator.pushNamed(context, '/gassale');
                         }
-
-                        final newproduct = new SaleRow(
-                          gasType: gasType,
-                          ref1: ref1,
-                          name: _selectedProd['Name'],
-                          oPLNSId: _selectedProd['o_p_l_n_s_id'],
-                          sellingPrice: _sellingPrice,
-                          quantity: _qtyToSell,
-                          oITMSId: _selectedProd['id'],
-                          lineTotal: _total,
-                          lineNum: _linenum,
-                          discSum: 0,
-                          commission: 0,
-                          taxId: null,
-                          taxRate: null,
-                          taxAmount: null,
-                        );
-
-                        productsData.addGasProduct(newproduct);
-                        Navigator.pushNamed(context, '/gassale');
                       }
                     },
                   ),

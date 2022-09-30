@@ -711,7 +711,56 @@ class _GasSaleState extends State<GasSale> {
 
                             cache = await _prefs.readCache('Token', 'StoreId',
                                 'loggedInUserName', 'storename');
+
                             if (context
+                                .read<ProductListProvider>()
+                                .gasProductList
+                                .isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Add products to sell',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
+                            } else if (context
+                                .read<ProductListProvider>()
+                                .gasPaymentList
+                                .isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Add Payment',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
+                            } else if (context
                                     .read<ProductListProvider>()
                                     .totalGasPayment >
                                 context
@@ -729,6 +778,56 @@ class _GasSaleState extends State<GasSale> {
                                     child: Center(
                                       child: Text(
                                         'Payment cannot be more than the total bill',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
+                            } else if (context
+                                    .read<ProductListProvider>()
+                                    .totalGasPayment <=
+                                0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Add Payment',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
+                            } else if (context
+                                    .read<ProductListProvider>()
+                                    .totalGasPayment <
+                                context
+                                    .read<ProductListProvider>()
+                                    .totalGasBill) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Payment canot be less than the total bill.',
                                         style: TextStyle(color: Colors.white),
                                       ),
                                     ),
