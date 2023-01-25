@@ -16,10 +16,13 @@ import 'package:testproject/providers/shared_preferences_services.dart';
 
 class GetProducts with ChangeNotifier {
   var data;
+  var _soldProducts;
   var selectedprod;
   var accountsdata;
   var response;
   var _responseCode;
+  var _totalsale;
+  var _allStores;
   int totalpayments = 0;
   bool _isloading = false;
   Map<String, dynamic> _generalSettingDetails = {};
@@ -30,6 +33,9 @@ class GetProducts with ChangeNotifier {
   Map<String, dynamic> get generalSettingsDetails => _generalSettingDetails;
 
   get responseCode => _responseCode;
+  get soldProducrs => _soldProducts;
+  get dailytotalsales => _totalsale;
+  get allStores => _allStores;
   // Map<String, dynamic> get generalSettingDetails => _generalSettingDetails;
 
   setislodaing() {
@@ -242,7 +248,7 @@ class GetProducts with ChangeNotifier {
       print('Customer Fetch ');
     }
     data = await jsonDecode(response.body)['ResponseData']['AllProductsSold'];
-
+    _soldProducts = data;
     notifyListeners();
     return data;
   }
@@ -392,6 +398,8 @@ class GetProducts with ChangeNotifier {
     if (response.statusCode == 200) {}
     var data =
         await jsonDecode(response.body)['ResponseData']['TotalSalesAmount'];
+
+    _totalsale = data;
 
     return data;
   }
@@ -563,4 +571,19 @@ class GetProducts with ChangeNotifier {
 }
  */
 
+  void fetchallStores() async {
+    var headers = await sethenders();
+
+    var url =
+        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/all/stores');
+    var response = await http.get(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {}
+    _allStores = jsonDecode(response.body)['ResponseData'];
+    notifyListeners();
+    print("all stores $_allStores");
+  }
 }

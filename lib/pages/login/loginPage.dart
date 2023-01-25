@@ -72,11 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           labelText: 'Password',
                           suffixIcon: IconButton(
-                            onPressed: () => {
-                              setState(() {
-                                _passwordVisible = !_passwordVisible;
-                              })
-                            },
+                            onPressed: _tooglePassowrdVisiable,
                             icon: Icon(Icons.security),
                           )),
                       obscureText: _passwordVisible,
@@ -146,6 +142,12 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  void _tooglePassowrdVisiable() {
+    setState(() {
+      _passwordVisible = !_passwordVisible;
+    });
   }
 
   void validateEmail(String val) {

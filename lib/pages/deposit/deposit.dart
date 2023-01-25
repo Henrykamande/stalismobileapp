@@ -740,11 +740,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                   content: Text("Hi, I am a snack bar!"),
                                 ));
                               } */
-                          print(
-                              'showdetails -------------------------------------------------${_generalSettingDetails['CompanyName']}_');
-                          AlertDialog(
-                            content: Text('success'),
-                          );
+
                           if (_formKey.currentState!.validate()) {
                             // print('Date  ...............${pickeddate}');
 
@@ -752,8 +748,30 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                 'loggedInUserName', 'storename');
                             if (context
                                     .read<ProductListProvider>()
-                                    .totalpayment >
-                                context.read<ProductListProvider>().totabill) {
+                                    .totalDepositPayment >
+                                context
+                                    .read<ProductListProvider>()
+                                    .totaDepositBill) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(20),
+                                        )),
+                                    height: 90.0,
+                                    child: Center(
+                                      child: Text(
+                                        'Deposit made should not be more than total bill.',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              );
                             } else {
                               final depositBalance = context
                                   .read<ProductListProvider>()

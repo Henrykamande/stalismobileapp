@@ -29,6 +29,7 @@ class UserLogin with ChangeNotifier {
       String token = datamap['ResponseData']['authToken'];
       int storeid = datamap['ResponseData']['store_id'];
       String storename = datamap['ResponseData']['storename'];
+      print(storename);
       // String companyPhone = datamap['ResponseData']['CompanyPhone'].toString();
 
       String logineduserName = datamap['ResponseData']['name'];

@@ -691,7 +691,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               bluetooth.printCustom(
                                   '${_generalSettingDetails['NotificationEmail']}',
                                   0,
-                                  0);
+                                  1);
                               bluetooth.printCustom(
                                   "Tel: ${_generalSettingDetails['CompanyPhone']}",
                                   1,

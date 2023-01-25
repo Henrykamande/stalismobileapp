@@ -26,8 +26,9 @@ class _SoldProductsState extends State<SoldProducts> {
   TextEditingController dateInput = TextEditingController();
   String _searchquery = DateTime.now().toString();
   String storename = '';
-
+  var solddata;
   var cache;
+  var totalSales;
 
   @override
   void initState() {
@@ -36,6 +37,10 @@ class _SoldProductsState extends State<SoldProducts> {
 
     super.initState();
     sethenders();
+  }
+
+  setSalesData(results) {
+    totalSales = results;
   }
 
   sethenders() async {
@@ -130,6 +135,7 @@ class _SoldProductsState extends State<SoldProducts> {
                           if (snapshot.data == null) {}
                           if (snapshot.hasData) {
                             List<dynamic> result = snapshot.data!;
+                            //setSalesData(result);
                             print(result);
                             print('rSold Products $result');
 
@@ -335,6 +341,64 @@ class _SoldProductsState extends State<SoldProducts> {
                       });
                 },
               ),
+              Consumer<GetProducts>(
+                builder: (context, value, child) {
+                  return ElevatedButton(
+                      onPressed: () {
+                        bluetooth.printCustom('${cache['storename']}', 1, 1);
+                        bluetooth.printCustom(
+                            '${_generalSettingDetails['NotificationEmail']}',
+                            0,
+                            1);
+                        bluetooth.printCustom(
+                            'Tel: ${_generalSettingDetails['CompanyPhone']}',
+                            1,
+                            1);
+
+                        bluetooth.printCustom('Date : ${dateInput.text}', 0, 1);
+
+                        bluetooth.printCustom(
+                            'Qty              Price    Total', 1, 0);
+                        for (int index = 0;
+                            index < value.soldProducrs.length;
+                            index++) {
+                          bluetooth.printCustom(
+                              '${value.soldProducrs[index]['product']['Name']}',
+                              0,
+                              0);
+
+                          bluetooth.printCustom(
+                              "${value.soldProducrs[index]['Quantity']}                      ${value.soldProducrs[index]['Price']}        ${value.soldProducrs[index]['LineTotal']}",
+                              0,
+                              0);
+                          bluetooth.printCustom(
+                              '${value.soldProducrs[index]['ref1']}', 0, 0);
+
+                          bluetooth.printNewLine();
+                        }
+                        bluetooth.printCustom(
+                            'Total Sales:  ${formatnum.format(value.dailytotalsales).toString()}',
+                            0,
+                            0);
+
+                        bluetooth.printNewLine();
+
+                        bluetooth.printCustom(
+                            '${_generalSettingDetails['PhysicalAddress']}',
+                            0,
+                            1);
+
+                        bluetooth.printNewLine();
+                        bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
+                        bluetooth.printNewLine();
+                        bluetooth.printNewLine();
+                        bluetooth.printNewLine();
+
+                        bluetooth.paperCut();
+                      },
+                      child: Text("Print Sold Products"));
+                },
+              )
             ],
           ),
         ),

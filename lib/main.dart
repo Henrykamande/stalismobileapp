@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:testproject/pages/Transfer/transfer_screen.dart';
 import 'package:testproject/pages/creditmemo/creditnote.dart';
 import 'package:testproject/pages/deposit/deposit.dart';
 import 'package:testproject/pages/deposit/listdeposits.dart';
@@ -61,6 +62,7 @@ class Stalisapp extends StatelessWidget {
             '/returnedproducts': (context) => ReturnProducts(),
             '/gassale': (context) => GasSale(),
             '/customerdepositlist': (context) => CustomerDepositsList(),
+            '/transfer': (context) => TransferScreen(),
           },
           title: title,
           home: Scaffold(

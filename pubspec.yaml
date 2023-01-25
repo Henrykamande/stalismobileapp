@@ -46,6 +46,7 @@ dependencies:
   url_launcher: ^6.0.10
   lite_rolling_switch: ^1.0.0
   flutter_switch: ^0.3.2
+  dropdown_search: ^5.0.3
  
  
 

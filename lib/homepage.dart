@@ -13,7 +13,6 @@ import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:intl/intl.dart';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:testproject/shared/drawerscreen.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -25,7 +24,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   PrefService _prefs = PrefService();
-  PrinterService _printerService = PrinterService();
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   final _formKey = GlobalKey<FormState>();
   var cache;
@@ -429,9 +427,10 @@ class _HomePageState extends State<HomePage> {
                                   currentDate: DateTime.now(),
                                   //firstDate: DateTime(1900)
                                   firstDate: DateTime.now()
-                                      .subtract(Duration(hours: 0)),
+                                      .subtract(Duration(hours: 72)),
                                   //DateTime.now() - not to allow to choose before today.
-                                  lastDate: DateTime(2100));
+                                  lastDate:
+                                      DateTime.now().add(Duration(hours: 0)));
 
                               if (pickedDate != null) {
                                 print(
@@ -440,23 +439,22 @@ class _HomePageState extends State<HomePage> {
                                     DateFormat('yyyy-MM-dd').format(pickedDate);
                                 print(
                                     formattedDate); //formatted date output using intl package =>  2021-03-16
-                                setState(() {
-                                  dateInput.text = formattedDate;
-                                  setdate = false;
-                                  value.setselectedDate(dateInput.text);
-                                  //set output date to TextField value.
-                                });
+
+                                dateInput.text = formattedDate;
+                                setdate = false;
+                                value.setselectedDate(dateInput.text);
+                                //set output date to TextField value.
+
                               } else {
                                 DateTime now = new DateTime.now();
                                 DateTime date =
                                     new DateTime(now.year, now.month, now.day);
                                 String formattedDate =
                                     DateFormat('yyyy-MM-dd').format(date);
-                                setState(() {
-                                  dateInput.text = formattedDate;
-                                  value.setSaleDate(dateInput
-                                      .text); //set output date to TextField value.
-                                });
+                                dateInput.text = formattedDate;
+                                value.setSaleDate(dateInput
+                                    .text); //set output date to TextField value.
+
                               }
                             },
                             validator: (value) {
@@ -526,9 +524,7 @@ class _HomePageState extends State<HomePage> {
                                             color: Colors.red,
                                           ),
                                           onPressed: () {
-                                            setState(() {
-                                              value.removeProduct(index);
-                                            });
+                                            value.removeProduct(index);
                                           }),
                                     )
                                   ],
@@ -570,9 +566,7 @@ class _HomePageState extends State<HomePage> {
                                                 color: Colors.red,
                                               ),
                                               onPressed: () {
-                                                setState(() {
-                                                  value.removePayment(index);
-                                                });
+                                                value.removePayment(index);
                                               }),
                                         )
                                       ],
@@ -828,6 +822,101 @@ class _HomePageState extends State<HomePage> {
                               context.read<GetProducts>().postsale(saleCard);
 
                               if (responseCode == 1200) {
+                                bluetooth.printCustom("$storename", 1, 1);
+
+                                bluetooth.printCustom(
+                                    '${_generalSettingDetails['NotificationEmail']}',
+                                    0,
+                                    1);
+                                /*   bluetooth.printCustom(
+                                  'Mobile Phones & Accessories', 0, 1); */
+
+                                bluetooth.printCustom(
+                                    "Tel: ${_generalSettingDetails['CompanyPhone']}",
+                                    1,
+                                    1);
+                                /* bluetooth.printCustom("Tel: 0732 568 835", 1, 1); */
+
+                                if (saleCard.ref2 != null) {
+                                  bluetooth.printCustom(
+                                      'Customer No ${saleCard.ref2!}', 0, 1);
+                                }
+                                bluetooth.printCustom(
+                                    ' Date : ${dateInput.text}', 0, 1);
+
+                                /*  if (saleCard.ref2 != null) {
+                                bluetooth.printCustom(
+                                    'Customer No ${saleCard.ref2!}  Date : ${dateInput.text}',
+                                    0,
+                                    0);
+                              } */
+
+                                bluetooth.printCustom(
+                                    'Qty              Price    Total', 1, 0);
+
+                                for (var i = 0; i < saleCard.rows.length; i++) {
+                                  //
+                                  var currentElement = saleCard.rows[i];
+                                  bluetooth.printCustom(
+                                      '${currentElement.name}', 0, 0);
+
+                                  bluetooth.printCustom(
+                                      "${currentElement.quantity}                      ${currentElement.sellingPrice}        ${currentElement.lineTotal}",
+                                      0,
+                                      0);
+                                  /*  bluetooth.print4Column(
+                                    '${currentElement.quantity}',
+                                    '   ${currentElement.sellingPrice}',
+                                    '   ${currentElement.lineTotal}',
+                                    '',
+                                    0); */
+                                  if (currentElement.ref1 != null) {
+                                    bluetooth.printCustom(
+                                        'Ref: ${currentElement.ref1!}', 0, 0);
+                                  }
+                                }
+
+                                bluetooth.printNewLine();
+                                bluetooth.printCustom(
+                                    'Total Bill:  ${formatnum.format(saleCard.docTotal)}',
+                                    0,
+                                    0);
+
+                                bluetooth.printCustom(
+                                    'Total Paid:  ${formatnum.format(saleCard.totalPaid)}',
+                                    0,
+                                    0);
+
+                                bluetooth.printCustom(
+                                    'Total Bal:  ${formatnum.format(saleCard.balance)}',
+                                    0,
+                                    0);
+                                bluetooth.printNewLine();
+                                /*   bluetooth.printCustom(
+                                  "${_generalSettingDetails['PhysicalAddress']}",
+                                  0,
+                                  1); */
+
+                                bluetooth.printCustom(
+                                    '${_generalSettingDetails['PhysicalAddress']}',
+                                    0,
+                                    1);
+                                bluetooth.printNewLine();
+                                bluetooth.printQRcode(
+                                    "Stalis Pos", 200, 200, 1);
+                                bluetooth.printNewLine();
+                                bluetooth.printNewLine();
+
+                                bluetooth.paperCut();
+                                /*Navigator.of(context).push(MaterialPageRoute( 
+                                  builder: (context) => PrintPage(saleCard)));*/
+                                context
+                                    .read<ProductListProvider>()
+                                    .setprodLIstempty();
+                                context
+                                    .read<ProductListProvider>()
+                                    .resetCustmerPhone();
+
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Container(
@@ -848,7 +937,28 @@ class _HomePageState extends State<HomePage> {
                                     backgroundColor: Colors.transparent,
                                   ),
                                 );
-                              } else {}
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(20),
+                                          )),
+                                      height: 90.0,
+                                      child: Center(
+                                        child: Text(
+                                          'Sale Not Succesfully  Repost the Sale.',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                );
+                              }
 
                               print(
                                   "############################################################################ $responseCode");
@@ -865,100 +975,6 @@ class _HomePageState extends State<HomePage> {
                               // var existingprinter = null;
                               /* bluetooth.printCustom(
                                   "${cache['storename']}", 1, 1); */
-
-                              bluetooth.printCustom("$storename", 1, 1);
-
-                              bluetooth.printCustom(
-                                  '${_generalSettingDetails['NotificationEmail']}',
-                                  0,
-                                  1);
-                              /*   bluetooth.printCustom(
-                                  'Mobile Phones & Accessories', 0, 1); */
-
-                              bluetooth.printCustom(
-                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
-                                  1,
-                                  1);
-                              /* bluetooth.printCustom("Tel: 0732 568 835", 1, 1); */
-
-                              if (saleCard.ref2 != null) {
-                                bluetooth.printCustom(
-                                    'Customer No ${saleCard.ref2!}', 0, 1);
-                              }
-                              bluetooth.printCustom(
-                                  ' Date : ${dateInput.text}', 0, 1);
-
-                              /*  if (saleCard.ref2 != null) {
-                                bluetooth.printCustom(
-                                    'Customer No ${saleCard.ref2!}  Date : ${dateInput.text}',
-                                    0,
-                                    0);
-                              } */
-
-                              bluetooth.printCustom(
-                                  'Qty              Price    Total', 1, 0);
-
-                              for (var i = 0; i < saleCard.rows.length; i++) {
-                                //
-                                var currentElement = saleCard.rows[i];
-                                bluetooth.printCustom(
-                                    '${currentElement.name}', 0, 0);
-
-                                bluetooth.printCustom(
-                                    "${currentElement.quantity}                      ${currentElement.sellingPrice}        ${currentElement.lineTotal}",
-                                    0,
-                                    0);
-                                /*  bluetooth.print4Column(
-                                    '${currentElement.quantity}',
-                                    '   ${currentElement.sellingPrice}',
-                                    '   ${currentElement.lineTotal}',
-                                    '',
-                                    0); */
-                                if (currentElement.ref1 != null) {
-                                  bluetooth.printCustom(
-                                      'Ref: ${currentElement.ref1!}', 0, 0);
-                                }
-                              }
-
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  'Total Bill:  ${formatnum.format(saleCard.docTotal)}',
-                                  0,
-                                  0);
-
-                              bluetooth.printCustom(
-                                  'Total Paid:  ${formatnum.format(saleCard.totalPaid)}',
-                                  0,
-                                  0);
-
-                              bluetooth.printCustom(
-                                  'Total Bal:  ${formatnum.format(saleCard.balance)}',
-                                  0,
-                                  0);
-                              bluetooth.printNewLine();
-                              /*   bluetooth.printCustom(
-                                  "${_generalSettingDetails['PhysicalAddress']}",
-                                  0,
-                                  1); */
-
-                              bluetooth.printCustom(
-                                  '${_generalSettingDetails['PhysicalAddress']}',
-                                  0,
-                                  1);
-                              bluetooth.printNewLine();
-                              bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
-                              bluetooth.printNewLine();
-                              bluetooth.printNewLine();
-
-                              bluetooth.paperCut();
-                              /*Navigator.of(context).push(MaterialPageRoute( 
-                                  builder: (context) => PrintPage(saleCard)));*/
-                              context
-                                  .read<ProductListProvider>()
-                                  .setprodLIstempty();
-                              context
-                                  .read<ProductListProvider>()
-                                  .resetCustmerPhone();
 
                               Navigator.pushNamed(context, '/start');
                             }

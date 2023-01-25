@@ -90,7 +90,9 @@ class _SearchProductState extends State<SearchProduct> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
-                  onChanged: (val) => setState(() => _searchquery = val),
+                  onChanged: (val) {
+                    _setSearchterm(val);
+                  },
                   decoration: InputDecoration(
                     fillColor: Colors.grey[400],
                     border: OutlineInputBorder(
@@ -174,5 +176,11 @@ class _SearchProductState extends State<SearchProduct> {
         ),
       ),
     );
+  }
+
+  void _setSearchterm(val) {
+    setState(() {
+      _searchquery = val;
+    });
   }
 }

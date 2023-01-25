@@ -423,9 +423,10 @@ class _GasSaleState extends State<GasSale> {
                                   currentDate: DateTime.now(),
                                   //firstDate: DateTime(1900)
                                   firstDate: DateTime.now()
-                                      .subtract(Duration(hours: 0)),
+                                      .subtract(Duration(hours: 72)),
                                   //DateTime.now() - not to allow to choose before today.
-                                  lastDate: DateTime(2100));
+                                  lastDate:
+                                      DateTime.now().add(Duration(hours: 0)));
 
                               if (pickedDate != null) {
                                 print(
@@ -466,74 +467,82 @@ class _GasSaleState extends State<GasSale> {
                   ]),
             ),
           ),
-          Expanded(
-            child: Consumer<ProductListProvider>(
-              builder: (context, value, child) {
-                return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: value.gasProductList.length,
-                    itemBuilder: (context, index) =>
-                        index < value.gasProductList.length
-                            ? Container(
-                                color: Colors.white,
-                                child: ListTile(
-                                  title: Text(
-                                    value.gasProductList[index].name.toString(),
-                                    style: TextStyle(
-                                        fontSize: 13.0,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Row(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          "Qty: ${(value.gasProductList[index].quantity).toString()}",
-                                          style: TextStyle(
-                                              fontSize: 11.0,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          "Price: ${value.gasProductList[index].sellingPrice.toString()}",
-                                          style: TextStyle(
-                                              fontSize: 11.0,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: Column(
+          Consumer<ProductListProvider>(
+            builder: (context, value, child) {
+              return Expanded(
+                child: Container(
+                  child: (value.gasProductList.length == 0)
+                      ? Text("No Product added")
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: value.gasProductList.length,
+                          itemBuilder: (context, index) => index <
+                                  value.gasProductList.length
+                              ? Container(
+                                  color: Colors.white,
+                                  child: ListTile(
+                                    title: Text(
+                                      value.gasProductList[index].name
+                                          .toString(),
+                                      style: TextStyle(
+                                          fontSize: 13.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Row(
                                       children: [
-                                        Text(formatnum
-                                            .format(value.gasProductList[index]
-                                                .lineTotal)
-                                            .toString()),
-                                        Expanded(
-                                          child: IconButton(
-                                              icon: Icon(
-                                                Icons.cancel,
-                                                color: Colors.red,
-                                              ),
-                                              onPressed: () {
-                                                print(index);
-                                                value.removeGasProduct(index);
-                                              }),
-                                        )
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "Qty: ${(value.gasProductList[index].quantity).toString()}",
+                                            style: TextStyle(
+                                                fontSize: 11.0,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "Price: ${value.gasProductList[index].sellingPrice.toString()}",
+                                            style: TextStyle(
+                                                fontSize: 11.0,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
                                       ],
                                     ),
+                                    trailing: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Column(
+                                        children: [
+                                          Text(formatnum
+                                              .format(value
+                                                  .gasProductList[index]
+                                                  .lineTotal)
+                                              .toString()),
+                                          Expanded(
+                                            child: IconButton(
+                                                icon: Icon(
+                                                  Icons.cancel,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    value.removeGasProduct(
+                                                        index);
+                                                  });
+                                                }),
+                                          )
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              )
-                            : Card(
-                                child: Text("Hello"),
-                              ));
-              },
-            ),
+                                )
+                              : Card(
+                                  child: Text("Hello"),
+                                )),
+                ),
+              );
+            },
           ),
           Consumer<ProductListProvider>(
             builder: (context, value, child) {
@@ -879,6 +888,86 @@ class _GasSaleState extends State<GasSale> {
                                     .resetCustmerPhone();
 
                                 _formKey.currentState?.reset();
+
+                                bluetooth.printCustom(
+                                    "${cache['storename']}", 1, 1);
+                                bluetooth.printCustom(
+                                    '${_generalSettingDetails['NotificationEmail']}',
+                                    0,
+                                    1);
+                                bluetooth.printCustom(
+                                    "Tel: ${_generalSettingDetails['CompanyPhone']}",
+                                    1,
+                                    1);
+
+                                if (saleCard.ref2 != null) {
+                                  bluetooth.printCustom(
+                                      'Customer No ${saleCard.ref2!}', 0, 1);
+                                }
+                                bluetooth.printCustom(
+                                    ' Date : ${dateInput.text}', 0, 1);
+                                bluetooth.printNewLine();
+                                bluetooth.printCustom(
+                                    'Qty              Price    Total', 1, 0);
+
+                                for (var i = 0; i < saleCard.rows.length; i++) {
+                                  //
+                                  var currentElement = saleCard.rows[i];
+                                  bluetooth.printCustom(
+                                      '${currentElement.name}', 0, 0);
+                                  bluetooth.printCustom(
+                                      "${currentElement.quantity}                      ${currentElement.sellingPrice}      ${currentElement.lineTotal}",
+                                      0,
+                                      0);
+                                  if (currentElement.ref1 != null) {
+                                    bluetooth.printCustom(
+                                        'Ref: ${currentElement.ref1!}', 0, 0);
+                                  }
+                                }
+
+                                bluetooth.printNewLine();
+                                bluetooth.printCustom(
+                                    'Total Bill:  ${formatnum.format(saleCard.docTotal)}',
+                                    0,
+                                    0);
+
+                                bluetooth.printCustom(
+                                    'Total Paid:  ${formatnum.format(saleCard.totalPaid)}',
+                                    0,
+                                    0);
+
+                                bluetooth.printCustom(
+                                    'Total Bal:  ${formatnum.format(saleCard.balance)}',
+                                    0,
+                                    0);
+                                bluetooth.printNewLine();
+                                bluetooth.printCustom(
+                                    "${_generalSettingDetails['PhysicalAddress']}",
+                                    0,
+                                    1);
+                                bluetooth.printNewLine();
+                                bluetooth.printQRcode(
+                                    "Stalis Pos", 200, 200, 1);
+
+                                bluetooth.printNewLine();
+                                bluetooth.printNewLine();
+
+                                bluetooth.paperCut();
+                                /*Navigator.of(context).push(MaterialPageRoute( 
+                                  builder: (context) => PrintPage(saleCard)));*/
+                                context
+                                    .read<ProductListProvider>()
+                                    .setGasProdListEmpty();
+                                context
+                                    .read<ProductListProvider>()
+                                    .resetGasCustmerPhone();
+
+                                context
+                                    .read<ProductListProvider>()
+                                    .resetsetselectededGasPrice();
+
+                                Navigator.pushNamed(context, '/gassale');
+
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Container(
@@ -908,83 +997,7 @@ class _GasSaleState extends State<GasSale> {
                               //     'Printer address fron fuction $printeraddress');
 
                               // var existingprinter = null;
-                              bluetooth.printCustom(
-                                  "${cache['storename']}", 1, 1);
-                              bluetooth.printCustom(
-                                  '${_generalSettingDetails['NotificationEmail']}',
-                                  0,
-                                  1);
-                              bluetooth.printCustom(
-                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
-                                  1,
-                                  1);
 
-                              if (saleCard.ref2 != null) {
-                                bluetooth.printCustom(
-                                    'Customer No ${saleCard.ref2!}', 0, 1);
-                              }
-                              bluetooth.printCustom(
-                                  ' Date : ${dateInput.text}', 0, 1);
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  'Qty              Price    Total', 1, 0);
-
-                              for (var i = 0; i < saleCard.rows.length; i++) {
-                                //
-                                var currentElement = saleCard.rows[i];
-                                bluetooth.printCustom(
-                                    '${currentElement.name}', 0, 0);
-                                bluetooth.printCustom(
-                                    "${currentElement.quantity}                      ${currentElement.sellingPrice}      ${currentElement.lineTotal}",
-                                    0,
-                                    0);
-                                if (currentElement.ref1 != null) {
-                                  bluetooth.printCustom(
-                                      'Ref: ${currentElement.ref1!}', 0, 0);
-                                }
-                              }
-
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  'Total Bill:  ${formatnum.format(saleCard.docTotal)}',
-                                  0,
-                                  0);
-
-                              bluetooth.printCustom(
-                                  'Total Paid:  ${formatnum.format(saleCard.totalPaid)}',
-                                  0,
-                                  0);
-
-                              bluetooth.printCustom(
-                                  'Total Bal:  ${formatnum.format(saleCard.balance)}',
-                                  0,
-                                  0);
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  "${_generalSettingDetails['PhysicalAddress']}",
-                                  0,
-                                  1);
-                              bluetooth.printNewLine();
-                              bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
-
-                              bluetooth.printNewLine();
-                              bluetooth.printNewLine();
-
-                              bluetooth.paperCut();
-                              /*Navigator.of(context).push(MaterialPageRoute( 
-                                  builder: (context) => PrintPage(saleCard)));*/
-                              context
-                                  .read<ProductListProvider>()
-                                  .setGasProdListEmpty();
-                              context
-                                  .read<ProductListProvider>()
-                                  .resetGasCustmerPhone();
-
-                              context
-                                  .read<ProductListProvider>()
-                                  .resetsetselectededGasPrice();
-
-                              Navigator.pushNamed(context, '/gassale');
                             }
                           }
                         },

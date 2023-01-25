@@ -65,6 +65,7 @@ class ProductListProvider with ChangeNotifier {
   String get customerPhone => _customerPhone;
   dynamic get selecteddepositItem => _depositItem;
   String get selectedDate => _selecteddate;
+  double get totalDepositPayment => _totalDepositPayments;
   bool get multiplePriceList => _multiplePriceList;
 
   /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -198,7 +199,6 @@ class ProductListProvider with ChangeNotifier {
       //calculate the total prices
       _totalbill = _totalbill + item.lineTotal;
     });
-    notifyListeners();
     return _totalbill;
   }
 
@@ -213,7 +213,7 @@ class ProductListProvider with ChangeNotifier {
     _payments.forEach((item) {
       _totalpayment += item.sumApplied!;
     });
-    notifyListeners();
+    //notifyListeners();
     return _totalpayment;
   }
 
@@ -327,19 +327,20 @@ class ProductListProvider with ChangeNotifier {
     if (billGasBalance == 0) {
       _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
       _gasProductList.removeAt(index);
-    }
-    if (_totalGasPayment == 0.0 && billGasBalance == 0.0) {
+      notifyListeners();
+    } else if (_totalGasPayment == 0.0 && billGasBalance == 0.0) {
       _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
       _gasProductList.removeAt(index);
-    }
-    if (_totalGasPayment == 0.0 && billGasBalance == 0.0) {
+      notifyListeners();
+    } else if (_totalGasPayment == 0.0 && billGasBalance == 0.0) {
       _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
       _gasProductList.removeAt(index);
+      notifyListeners();
+    } else {
+      _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
+      _gasProductList.removeAt(index);
+      notifyListeners();
     }
-
-    _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
-    _gasProductList.removeAt(index);
-    notifyListeners();
   }
 
   void removeGasPayment(index) {
@@ -445,7 +446,6 @@ class ProductListProvider with ChangeNotifier {
   double balancepayment() {
     _balance = 0;
     _balance = _totalbill - totalPaymentcalc();
-    notifyListeners();
     return _balance;
   }
 
@@ -531,4 +531,13 @@ class ProductListProvider with ChangeNotifier {
   void setMultiplePriceList(value) {
     _multiplePriceList = value;
   }
+
+  /* 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Transfer Products 
+
+
+
+^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*****************************/
 }
