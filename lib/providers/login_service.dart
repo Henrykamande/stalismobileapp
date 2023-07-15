@@ -11,7 +11,8 @@ class UserLogin with ChangeNotifier {
   Future<bool> loginApi(String password, String email) async {
     final PrefService _prefs = PrefService();
     var response = await http.post(
-      Uri.parse('https://apoyobackend.softcloudtech.co.ke/api/v1/login'),
+      Uri.parse(
+          'https://phplaravel-1005299-3647050.cloudwaysapps.com/api/v1/login'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -24,14 +25,12 @@ class UserLogin with ChangeNotifier {
         print(data.length); */
       Map<String, dynamic> datamap = await json.decode(response.body);
       if (datamap['ResultCode'] == 1500) {}
-      print(
-          'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  dddddddddd userdat  $datamap');
+
       String token = datamap['ResponseData']['authToken'];
       int storeid = datamap['ResponseData']['store_id'];
       String storename = datamap['ResponseData']['storename'];
-      print(storename);
       // String companyPhone = datamap['ResponseData']['CompanyPhone'].toString();
-
+      print("$token $storeid  ");
       String logineduserName = datamap['ResponseData']['name'];
       _prefs.createCache(token, storeid.toString(), logineduserName, storename);
       isLoggedIn = true;

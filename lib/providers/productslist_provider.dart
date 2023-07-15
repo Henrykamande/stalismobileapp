@@ -250,7 +250,6 @@ class ProductListProvider with ChangeNotifier {
 
   void postsalearray(salecard) {
     GetProducts _salebody = GetProducts();
-    print('PostSalearray Method Sale Card $salecard');
     _salebody.postsale(salecard);
   }
 
@@ -323,7 +322,6 @@ class ProductListProvider with ChangeNotifier {
   }
 
   void removeGasProduct(index) {
-    print('Remove Gas Procud $index');
     if (billGasBalance == 0) {
       _totalGasBill = _totalGasBill - _gasProductList[index].lineTotal;
       _gasProductList.removeAt(index);
@@ -357,7 +355,6 @@ class ProductListProvider with ChangeNotifier {
 
   void postGasSale(salecard) {
     GetProducts _salebody = GetProducts();
-    print('PostSalearray Method Sale Card $salecard');
     _salebody.postsale(salecard);
   }
 
@@ -457,7 +454,6 @@ class ProductListProvider with ChangeNotifier {
 
   void postDepositarray(salecard) {
     GetProducts _salebody = GetProducts();
-    print('PostSalearray Method Sale Card $salecard');
 
     // CHane to post deposit
     _salebody.postsale(salecard);

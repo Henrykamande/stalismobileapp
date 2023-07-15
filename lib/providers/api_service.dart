@@ -14,6 +14,8 @@ import 'package:testproject/models/postSale.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 
+import '../constants/constants.dart';
+
 class GetProducts with ChangeNotifier {
   var data;
   var _soldProducts;
@@ -23,6 +25,7 @@ class GetProducts with ChangeNotifier {
   var _responseCode;
   var _totalsale;
   var _allStores;
+  var _resultDes;
   int totalpayments = 0;
   bool _isloading = false;
   Map<String, dynamic> _generalSettingDetails = {};
@@ -32,6 +35,7 @@ class GetProducts with ChangeNotifier {
   bool get isloading => _isloading;
   Map<String, dynamic> get generalSettingsDetails => _generalSettingDetails;
 
+  get resultDesc => _resultDes;
   get responseCode => _responseCode;
   get soldProducrs => _soldProducts;
   get dailytotalsales => _totalsale;
@@ -72,8 +76,7 @@ class GetProducts with ChangeNotifier {
     });
     var headers = await sethenders();
 
-    var url = Uri.https('apoyobackend.softcloudtech.co.ke',
-        '/api/v1/search-products-mobile-api');
+    var url = Uri.https(baseUrl, '/api/v1/search-products-mobile-api');
 
     try {
       if (query != null) {
@@ -127,8 +130,7 @@ class GetProducts with ChangeNotifier {
       "searchText": "$searchquery",
     });
 
-    var url =
-        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/bank-accounts');
+    var url = Uri.https(baseUrl, '/api/v1/bank-accounts');
 
     /* if (searchquery != null) {
       response = await http.post(url, headers: headers, body: queryparamaeters);
@@ -155,7 +157,7 @@ class GetProducts with ChangeNotifier {
     });
     List<CustomersResponseDatum> customersdata;
 
-    var url = Uri.https('apoyobackend.softcloudtech.co.ke', '/customers');
+    var url = Uri.https(baseUrl, '/customers');
     response = await http.get(
       url,
       headers: headers,
@@ -179,31 +181,29 @@ class GetProducts with ChangeNotifier {
   }
 
   postsale(salecard) async {
-    print('Print Sales $salecard');
     var headers = await sethenders();
     final queryparamaeters = posSaleToJson(salecard);
-    print(
-        "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ psot sale parameters $queryparamaeters");
-    //print(jsonDecode(queryparamaeters));
-    var url = Uri.https(
-      'apoyobackend.softcloudtech.co.ke',
-      '/api/v1/documents',
-    );
+
+    print(jsonDecode(queryparamaeters));
+
+    var url = Uri.https(baseUrl, '/api/v1/create-document');
+    print(url);
     try {
       response = await http.post(
         url,
         headers: headers,
         body: queryparamaeters,
       );
+      print(response.body);
       data = await jsonDecode(response.body);
-      print(
-          'rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr $data');
+
       if (data['ResultCode'] == 1200) {
         _responseCode = data['ResultCode'];
         print('Response Code ${data['ResultCode']}');
         return _responseCode;
       } else {
-        _responseCode = data['ResultCode'];
+        _responseCode = data['ResultDesc'];
+        _resultDes = data[''];
         notifyListeners();
         return _responseCode;
       }
@@ -215,8 +215,7 @@ class GetProducts with ChangeNotifier {
 
   void getBankAccounts() async {
     var headers = await sethenders();
-    var url =
-        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/bank-accounts');
+    var url = Uri.https(baseUrl, '/api/v1/bank-accounts');
     response = await http.get(
       url,
       headers: headers,
@@ -237,8 +236,7 @@ class GetProducts with ChangeNotifier {
       "CustomerID": null,
       "ProductID": null
     });
-    var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/bought-sold-products/14');
+    var url = Uri.https(baseUrl, '/api/v1/bought-sold-products/14');
     response = await http.post(
       url,
       headers: headers,
@@ -258,8 +256,7 @@ class GetProducts with ChangeNotifier {
     var headers = await sethenders();
     PaymentAccountsResponseData accountsdata;
 
-    var url =
-        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/bank-accounts');
+    var url = Uri.https(baseUrl, '/api/v1/bank-accounts');
     response = await http.get(
       url,
       headers: headers,
@@ -286,14 +283,12 @@ class GetProducts with ChangeNotifier {
 
     try {
       print('Params Fect Payments $queryparameters');
-      var url = Uri.https(
-          'apoyobackend.softcloudtech.co.ke', '/api/v1/sale-payments-report');
+      var url = Uri.https(baseUrl, '/api/v1/sale-payments-report');
       print(url);
     } catch (e) {
       print(e);
     }
-    var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/sale-payments-report');
+    var url = Uri.https(baseUrl, '/api/v1/sale-payments-report');
     response = await http.post(
       url,
       headers: headers,
@@ -317,8 +312,7 @@ class GetProducts with ChangeNotifier {
       'address': printerAddress,
     });
 
-    var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/store-mac-address');
+    var url = Uri.https(baseUrl, '/api/v1/store-mac-address');
     response = await http.post(
       url,
       headers: headers,
@@ -337,7 +331,7 @@ class GetProducts with ChangeNotifier {
 
   /* Future<List<dynamic>> getPrinterAddress() async {
     var headers = await sethenders();
-    var url = Uri.https('apoyobackend.softcloudtech.co.ke',
+    var url = Uri.https(baseUrl,
         '/api/v1/store-mac-address/${headers['storeid']}');
     response = await http.get(
       url,
@@ -359,8 +353,7 @@ class GetProducts with ChangeNotifier {
       "EndDate": "$query",
     });
 
-    var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/sale-payments-report');
+    var url = Uri.https(baseUrl, '/api/v1/sale-payments-report');
     var response = await http.post(
       url,
       headers: headers,
@@ -388,8 +381,7 @@ class GetProducts with ChangeNotifier {
       "CustomerID": null,
       "ProductID": null
     });
-    var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/bought-sold-products/14');
+    var url = Uri.https(baseUrl, '/api/v1/bought-sold-products/14');
     var response = await http.post(
       url,
       headers: headers,
@@ -411,7 +403,7 @@ class GetProducts with ChangeNotifier {
 
     //print(jsonDecode(queryparamaeters));
     var url = Uri.https(
-      'apoyobackend.softcloudtech.co.ke',
+      baseUrl,
       '/api/v1/credit-memo',
     );
     try {
@@ -440,14 +432,12 @@ class GetProducts with ChangeNotifier {
 
     try {
       print('Params Fetch retruned Products $queryparameters');
-      var url = Uri.https('apoyobackend.softcloudtech.co.ke',
-          '/api/v1/returned-products-report');
+      var url = Uri.https(baseUrl, '/api/v1/returned-products-report');
       print(url);
     } catch (e) {
       print(e);
     }
-    var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/returned-products-report');
+    var url = Uri.https(baseUrl, '/api/v1/returned-products-report');
     response = await http.post(
       url,
       headers: headers,
@@ -469,7 +459,7 @@ class GetProducts with ChangeNotifier {
 
     //print(jsonDecode(queryparamaeters));
     var url = Uri.https(
-      'apoyobackend.softcloudtech.co.ke',
+      baseUrl,
       '/api/v1/sale-deposit',
     );
     try {
@@ -489,8 +479,7 @@ class GetProducts with ChangeNotifier {
   Future<List<dynamic>> fetchDeposits() async {
     var headers = await sethenders();
 
-    var url =
-        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/deposits-list');
+    var url = Uri.https(baseUrl, '/api/v1/deposits-list');
     response = await http.get(
       url,
       headers: headers,
@@ -511,7 +500,7 @@ class GetProducts with ChangeNotifier {
 
     //print(jsonDecode(queryparamaeters));
     var url = Uri.https(
-      'apoyobackend.softcloudtech.co.ke',
+      baseUrl,
       '/api/v1/deposit-payment',
     );
     try {
@@ -520,9 +509,9 @@ class GetProducts with ChangeNotifier {
         headers: headers,
         body: queryparamaeters,
       );
-      print('Query param Deposit sale Card $queryparamaeters');
+      //print('Query param Deposit sale Card $queryparamaeters');
 
-      print('response from Deposit Sale ${response.body}');
+      //print('response from Deposit Sale ${response.body}');
     } catch (e) {
       print(e);
     }
@@ -531,8 +520,7 @@ class GetProducts with ChangeNotifier {
   void fetchshopDetails() async {
     var headers = await sethenders();
 
-    var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/general-settings');
+    var url = Uri.https(baseUrl, '/api/v1/general-settings');
     var response = await http.get(
       url,
       headers: headers,
@@ -554,7 +542,7 @@ class GetProducts with ChangeNotifier {
       "o_p_l_n_s_id": o_p_l_n_s_id
     });
     var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/price-calculation');
+        baseUrl, '/api/v1/price-calculation');
     response = await http.post(
       url,
       headers: headers,
@@ -574,8 +562,7 @@ class GetProducts with ChangeNotifier {
   void fetchallStores() async {
     var headers = await sethenders();
 
-    var url =
-        Uri.https('apoyobackend.softcloudtech.co.ke', '/api/v1/all/stores');
+    var url = Uri.https(baseUrl, '/api/v1/all/stores');
     var response = await http.get(
       url,
       headers: headers,

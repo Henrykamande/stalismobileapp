@@ -97,12 +97,10 @@ class _SoldProductsState extends State<SoldProducts> {
                           lastDate: DateTime(2100));
 
                       if (pickedDate != null) {
-                        print(
-                            pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                        //pickedDate output format => 2021-03-10 00:00:00.000
                         String formattedDate =
                             DateFormat('yyyy-MM-dd').format(pickedDate);
-                        print(
-                            formattedDate); //formatted date output using intl package =>  2021-03-16
+                        //formatted date output using intl package =>  2021-03-16
                         setState(() {
                           dateInput.text = formattedDate;
                           _searchquery = dateInput
@@ -136,8 +134,6 @@ class _SoldProductsState extends State<SoldProducts> {
                           if (snapshot.hasData) {
                             List<dynamic> result = snapshot.data!;
                             //setSalesData(result);
-                            print(result);
-                            print('rSold Products $result');
 
                             return (result != [])
                                 ? ListView.builder(
@@ -185,9 +181,6 @@ class _SoldProductsState extends State<SoldProducts> {
                                             Expanded(
                                               child: IconButton(
                                                 onPressed: () {
-                                                  print(
-                                                      'Sold item ------------------------------------------${result[index]['product']}');
-
                                                   bluetooth.printCustom(
                                                       '${cache['storename']}',
                                                       1,
@@ -327,7 +320,6 @@ class _SoldProductsState extends State<SoldProducts> {
                           .getsoldtotals(_searchquery),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          print(snapshot.hasData);
                           var result = snapshot.data!;
 
                           return (dateInput.text != '')

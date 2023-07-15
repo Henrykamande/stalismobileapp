@@ -127,8 +127,6 @@ class _SearchProductState extends State<SearchProduct> {
                                         onTap: () {
                                           //print(result[index]['name']);
 
-                                          print(result[index]);
-
                                           /*   final selectedproduct = new ResponseDatum(
                                           name: result[index]['Name'],
                                           sellingPrice: double.parse(

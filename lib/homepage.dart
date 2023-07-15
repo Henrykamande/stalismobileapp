@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
+import 'package:testproject/constants/constants.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/printservice.dart';
@@ -61,18 +62,14 @@ class _HomePageState extends State<HomePage> {
   void fetchshopDetails() async {
     var headers = await sethenders();
 
-    var url = Uri.https(
-        'apoyobackend.softcloudtech.co.ke', '/api/v1/general-settings');
+    var url = Uri.https(baseUrl, '/api/v1/general-settings');
     var response = await http.get(
       url,
       headers: headers,
     );
 
-    if (response.statusCode == 200) {
-      print('Sucessful POst');
-    }
+    if (response.statusCode == 200) {}
     _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
-    print("General Setting Data $_generalSettingDetails ");
   }
 
   Future<void> initPlatformState() async {
@@ -171,15 +168,14 @@ class _HomePageState extends State<HomePage> {
 
   _getPrinterAddress() async {
     var headers = await sethenders();
-    var url = Uri.https('apoyobackend.softcloudtech.co.ke',
-        '/api/v1/store-mac-address/${headers['storeid']}');
+    var url =
+        Uri.https(baseUrl, '/api/v1/store-mac-address/${headers['storeid']}');
     var response = await http.get(
       url,
       headers: headers,
     );
     var data = await jsonDecode(response.body);
 
-    print('State Printer ${data['ResponseData']}');
     setState(() {
       macaddress = data['ResponseData'];
     });
@@ -189,6 +185,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final responseCode = Provider.of<GetProducts>(context).responseCode;
+    final resultDesc = Provider.of<GetProducts>(context).resultDesc;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -244,10 +242,8 @@ class _HomePageState extends State<HomePage> {
             onPressed: () async {
               cache = await _prefs.readCache(
                   'Token', 'StoreId', 'loggedInUserName', 'storename');
-              print(cache['Token']);
               await _prefs.removeCache(
                   'Token', 'StoreId', 'loggedInUserName', 'storename');
-              print(cache);
               Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
             },
             child: Icon(
@@ -433,18 +429,15 @@ class _HomePageState extends State<HomePage> {
                                       DateTime.now().add(Duration(hours: 0)));
 
                               if (pickedDate != null) {
-                                print(
-                                    pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                                //pickedDate output format => 2021-03-10 00:00:00.000
                                 String formattedDate =
                                     DateFormat('yyyy-MM-dd').format(pickedDate);
-                                print(
-                                    formattedDate); //formatted date output using intl package =>  2021-03-16
+                                //formatted date output using intl package =>  2021-03-16
 
                                 dateInput.text = formattedDate;
                                 setdate = false;
                                 value.setselectedDate(dateInput.text);
                                 //set output date to TextField value.
-
                               } else {
                                 DateTime now = new DateTime.now();
                                 DateTime date =
@@ -454,7 +447,6 @@ class _HomePageState extends State<HomePage> {
                                 dateInput.text = formattedDate;
                                 value.setSaleDate(dateInput
                                     .text); //set output date to TextField value.
-
                               }
                             },
                             validator: (value) {
@@ -501,7 +493,7 @@ class _HomePageState extends State<HomePage> {
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(
-                                      "Price: ${value.productlist[index].sellingPrice.toString()}",
+                                      "Price: ${value.productlist[index].price.toString()}",
                                       style: TextStyle(
                                           fontSize: 11.0,
                                           fontWeight: FontWeight.bold),
@@ -705,8 +697,7 @@ class _HomePageState extends State<HomePage> {
                                   content: Text("Hi, I am a snack bar!"),
                                 ));
                               } */
-                          print(
-                              'showdetails -------------------------------------------------${_generalSettingDetails['CompanyName']}_');
+
                           AlertDialog(
                             content: Text('success'),
                           );
@@ -828,6 +819,9 @@ class _HomePageState extends State<HomePage> {
                                     '${_generalSettingDetails['NotificationEmail']}',
                                     0,
                                     1);
+
+                                bluetooth.printNewLine();
+
                                 /*   bluetooth.printCustom(
                                   'Mobile Phones & Accessories', 0, 1); */
 
@@ -835,12 +829,16 @@ class _HomePageState extends State<HomePage> {
                                     "Tel: ${_generalSettingDetails['CompanyPhone']}",
                                     1,
                                     1);
+                                bluetooth.printNewLine();
+
                                 /* bluetooth.printCustom("Tel: 0732 568 835", 1, 1); */
 
                                 if (saleCard.ref2 != null) {
                                   bluetooth.printCustom(
                                       'Customer No ${saleCard.ref2!}', 0, 1);
                                 }
+                                bluetooth.printNewLine();
+
                                 bluetooth.printCustom(
                                     ' Date : ${dateInput.text}', 0, 1);
 
@@ -852,7 +850,7 @@ class _HomePageState extends State<HomePage> {
                               } */
 
                                 bluetooth.printCustom(
-                                    'Qty              Price    Total', 1, 0);
+                                    'Qty          Price    Total', 1, 0);
 
                                 for (var i = 0; i < saleCard.rows.length; i++) {
                                   //
@@ -861,7 +859,7 @@ class _HomePageState extends State<HomePage> {
                                       '${currentElement.name}', 0, 0);
 
                                   bluetooth.printCustom(
-                                      "${currentElement.quantity}                      ${currentElement.sellingPrice}        ${currentElement.lineTotal}",
+                                      "${currentElement.quantity}                      ${currentElement.price}        ${currentElement.lineTotal}",
                                       0,
                                       0);
                                   /*  bluetooth.print4Column(
@@ -942,14 +940,14 @@ class _HomePageState extends State<HomePage> {
                                   SnackBar(
                                     content: Container(
                                       decoration: BoxDecoration(
-                                          color: Colors.green,
+                                          color: Colors.red,
                                           borderRadius: BorderRadius.all(
                                             Radius.circular(20),
                                           )),
                                       height: 90.0,
                                       child: Center(
                                         child: Text(
-                                          'Sale Not Succesfully  Repost the Sale.',
+                                          'Sale Not Succesfully $resultDesc',
                                           style: TextStyle(color: Colors.white),
                                         ),
                                       ),
@@ -960,8 +958,6 @@ class _HomePageState extends State<HomePage> {
                                 );
                               }
 
-                              print(
-                                  "############################################################################ $responseCode");
                               context
                                   .read<ProductListProvider>()
                                   .resetCustmerPhone();

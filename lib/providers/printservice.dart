@@ -4,6 +4,7 @@ import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:testproject/constants/constants.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 
 class PrinterService with ChangeNotifier {
@@ -112,8 +113,8 @@ class PrinterService with ChangeNotifier {
 
   getPrinterAddress() async {
     var headers = await sethenders();
-    var url = Uri.https('apoyobackend.softcloudtech.co.ke',
-        '/api/v1/store-mac-address/${headers['storeid']}');
+    var url =
+        Uri.https(baseUrl, '/api/v1/store-mac-address/${headers['storeid']}');
     var response = await http.get(
       url,
       headers: headers,

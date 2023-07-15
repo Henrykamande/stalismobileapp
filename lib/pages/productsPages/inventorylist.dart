@@ -85,7 +85,6 @@ class _InventoryListState extends State<InventoryList> {
                             itemCount: result.length,
                             itemBuilder: (context, index) => InkWell(
                               onTap: () {
-                                print(result[index]['name']);
                                 final selectedproduct = new ResponseDatum(
                                   sellingPrice: result[index]['sellingPrice'],
                                   availableQty: result[index]['availableQty'],

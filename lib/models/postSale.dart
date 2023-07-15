@@ -107,7 +107,7 @@ class SaleRow {
     this.name,
     this.ref1,
     required this.oPLNSId,
-    required this.sellingPrice,
+    required this.price,
     required this.quantity,
     this.uomEntry,
     required this.oITMSId,
@@ -122,7 +122,7 @@ class SaleRow {
   String? name;
   String? gasType;
   int oPLNSId;
-  double sellingPrice;
+  double price;
   int quantity;
   dynamic uomEntry;
   int oITMSId;
@@ -138,7 +138,7 @@ class SaleRow {
   factory SaleRow.fromJson(Map<String, dynamic> json) => SaleRow(
       name: json["name"],
       oPLNSId: json["o_p_l_n_s_id"],
-      sellingPrice: json["SellingPrice"],
+      price: json["Price"],
       quantity: json["Quantity"],
       uomEntry: json["UomEntry"],
       oITMSId: json["o_i_t_m_s_id"],
@@ -155,7 +155,7 @@ class SaleRow {
   Map<String, dynamic> toJson() => {
         "name": name,
         "o_p_l_n_s_id": oPLNSId,
-        "SellingPrice": sellingPrice,
+        "Price": price,
         "Quantity": quantity,
         "UomEntry": uomEntry,
         "o_i_t_m_s_id": oITMSId,

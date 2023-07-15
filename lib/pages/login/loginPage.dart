@@ -92,9 +92,7 @@ class _LoginPageState extends State<LoginPage> {
                               .loginApi(passwordController.text.toString(),
                                   emailController.text.toString())
                               .then((response) {
-                            print('Login Response $response');
                             if (response) {
-                              print('THis is login response $response');
                               Navigator.pushNamedAndRemoveUntil(
                                   context, '/start', (route) => false);
                             }

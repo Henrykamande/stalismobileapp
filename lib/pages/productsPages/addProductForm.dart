@@ -264,8 +264,6 @@ class _AddProductFormState extends State<AddProductForm> {
                                     ),
                                     Consumer<ProductListProvider>(
                                       builder: (context, value, child) {
-                                        print(
-                                            '############################################ selling Price $_sellingPrice');
                                         final initialSelingPrice =
                                             _sellingPrice.toString();
 
@@ -491,7 +489,7 @@ class _AddProductFormState extends State<AddProductForm> {
                           ref1: ref1,
                           name: _selectedProd['Name'],
                           oPLNSId: _selectedProd['o_p_l_n_s_id'],
-                          sellingPrice: _sellingPrice,
+                          price: _sellingPrice,
                           quantity: _qtyToSell,
                           oITMSId: _selectedProd['id'],
                           lineTotal: _total,

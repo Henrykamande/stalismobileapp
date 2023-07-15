@@ -504,7 +504,7 @@ class _AddGasProductFormState extends State<AddGasProductForm> {
                             ref1: ref1,
                             name: _selectedProd['Name'],
                             oPLNSId: _selectedProd['o_p_l_n_s_id'],
-                            sellingPrice: _sellingPrice,
+                            price: _sellingPrice,
                             quantity: _qtyToSell,
                             oITMSId: _selectedProd['id'],
                             lineTotal: _total,

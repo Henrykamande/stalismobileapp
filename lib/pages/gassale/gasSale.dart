@@ -502,7 +502,7 @@ class _GasSaleState extends State<GasSale> {
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
-                                            "Price: ${value.gasProductList[index].sellingPrice.toString()}",
+                                            "Price: ${value.gasProductList[index].price.toString()}",
                                             style: TextStyle(
                                                 fontSize: 11.0,
                                                 fontWeight: FontWeight.bold),
@@ -916,7 +916,7 @@ class _GasSaleState extends State<GasSale> {
                                   bluetooth.printCustom(
                                       '${currentElement.name}', 0, 0);
                                   bluetooth.printCustom(
-                                      "${currentElement.quantity}                      ${currentElement.sellingPrice}      ${currentElement.lineTotal}",
+                                      "${currentElement.quantity}                      ${currentElement.price}      ${currentElement.lineTotal}",
                                       0,
                                       0);
                                   if (currentElement.ref1 != null) {
@@ -997,7 +997,6 @@ class _GasSaleState extends State<GasSale> {
                               //     'Printer address fron fuction $printeraddress');
 
                               // var existingprinter = null;
-
                             }
                           }
                         },
