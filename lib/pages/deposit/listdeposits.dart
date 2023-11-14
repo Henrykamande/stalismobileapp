@@ -6,7 +6,6 @@ import 'package:testproject/models/depositPayment.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/shared/drawerscreen.dart';
@@ -21,7 +20,6 @@ class CustomerDepositsList extends StatefulWidget {
 class _CustomerDepositsListState extends State<CustomerDepositsList> {
   PrefService _prefs = PrefService();
 
-  BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   bool _connected = false;
 
   late Future<List<dynamic>> soldproducts;
@@ -59,81 +57,6 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
     return headers;
   }
 
-  Future<void> initPlatformState() async {
-    bool? isConnected = await bluetooth.isConnected;
-    List<BluetoothDevice> devices = [];
-    try {
-      devices = await bluetooth.getBondedDevices();
-    } on PlatformException {}
-
-    bluetooth.onStateChanged().listen((state) {
-      switch (state) {
-        case BlueThermalPrinter.CONNECTED:
-          setState(() {
-            _connected = true;
-
-            print("bluetooth device state: connected");
-          });
-          break;
-        case BlueThermalPrinter.DISCONNECTED:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: disconnected");
-          });
-          break;
-        case BlueThermalPrinter.DISCONNECT_REQUESTED:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: disconnect requested");
-          });
-          break;
-        case BlueThermalPrinter.STATE_TURNING_OFF:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: bluetooth turning off");
-          });
-          break;
-        case BlueThermalPrinter.STATE_OFF:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: bluetooth off");
-          });
-          break;
-        case BlueThermalPrinter.STATE_ON:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: bluetooth on");
-          });
-          break;
-        case BlueThermalPrinter.STATE_TURNING_ON:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: bluetooth turning on");
-          });
-          break;
-        case BlueThermalPrinter.ERROR:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: error");
-          });
-          break;
-        default:
-          print(state);
-          break;
-      }
-    });
-
-    if (!mounted) return;
-    setState(() {
-      _devices = devices;
-    });
-
-    if (isConnected == true) {
-      setState(() {
-        _connected = true;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

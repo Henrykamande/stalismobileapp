@@ -45,15 +45,15 @@ class DrawerNavigation extends StatelessWidget {
                 Navigator.pushNamed(context, '/start');
               },
             ),
-            ListTile(
-              title: const Text('Customer Deposit'),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.pushNamed(context, '/customerDeposit');
-              },
-            ),
+            // ListTile(
+            //   title: const Text('Customer Deposit'),
+            //   onTap: () {
+            //     // Update the state of the app
+            //     // ...
+            //     // Then close the drawer
+            //     Navigator.pushNamed(context, '/customerDeposit');
+            //   },
+            // ),
             /* ListTile(
               title: const Text('Invetory'),
               onTap: () {

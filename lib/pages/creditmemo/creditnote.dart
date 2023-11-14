@@ -18,7 +18,6 @@ import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/pages/productsPages/searchproduct.dart';
 import 'package:intl/intl.dart';
-import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:http/http.dart' as http;
 import 'package:testproject/shared/drawerscreen.dart';
 
@@ -29,7 +28,6 @@ class CustomerCreditNote extends StatefulWidget {
 
 class _CustomerCreditNoteState extends State<CustomerCreditNote> {
   PrefService _prefs = PrefService();
-  BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   PrinterService _printerService = PrinterService();
 
   final _formKey = GlobalKey<FormState>();
@@ -55,7 +53,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
 
     _printerService.initPlatformState();
     _printerService.getPrinterAddress();
-    _printerService.connect();
+    // _printerService.connect();
     context.read<GetProducts>().fetchshopDetails();
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
     /*  _getPrinterAddress();
@@ -676,112 +674,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
                               productsData.setCreditNoteListempty();
                               productsData.setTopUpPaymentListEmpty();
 
-                              /*   bluetooth.printCustom(
-                                  "${cache['storename']}", 1, 1);
-                              bluetooth.printCustom(
-                                  '${_generalSettingDetails['NotificationEmail']}',
-                                  0,
-                                  1);
-                              bluetooth.printCustom(
-                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
-                                  1,
-                                  1); */
-                              bluetooth.printCustom(
-                                  "${cache['storename']}", 1, 1);
-                              bluetooth.printCustom(
-                                  '${_generalSettingDetails['NotificationEmail']}',
-                                  0,
-                                  1);
-                              bluetooth.printCustom(
-                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
-                                  1,
-                                  1);
-                              bluetooth.printCustom(
-                                  'Customer Name: ${creditMemo.customerName}',
-                                  0,
-                                  1);
-                              bluetooth.printCustom(
-                                  'Customer No: ${creditMemo.customerPhone}',
-                                  0,
-                                  1);
-                              bluetooth.printCustom(
-                                  ' Date : ${dateInput.text}', 0, 1);
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  'Qty              Price    Total', 1, 0);
 
-                              bluetooth.printCustom('Returned Product', 0, 1);
-                              for (var i = 0;
-                                  i < creditMemo.returnedProducts.length;
-                                  i++) {
-                                //
-                                var currentElement =
-                                    creditMemo.returnedProducts[i];
-                                bluetooth.printCustom(
-                                    '${currentElement.productName}', 0, 0);
-                                bluetooth.print3Column(
-                                    '${currentElement.quantity}',
-                                    '    ${formatnum.format(currentElement.sellingPrice)}',
-                                    '    ${formatnum.format(currentElement.lineTotal)}',
-                                    0);
-                                if (currentElement.ref1 != null) {
-                                  bluetooth.printCustom(
-                                      currentElement.ref1!, 0, 0);
-                                }
-                              }
-                              bluetooth.printCustom(
-                                  'Replacement Product', 0, 1);
-                              for (var i = 0;
-                                  i < creditMemo.replacedProducts.length;
-                                  i++) {
-                                //
-                                var currentElement =
-                                    creditMemo.replacedProducts[i];
-                                bluetooth.printCustom(
-                                    '${currentElement.productName}', 0, 0);
-                                bluetooth.print3Column(
-                                    '${currentElement.quantity}',
-                                    '    ${formatnum.format(currentElement.sellingPrice)}',
-                                    '    ${formatnum.format(currentElement.lineTotal)}',
-                                    0);
-                                if (currentElement.ref1 != null) {
-                                  bluetooth.printCustom(
-                                      currentElement.ref1!, 0, 0);
-                                }
-                              }
-                              bluetooth.printCustom(
-                                  'Total Return Cost: Ksh ${formatnum.format(totalReturncost)}',
-                                  0,
-                                  0);
-
-                              bluetooth.printCustom(
-                                  'Total Replacement: Ksh ${formatnum.format(totalReplacementCost)}',
-                                  0,
-                                  0);
-
-                              bluetooth.printCustom(
-                                  'Top Up Payment : Ksh ${formatnum.format(totalTopUpPayment)}',
-                                  0,
-                                  0);
-                              bluetooth.printNewLine();
-                              /*       bluetooth.printCustom(
-                                  "${_generalSettingDetails['PhysicalAddress']}",
-                                  0,
-                                  1); */
-                              bluetooth.printCustom(
-                                  "${_generalSettingDetails['PhysicalAddress']}",
-                                  0,
-                                  1);
-                              bluetooth.printNewLine();
-                              bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
-
-                              bluetooth.printNewLine();
-                              bluetooth.printNewLine();
-
-                              bluetooth.paperCut();
-
-                              /* Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => PrintPage(saleCard))); */
 
                               Navigator.pushNamed(
                                   context, '/customercreditnote');

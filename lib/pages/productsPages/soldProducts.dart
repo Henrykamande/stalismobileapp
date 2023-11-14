@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 
 class SoldProducts extends StatefulWidget {
@@ -14,7 +13,7 @@ class SoldProducts extends StatefulWidget {
 }
 
 class _SoldProductsState extends State<SoldProducts> {
-  BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
+
   PrefService _prefs = PrefService();
 
   late Future<List<dynamic>> soldproducts;
@@ -180,112 +179,7 @@ class _SoldProductsState extends State<SoldProducts> {
                                             ),
                                             Expanded(
                                               child: IconButton(
-                                                onPressed: () {
-                                                  bluetooth.printCustom(
-                                                      '${cache['storename']}',
-                                                      1,
-                                                      1);
-                                                  bluetooth.printCustom(
-                                                      '${_generalSettingDetails['NotificationEmail']}',
-                                                      0,
-                                                      1);
-                                                  bluetooth.printCustom(
-                                                      'Tel: ${_generalSettingDetails['CompanyPhone']}',
-                                                      1,
-                                                      1);
-
-                                                  bluetooth.printCustom(
-                                                      'Date : ${dateInput.text}',
-                                                      0,
-                                                      1);
-
-                                                  if (result[index]['ref2'] !=
-                                                      null) {
-                                                    bluetooth.printCustom(
-                                                        'Customer No ${result[index]['ref2']}  ',
-                                                        0,
-                                                        1);
-                                                  }
-                                                  bluetooth.printNewLine();
-
-                                                  bluetooth.printCustom(
-                                                      'Qty              Price    Total',
-                                                      1,
-                                                      0);
-
-                                                  bluetooth.printCustom(
-                                                      '${result[index]['product']['Name']}',
-                                                      0,
-                                                      0);
-
-                                                  bluetooth.printCustom(
-                                                      "${result[index]['Quantity']}                      ${result[index]['Price']}        ${result[index]['LineTotal']}",
-                                                      0,
-                                                      0);
-                                                  bluetooth.printCustom(
-                                                      '${result[index]['ref1']}',
-                                                      0,
-                                                      0);
-                                                  /* for (var i = 0;
-                                                      i <
-                                                          result[index]
-                                                              .rows
-                                                              .length;
-                                                      i++) {
-                                                    //
-                                                    var currentElement =
-                                                        result[index].rows[i];
-                                                    bluetooth.printCustom(
-                                                        '${currentElement.name}',
-                                                        0,
-                                                        0);
-                                                    bluetooth.print3Column(
-                                                        '${currentElement.quantity}',
-                                                        '${formatnum.format(currentElement['sellingPrice'])}',
-                                                        '${formatnum.format(currentElement['lineTotal]'])}',
-                                                        1);
-                                                    if (currentElement['ref1'] !=
-                                                        null) {
-                                                      bluetooth.printCustom(
-                                                          'Ref: ${currentElement['ref1']}',
-                                                          0,
-                                                          0);
-                                                    } */
-                                                  bluetooth.printNewLine();
-
-                                                  bluetooth.printCustom(
-                                                      'Total Bill:  ${formatnum.format(result[index]['document']['DocTotal']).toString()}',
-                                                      0,
-                                                      0);
-
-                                                  bluetooth.printCustom(
-                                                      'Total Paid: ${formatnum.format(result[index]['document']['PaidSum']).toString()}',
-                                                      0,
-                                                      0);
-
-                                                  bluetooth.printCustom(
-                                                      'Total Bal: ${formatnum.format(result[index]['document']['Balance']).toString()}',
-                                                      0,
-                                                      0);
-                                                  bluetooth.printNewLine();
-
-                                                  bluetooth.printCustom(
-                                                      '${_generalSettingDetails['PhysicalAddress']}',
-                                                      0,
-                                                      1);
-
-                                                  bluetooth.printNewLine();
-                                                  bluetooth.printQRcode(
-                                                      "Stalis Pos",
-                                                      200,
-                                                      200,
-                                                      1);
-                                                  bluetooth.printNewLine();
-                                                  bluetooth.printNewLine();
-                                                  bluetooth.printNewLine();
-
-                                                  bluetooth.paperCut();
-                                                },
+                                                onPressed: () {},
                                                 icon: Column(
                                                   children: [
                                                     Expanded(
@@ -336,58 +230,7 @@ class _SoldProductsState extends State<SoldProducts> {
               Consumer<GetProducts>(
                 builder: (context, value, child) {
                   return ElevatedButton(
-                      onPressed: () {
-                        bluetooth.printCustom('${cache['storename']}', 1, 1);
-                        bluetooth.printCustom(
-                            '${_generalSettingDetails['NotificationEmail']}',
-                            0,
-                            1);
-                        bluetooth.printCustom(
-                            'Tel: ${_generalSettingDetails['CompanyPhone']}',
-                            1,
-                            1);
-
-                        bluetooth.printCustom('Date : ${dateInput.text}', 0, 1);
-
-                        bluetooth.printCustom(
-                            'Qty              Price    Total', 1, 0);
-                        for (int index = 0;
-                            index < value.soldProducrs.length;
-                            index++) {
-                          bluetooth.printCustom(
-                              '${value.soldProducrs[index]['product']['Name']}',
-                              0,
-                              0);
-
-                          bluetooth.printCustom(
-                              "${value.soldProducrs[index]['Quantity']}                      ${value.soldProducrs[index]['Price']}        ${value.soldProducrs[index]['LineTotal']}",
-                              0,
-                              0);
-                          bluetooth.printCustom(
-                              '${value.soldProducrs[index]['ref1']}', 0, 0);
-
-                          bluetooth.printNewLine();
-                        }
-                        bluetooth.printCustom(
-                            'Total Sales:  ${formatnum.format(value.dailytotalsales).toString()}',
-                            0,
-                            0);
-
-                        bluetooth.printNewLine();
-
-                        bluetooth.printCustom(
-                            '${_generalSettingDetails['PhysicalAddress']}',
-                            0,
-                            1);
-
-                        bluetooth.printNewLine();
-                        bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
-                        bluetooth.printNewLine();
-                        bluetooth.printNewLine();
-                        bluetooth.printNewLine();
-
-                        bluetooth.paperCut();
-                      },
+                      onPressed: () {},
                       child: Text("Print Sold Products"));
                 },
               )

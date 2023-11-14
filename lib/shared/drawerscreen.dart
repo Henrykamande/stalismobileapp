@@ -60,41 +60,41 @@ class DrawerScreen extends StatelessWidget {
               Navigator.pushNamed(context, '/salepayments');
             },
           ),
-          ListTile(
-            title: const Text('Create Deposit'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pushNamed(context, '/customerDeposit');
-            },
-          ),
-          ListTile(
-              title: Text('Deposits'),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.pushNamed(context, '/customerdepositlist');
-              }),
-          ListTile(
-            title: const Text('Return & Replacement'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pushNamed(context, '/customercreditnote');
-            },
-          ),
-          ListTile(
-            title: const Text('Returned Products'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pushNamed(context, '/returnedproducts');
-            },
-          ),
+          // ListTile(
+          //   title: const Text('Create Deposit'),
+          //   onTap: () {
+          //     // Update the state of the app
+          //     // ...
+          //     // Then close the drawer
+          //     Navigator.pushNamed(context, '/customerDeposit');
+          //   },
+          // ),
+          // ListTile(
+          //     title: Text('Deposits'),
+          //     onTap: () {
+          //       // Update the state of the app
+          //       // ...
+          //       // Then close the drawer
+          //       Navigator.pushNamed(context, '/customerdepositlist');
+          //     }),
+          // ListTile(
+          //   title: const Text('Return & Replacement'),
+          //   onTap: () {
+          //     // Update the state of the app
+          //     // ...
+          //     // Then close the drawer
+          //     Navigator.pushNamed(context, '/customercreditnote');
+          //   },
+          // ),
+          // ListTile(
+          //   title: const Text('Returned Products'),
+          //   onTap: () {
+          //     // Update the state of the app
+          //     // ...
+          //     // Then close the drawer
+          //     Navigator.pushNamed(context, '/returnedproducts');
+          //   },
+          // ),
           /*   ListTile(
               title: const Text('Transfer'),
               onTap: () {
@@ -103,24 +103,24 @@ class DrawerScreen extends StatelessWidget {
                 // Then close the drawer
                 Navigator.pushNamed(context, '/transfer');
               }), */
-          ListTile(
-            title: const Text('Gas Sale'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pushNamed(context, '/gassale');
-            },
-          ),
-          ListTile(
-            title: const Text('General Settings'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pushNamed(context, '/generalsettings');
-            },
-          ),
+          // ListTile(
+          //   title: const Text('Gas Sale'),
+          //   onTap: () {
+          //     // Update the state of the app
+          //     // ...
+          //     // Then close the drawer
+          //     Navigator.pushNamed(context, '/gassale');
+          //   },
+          // ),
+          // ListTile(
+          //   title: const Text('General Settings'),
+          //   onTap: () {
+          //     // Update the state of the app
+          //     // ...
+          //     // Then close the drawer
+          //     Navigator.pushNamed(context, '/generalsettings');
+          //   },
+          // ),
           ListTile(
               title: const Text('Web Portal'),
               onTap:

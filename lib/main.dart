@@ -56,7 +56,6 @@ class Stalisapp extends StatelessWidget {
             '/soldproducts': (context) => SoldProducts(),
             '/paymentsearch': (context) => PaymentSearch(),
             '/salepayments': (context) => SalePayment(),
-            '/generalsettings': (context) => PrintPage(),
             '/customerDeposit': (context) => CustomerDeposit(),
             '/customercreditnote': (context) => CustomerCreditNote(),
             '/returnedproducts': (context) => ReturnProducts(),

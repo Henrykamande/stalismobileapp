@@ -11,7 +11,6 @@ import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:intl/intl.dart';
-import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:testproject/shared/drawerscreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -26,7 +25,6 @@ class CustomerDeposit extends StatefulWidget {
 class _CustomerDepositState extends State<CustomerDeposit> {
   PrefService _prefs = PrefService();
   PrinterService _printerService = PrinterService();
-  BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
   final _formKey = GlobalKey<FormState>();
   var cache;
   bool _connected = false;
@@ -78,81 +76,6 @@ class _CustomerDepositState extends State<CustomerDeposit> {
     print("General Setting Data $_generalSettingDetails ");
   }
 
-  Future<void> initPlatformState() async {
-    bool? isConnected = await bluetooth.isConnected;
-    List<BluetoothDevice> devices = [];
-    try {
-      devices = await bluetooth.getBondedDevices();
-    } on PlatformException {}
-
-    bluetooth.onStateChanged().listen((state) {
-      switch (state) {
-        case BlueThermalPrinter.CONNECTED:
-          setState(() {
-            _connected = true;
-
-            print("bluetooth device state: connected");
-          });
-          break;
-        case BlueThermalPrinter.DISCONNECTED:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: disconnected");
-          });
-          break;
-        case BlueThermalPrinter.DISCONNECT_REQUESTED:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: disconnect requested");
-          });
-          break;
-        case BlueThermalPrinter.STATE_TURNING_OFF:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: bluetooth turning off");
-          });
-          break;
-        case BlueThermalPrinter.STATE_OFF:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: bluetooth off");
-          });
-          break;
-        case BlueThermalPrinter.STATE_ON:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: bluetooth on");
-          });
-          break;
-        case BlueThermalPrinter.STATE_TURNING_ON:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: bluetooth turning on");
-          });
-          break;
-        case BlueThermalPrinter.ERROR:
-          setState(() {
-            _connected = false;
-            print("bluetooth device state: error");
-          });
-          break;
-        default:
-          print(state);
-          break;
-      }
-    });
-
-    if (!mounted) return;
-    setState(() {
-      _devices = devices;
-    });
-
-    if (isConnected == true) {
-      setState(() {
-        _connected = true;
-      });
-    }
-  }
 
   sethenders() async {
     cache = await _prefs.readCache(
@@ -835,91 +758,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
                                   .read<ProductListProvider>()
                                   .resetCustomerName();
 
-                              //salepost.setislodaing();
-
-                              //var printeraddress = salepost.getPrinterAddress();
-                              // print(
-                              //     'Printer address fron fuction $printeraddress');
-
-                              // var existingprinter = null;
-                              /* bluetooth.printCustom(
-                                  "${cache['storename']}", 1, 1);
-                             /*  bluetooth.printCustom(
-                                  '${_generalSettingDetails['NotificationEmail']}',
-                                  0,
-                                  1); */
-                              bluetooth.printCustom(
-                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
-                                  1,
-                                  1); */
-                              bluetooth.printCustom(
-                                  "${cache['storename']}", 1, 1);
-                              bluetooth.printCustom(
-                                  '${_generalSettingDetails['NotificationEmail']}',
-                                  0,
-                                  0);
-                              bluetooth.printCustom(
-                                  "Tel: ${_generalSettingDetails['CompanyPhone']}",
-                                  1,
-                                  1);
-
-                              if (saleCard.ref2 != null) {
-                                bluetooth.printCustom(
-                                    'Customer No ${saleCard.ref2!}', 0, 1);
-                              }
-                              bluetooth.printCustom(
-                                  ' Date : ${dateInput.text}', 0, 1);
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  'Qty              Price    Total', 1, 0);
-                              for (var i = 0; i < saleCard.rows.length; i++) {
-                                //
-                                var currentElement = saleCard.rows[i];
-                                bluetooth.printCustom(
-                                    '${currentElement.name}', 0, 0);
-                                bluetooth.printCustom(
-                                    "${currentElement.quantity}                      ${currentElement.price}      ${currentElement.lineTotal}",
-                                    0,
-                                    0);
-                                if (currentElement.ref1 != null) {
-                                  bluetooth.printCustom(
-                                      'Ref: ${currentElement.ref1!}', 0, 0);
-                                }
-                              }
-
-                              bluetooth.printNewLine();
-                              bluetooth.printCustom(
-                                  'Total Bill:  ${formatnum.format(saleCard.docTotal)}',
-                                  0,
-                                  0);
-
-                              bluetooth.printCustom(
-                                  'Total Paid:  ${formatnum.format(saleCard.totalPaid)}',
-                                  0,
-                                  0);
-
-                              bluetooth.printCustom(
-                                  'Total Bal:  ${formatnum.format(saleCard.balance)}',
-                                  0,
-                                  0);
-                              bluetooth.printNewLine();
-                              /* bluetooth.printCustom(
-                                  "${_generalSettingDetails['PhysicalAddress']}",
-                                  0,
-                                  1); */
-
-                              bluetooth.printCustom(
-                                  "${_generalSettingDetails['PhysicalAddress']}",
-                                  0,
-                                  1);
-                              bluetooth.printNewLine();
-                              bluetooth.printQRcode("Stalis Pos", 200, 200, 1);
-
-                              bluetooth.printNewLine();
-                              bluetooth.printNewLine();
-
-                              bluetooth.paperCut();
-                              /*Navigator.of(context).push(MaterialPageRoute( 
+                               /*Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => PrintPage(saleCard)));*/
                               context
                                   .read<ProductListProvider>()

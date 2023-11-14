@@ -16,9 +16,9 @@ class AddProductForm extends StatefulWidget {
 
 class _AddProductFormState extends State<AddProductForm> {
   final _formKey = GlobalKey<FormState>();
-  int _qtyToSell = 1;
-  double _sellingPrice = 0;
-  double _total = 0;
+  var _qtyToSell = 1;
+  var _sellingPrice;
+   double _total = 0;
   String _productName = "";
   int _linenum = 0;
   List priceListsNames = [];
@@ -47,6 +47,10 @@ class _AddProductFormState extends State<AddProductForm> {
     final productsData = Provider.of<ProductListProvider>(context);
     final selectedProdp = Provider.of<GetProducts>(context);
     final _selectedProd = selectedProdp.selectedprod;
+
+    setState(() {
+      _sellingPrice = _selectedProd['SellingPrice'];
+    });
 
     final sellingGasPrice =
         context.watch<ProductListProvider>().selectedGasPrice;
@@ -115,229 +119,9 @@ class _AddProductFormState extends State<AddProductForm> {
                     ],
                   ),
                 ),
-                (previousrouteString == '/gassale')
-                    ? Row(
-                        children: [
-                          Expanded(
-                              child: RadioListTile<GasSellTypeEnum>(
-                                  value: GasSellTypeEnum.Refill,
-                                  groupValue: _gasSellTypeEnum,
-                                  title: Text(GasSellTypeEnum.Refill.name),
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _gasSellTypeEnum = val;
-                                      gasType = val!.name;
-                                    });
-                                  })),
-                          Expanded(
-                              child: RadioListTile<GasSellTypeEnum>(
-                                  value: GasSellTypeEnum.Full,
-                                  groupValue: _gasSellTypeEnum,
-                                  title: Text(GasSellTypeEnum.Full.name),
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _gasSellTypeEnum = val;
-                                      gasType = val!.name;
-                                    });
-                                  }))
-                        ],
-                      )
-                    : Text(''),
                 Consumer<ProductListProvider>(
                   builder: (context, value, child) {
-                    return (_generalSettingDetails['enablePriceList'] == 'Y')
-                        ? Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [Text('Select Price List')],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Consumer<ProductListProvider>(
-                                  builder: (context, value, child) {
-                                    return DropdownButton(
-                                      hint: _dropDownValue == null
-                                          ? Text('Price List')
-                                          : Text(
-                                              _dropDownValue,
-                                              style:
-                                                  TextStyle(color: Colors.blue),
-                                            ),
-                                      isExpanded: true,
-                                      iconSize: 30.0,
-                                      style: TextStyle(color: Colors.blue),
-                                      items: itm4list.map(
-                                        (val) {
-                                          return DropdownMenuItem(
-                                            value: val['pricelist']['Name'],
-                                            child:
-                                                Text(val['pricelist']['Name']),
-                                          );
-                                        },
-                                      ).toList(),
-                                      onChanged: (val) {
-                                        var existingItm4 = itm4list.firstWhere(
-                                            (itemToCheck) =>
-                                                itemToCheck['pricelist']
-                                                    ['Name'] ==
-                                                val);
-                                        if (gasType == 'Refill') {
-                                          gasPrice = existingItm4['refill'];
-
-                                          setState(() {
-                                            _sellingPrice = gasPrice.toDouble();
-                                          });
-                                          value.setselectededGasPrice(
-                                              gasPrice.toDouble());
-                                        } else if (gasType == 'Full') {
-                                          gasPrice = existingItm4['fullGas'];
-                                          setState(() {
-                                            _sellingPrice = gasPrice.toDouble();
-                                          });
-                                          value.setselectededGasPrice(
-                                              gasPrice.toDouble());
-                                          /*  final _sellingPrice =
-                                              value.setselectededGasPrice(
-                                                  gasPrice.toDouble());
-                                          print(_sellingPrice); */
-                                        } else {
-                                          gasPrice =
-                                              existingItm4['SellingPrice'];
-                                          setState(() {
-                                            _sellingPrice = gasPrice.toDouble();
-                                          });
-                                          value.setselectededGasPrice(
-                                              gasPrice.toDouble());
-                                        }
-
-                                        setState(
-                                          () {
-                                            _dropDownValue = val;
-                                          },
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
-                              Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                          initialValue: _qtyToSell.toString(),
-                                          keyboardType:
-                                              TextInputType.numberWithOptions(
-                                                  decimal: true),
-                                          decoration: InputDecoration(
-                                            labelText: 'Qty To Sell',
-                                            fillColor: Colors.white,
-                                            filled: true,
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.red,
-                                                  width: 1.0),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.blue,
-                                                  width: 1.0),
-                                            ),
-                                          ),
-                                          validator: (val) => val!.isEmpty
-                                              ? 'Please Enter Qty to Sell'
-                                              : null,
-                                          onChanged: (val) => setState(() {
-                                            _qtyToSell = int.parse(
-                                              val,
-                                            );
-                                            _total = _qtyToSell * _sellingPrice;
-                                          }),
-                                        ),
-                                      ),
-                                    ),
-                                    Consumer<ProductListProvider>(
-                                      builder: (context, value, child) {
-                                        final initialSelingPrice =
-                                            _sellingPrice.toString();
-
-                                        /* print(
-                                            'Selellllllllllllllllllllllllllllllllll ${value.selectedGasPrice}'); */
-                                        return Expanded(
-                                          child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: TextFormField(
-                                                /*  key: Key(initialSelingPrice), */
-                                                key: Key(
-                                                    (value.selectedGasPrice)
-                                                        .toString()),
-                                                initialValue: value
-                                                    .selectedGasPrice
-                                                    .toString(),
-
-                                                /*  (value
-                                                        .selectedGasPrice
-                                                        .toInt())
-                                                    .toString() */
-                                                keyboardType: TextInputType
-                                                    .numberWithOptions(
-                                                        decimal: true),
-                                                decoration: InputDecoration(
-                                                  labelText: 'Selling Price',
-                                                  fillColor: Colors.white,
-                                                  filled: true,
-                                                  focusedBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                        color: Colors.red,
-                                                        width: 1.0),
-                                                  ),
-                                                  enabledBorder:
-                                                      OutlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                        color: Colors.blue,
-                                                        width: 1.0),
-                                                  ),
-                                                ),
-                                                validator: (val) {
-                                                  setState(() {
-                                                    _sellingPrice =
-                                                        double.parse((val!));
-                                                    _total = _qtyToSell *
-                                                        _sellingPrice;
-                                                  });
-                                                },
-                                                onEditingComplete: () {},
-                                                onChanged: (val) {
-                                                  setState(() {
-                                                    _sellingPrice =
-                                                        double.parse((val));
-
-                                                    _total = _qtyToSell *
-                                                        _sellingPrice;
-                                                  });
-                                                },
-                                              )),
-                                        );
-                                      },
-                                    ),
-                                  ]),
-                              /* (previousrouteString == '/gassale')
-                                  ? Card(
-                                      child:
-                                          Text('Total: ${_total.toString()}'),
-                                    )
-                                  : Text(''), */
-                            ],
-                          )
-                        : Column(
+                    return Column(
                             children: [
                               Row(
                                   mainAxisAlignment:
@@ -373,7 +157,7 @@ class _AddProductFormState extends State<AddProductForm> {
                                             _qtyToSell = int.parse(
                                               val,
                                             );
-                                            _total = _qtyToSell * _sellingPrice;
+                                            _total = double.parse( _qtyToSell.toString()) * double.parse(_sellingPrice.toString());
                                           }),
                                         ),
                                       ),
@@ -408,17 +192,15 @@ class _AddProductFormState extends State<AddProductForm> {
                                               ),
                                               validator: (val) {
                                                 setState(() {
-                                                  _sellingPrice =
-                                                      double.parse((val!));
-                                                  _total = _qtyToSell *
-                                                      _sellingPrice;
+                                                  _sellingPrice = val;
+                                                  _total = double.parse(_qtyToSell.toString()) *
+                                                      double.parse((val!.toString()));
                                                 });
                                               },
                                               onChanged: (val) => setState(() {
-                                                _sellingPrice =
-                                                    double.parse((val));
+                                                _sellingPrice = val;
                                                 _total =
-                                                    _qtyToSell * _sellingPrice;
+                                                    double.parse(_qtyToSell.toString()) * double.parse((val));
                                               }),
                                             );
                                           },
@@ -430,10 +212,7 @@ class _AddProductFormState extends State<AddProductForm> {
                           );
                   },
                 ),
-
-                (previousrouteString == '/gassale')
-                    ? Text('')
-                    : Padding(
+                 Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextFormField(
                           decoration: InputDecoration(
@@ -450,18 +229,8 @@ class _AddProductFormState extends State<AddProductForm> {
                                   BorderSide(color: Colors.blue, width: 1.0),
                             ),
                           ),
-                          validator: (val) =>
-                              val!.isEmpty ? 'Please Ref/Serial No' : null,
-                          onChanged: (val) => setState(() {
-                            ref1 = val;
-                          }),
                         ),
                       ),
-                (previousrouteString != '/gassale')
-                    ? Card(
-                        child: Text('Total: ${_total.toString()}'),
-                      )
-                    : Text(''),
                 SizedBox(
                   height: 20.0,
                 ),
@@ -489,7 +258,7 @@ class _AddProductFormState extends State<AddProductForm> {
                           ref1: ref1,
                           name: _selectedProd['Name'],
                           oPLNSId: _selectedProd['o_p_l_n_s_id'],
-                          price: _sellingPrice,
+                          price: double.parse(_sellingPrice.toString()),
                           quantity: _qtyToSell,
                           oITMSId: _selectedProd['id'],
                           lineTotal: _total,

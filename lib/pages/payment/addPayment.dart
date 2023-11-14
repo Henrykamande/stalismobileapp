@@ -121,7 +121,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                     Expanded(
                       child: TextFormField(
                           decoration: InputDecoration(
-                            labelText: 'Remarks',
+                            labelText: 'Ref No',
                             fillColor: Colors.white,
                             filled: true,
                             enabledBorder: OutlineInputBorder(

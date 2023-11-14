@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/pages/payment/addPayment.dart';
+import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/models/accountmodel.dart';
 import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/paymentsAccounts.dart';
@@ -9,6 +12,7 @@ import 'package:testproject/models/product.dart';
 import 'package:snippet_coder_utils/FormHelper.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
+import '../../utils/http.dart';
 import '../productsPages/addProductForm.dart';
 
 class PaymentSearch extends StatefulWidget {
@@ -23,12 +27,33 @@ class _PaymentSearchState extends State<PaymentSearch> {
   String _searchquery = "";
   late TextEditingController amountPaid;
   late TextEditingController selectedAccountName;
+  var _isLoading = false;
 
-  late Future<List<dynamic>> accountsList;
-  GetProducts _accountslistbulder = GetProducts();
+  var accounts = [];
+  // GetProducts _accountslistbulder = GetProducts();
+
+  void fetchAccounts() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final response = await httpGet('bank-accounts');
+    final accountsResponse = jsonDecode(response.body);
+
+    if(accountsResponse['ResultCode'] == 1200) {
+      setState(() {
+        accounts = accountsResponse['ResponseData'];
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+
+  }
 
   void initState() {
     super.initState();
+    fetchAccounts();
     //amountPaid = TextEditingController();
   }
 
@@ -48,7 +73,6 @@ class _PaymentSearchState extends State<PaymentSearch> {
   Widget build(BuildContext context) {
     final paymentsData = Provider.of<ProductListProvider>(context);
     final previousrouteString = paymentsData.previousRoute;
-    accountsList = _accountslistbulder.getaccounts(_searchquery);
 
     return Scaffold(
       appBar: AppBar(
@@ -59,76 +83,40 @@ class _PaymentSearchState extends State<PaymentSearch> {
         elevation: 0.0,
       ),
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
+      body: _isLoading == true ? Center(child: CircularProgressIndicator())  : SafeArea(
         child: Container(
           child: Column(
             children: [
               SizedBox(
                 height: 20.0,
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  onChanged: (val) => setState(() => _searchquery = val),
-                  decoration: InputDecoration(
-                    fillColor: Colors.grey[400],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Colors.purple.shade900,
+              Expanded(
+                child: Container(
+                  height: 300,
+                  child: ListView.builder(
+                    itemCount: accounts.length,
+                    itemBuilder: (context, index) => InkWell(
+                      onTap: () async {
+                        Payment selectedAccount = new Payment(
+                          oACTSId: accounts[index]['id'],
+                          name: accounts[index]['Name'],
+                        );
+
+                        /*  openAddPaymentDialog(paymentsData,
+                                    selectedAccount, previousrouteString);
+ */
+
+                        await paymentsData
+                            .accountchoice(selectedAccount);
+                        _showaddPaymentPane();
+                      },
+                      child: ListTile(
+                        title: Text(accounts[index]['Name']),
+                      ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(
-                height: 20.0,
-              ),
-              Expanded(
-                child: Container(
-                  height: 300,
-                  child: FutureBuilder<List<dynamic>>(
-                      future: accountsList,
-                      builder: (context, snapshot) {
-                        if (snapshot.data == null) {}
-                        if (snapshot.hasData) {
-                          List<dynamic> result = snapshot.data!;
-                          print(result);
-                          return (_searchquery != '')
-                              ? ListView.builder(
-                                  itemCount: result.length,
-                                  itemBuilder: (context, index) => InkWell(
-                                    onTap: () async {
-                                      Payment selectedAccount = new Payment(
-                                        oACTSId: result[index]['id'],
-                                        name: result[index]['Name'],
-                                      );
-
-                                      /*  openAddPaymentDialog(paymentsData,
-                                    selectedAccount, previousrouteString);
- */
-
-                                      await paymentsData
-                                          .accountchoice(selectedAccount);
-                                      _showaddPaymentPane();
-                                    },
-                                    child: ListTile(
-                                      title: Text(result[index]['Name']),
-                                    ),
-                                  ),
-                                )
-                              : Text('');
-                        } else if (snapshot.hasError) {
-                          return Text('${snapshot.error}');
-                        }
-
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }),
-                ),
-              ),
             ],
           ),
         ),
@@ -136,80 +124,5 @@ class _PaymentSearchState extends State<PaymentSearch> {
     );
   }
 
-  /* Future openAddPaymentDialog(
-      paymentsData, selectedAccout, previousrouteString) async {
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Add Payment'),
-        content: Container(
-          height: 100,
-          child: Column(
-            children: [
-              TextFormField(
-                readOnly: true,
-                initialValue: selectedAccout.name,
-              ),
-              TextField(
-                controller: amountPaid,
-                decoration: InputDecoration(hintText: "Enter Amount Paid "),
-              )
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              if (previousrouteString == '/customercreditnote') {
-                Navigator.pushNamed(context, '/start');
-              }
-              if (previousrouteString == '/customerDeposit') {
-                Navigator.pushNamed(context, '/customerDeposit');
-              }
-              if (previousrouteString == '/start') {
-                submit(paymentsData, selectedAccout, previousrouteString);
-                Navigator.pushNamed(context, '/start');
-              }
-            },
-            child: Text('Close'),
-          ),
-          TextButton(
-            onPressed: () {
-              submit(paymentsData, selectedAccout, previousrouteString);
-            },
-            child: Text('Add Payment'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void submit(paymentData, selectedAccount, previousrouteString) {
-    Payment newpayment = Payment(
-        sumApplied: int.parse(amountPaid.text),
-        oACTSId: selectedAccount.oACTSId,
-        name: selectedAccount.name);
-
-    if (previousrouteString == '/customercreditnote') {
-      TopupPayment newpayment = new TopupPayment(
-        paymentMode: selectedAccount.name,
-        SumApplied: int.parse(amountPaid.text),
-        o_a_c_t_s_id: selectedAccount.oACTSId,
-      );
-      paymentData.addTopUpPayment(newpayment);
-      Navigator.pushNamed(context, '/customercreditnote');
-    }
-
-    if (previousrouteString == '/customerDeposit') {
-      paymentData.addDepositPayment(newpayment);
-      Navigator.pushNamed(context, '/customerDeposit');
-    }
-    if (previousrouteString == '/start') {
-      paymentData.addPayment(newpayment);
-      Navigator.pushNamed(context, '/start');
-    }
-  }
-
- */
 
 }
