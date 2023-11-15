@@ -17,6 +17,8 @@ class PosSale {
     required this.balance,
     this.ref1,
     this.ref2,
+    this.driver,
+    this.saleType,
     this.customerName,
     required this.docDate,
     required this.discSum,
@@ -29,6 +31,8 @@ class PosSale {
   int objType;
   int docNum;
   int? cardCode;
+  int? driver;
+  int? saleType;
   double docTotal;
   double balance;
   String? ref2;
@@ -43,6 +47,8 @@ class PosSale {
 
   factory PosSale.fromJson(Map<String, dynamic> json) => PosSale(
         objType: json["ObjType"],
+        driver: json["driver"],
+        saleType: json["saleType"],
         ref2: json['ref2'],
         docNum: json["DocNum"],
         cardCode: json["CardCode"],
@@ -61,6 +67,8 @@ class PosSale {
 
   Map<String, dynamic> toJson() => {
         "ObjType": objType,
+        "drive": driver,
+        "saleType": saleType,
         "DocNum": docNum,
         "CardCode": cardCode,
         "DocTotal": docTotal,

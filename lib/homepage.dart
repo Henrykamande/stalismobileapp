@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:testproject/shared/drawerscreen.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:testproject/utils/http.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -33,9 +34,14 @@ class _HomePageState extends State<HomePage> {
   String storename = '';
   List<SaleRow> products = [];
   String customerNo = "";
+  List alldrivers = [];
+  var selecteddriver;
+
+  var discountGiven = 0;
   List _devices = [];
   var macaddress = '';
-
+  var selectedSaleType; // Default selected value
+  List allSaleTypes = [];
   // var dateFormat = DateFormat("yyyy-MM-dd");
   // String todayDate = dateFormat.format(DateTime.now());
 
@@ -45,18 +51,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-
+    fetchallStores();
+    fetchallSaleTypes();
     setdate = true;
     _getPrinterAddress();
     context.read<GetProducts>().fetchshopDetails();
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
-    /* _printerService.initPlatformState();
-    _printerService.getPrinterAddress();
-    _printerService.connect();
- */
-    // initPlatformState();
-    //fetchshopDetails();
-    // sethenders();
   }
 
   void fetchshopDetails() async {
@@ -72,7 +72,29 @@ class _HomePageState extends State<HomePage> {
     _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
   }
 
+  void fetchallStores() async {
+    var response = await httpGet('drivers');
+    print(response.body);
 
+    if (response.statusCode == 200) {}
+    setState(() {
+      alldrivers = jsonDecode(response.body)['ResponseData'];
+      print("All Stores $alldrivers");
+    });
+    print("all stores $alldrivers");
+  }
+
+  void fetchallSaleTypes() async {
+    var response = await httpGet('drivers');
+    print(response.body);
+
+    if (response.statusCode == 200) {}
+    setState(() {
+      allSaleTypes = jsonDecode(response.body)['ResponseData'];
+      print("All Stores $allSaleTypes");
+    });
+    print("all stores $allSaleTypes");
+  }
 
   sethenders() async {
     cache = await _prefs.readCache(
@@ -154,96 +176,140 @@ class _HomePageState extends State<HomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton.icon(onPressed: () {
-                context
-                    .read<ProductListProvider>()
-                    .setPreviousRoute('/start');
+              TextButton.icon(
+                  onPressed: () {
+                    context
+                        .read<ProductListProvider>()
+                        .setPreviousRoute('/start');
 
-                Navigator.pushNamed(context, '/searchproduct');
-              }, icon: Icon(Icons.add), label: Text('Add Sale Item')),
-              TextButton.icon(onPressed: () {
-                context
-                    .read<ProductListProvider>()
-                    .setPreviousRoute('/start');
+                    Navigator.pushNamed(context, '/searchproduct');
+                  },
+                  icon: Icon(Icons.add),
+                  label: Text('Add Sale Item')),
+              TextButton.icon(
+                onPressed: () {
+                  context
+                      .read<ProductListProvider>()
+                      .setPreviousRoute('/start');
 
-                Navigator.pushNamed(context, '/paymentsearch');
-              }, icon: Icon(Icons.add), label: Text('Add Payment'),
-              style: ButtonStyle(foregroundColor: MaterialStateColor.resolveWith((states) => Colors.pink)),)
+                  Navigator.pushNamed(context, '/paymentsearch');
+                },
+                icon: Icon(Icons.add),
+                label: Text('Add Payment'),
+                style: ButtonStyle(
+                    foregroundColor: MaterialStateColor.resolveWith(
+                        (states) => Colors.pink)),
+              )
             ],
           ),
           Container(
             color: Colors.white,
-            child:  Consumer<ProductListProvider>(
+            child: Consumer<ProductListProvider>(
               builder: (context, value, child) {
                 return ListView.builder(
                     shrinkWrap: true,
                     itemCount: value.productlist.length,
                     itemBuilder: (context, index) => index <
-                        value.productlist.length
+                            value.productlist.length
                         ? Container(
-                      color: Colors.white,
-                      child: ListTile(
-                        title: Text(
-                          value.productlist[index].name.toString(),
-                          style: TextStyle(
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Qty: ${(value.productlist[index].quantity).toString()}",
+                            color: Colors.white,
+                            child: ListTile(
+                              title: Text(
+                                value.productlist[index].name.toString(),
                                 style: TextStyle(
-                                    fontSize: 11.0,
+                                    fontSize: 13.0,
                                     fontWeight: FontWeight.bold),
                               ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Price: ${value.productlist[index].price.toString()}",
-                                style: TextStyle(
-                                    fontSize: 11.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Column(
-                            children: [
-                              Text(formatnum
-                                  .format(
-                                  value.productlist[index].lineTotal)
-                                  .toString()),
-                              Expanded(
-                                child: IconButton(
-                                    icon: Icon(
-                                      Icons.cancel,
-                                      color: Colors.red,
+                              subtitle: Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "Qty: ${(value.productlist[index].quantity).toString()}",
+                                      style: TextStyle(
+                                          fontSize: 11.0,
+                                          fontWeight: FontWeight.bold),
                                     ),
-                                    onPressed: () {
-                                      value.removeProduct(index);
-                                    }),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "Price: ${value.productlist[index].price.toString()}",
+                                      style: TextStyle(
+                                          fontSize: 11.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              trailing: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Column(
+                                  children: [
+                                    Text(formatnum
+                                        .format(
+                                            value.productlist[index].lineTotal)
+                                        .toString()),
+                                    Expanded(
+                                      child: IconButton(
+                                          icon: Icon(
+                                            Icons.cancel,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            value.removeProduct(index);
+                                          }),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
                         : Card(
-                      child: Text("No product added"),
-                    ));
+                            child: Text("No product added"),
+                          ));
               },
             ),
           ),
+          SizedBox(
+            height: 20,
+          ),
+          Consumer<ProductListProvider>(builder: (context, value, child) {
+            return Container(
+              child: Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: TextFormField(
+                  key: _formKey,
+                  initialValue: "0",
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Discount Amount',
+                    fillColor: Colors.white,
+                    filled: false,
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red, width: 1.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                    ),
+                  ),
+                  onChanged: (val) => setState(() {
+                    value.addDiscount(double.parse(val.toString()));
+                    val.length > 0
+                        ? discountGiven = int.parse(val.toString())
+                        : discountGiven = 0;
+                  }),
+                ),
+              ),
+            );
+          }),
           Container(
             color: Colors.black54,
-            padding: EdgeInsets.symmetric(vertical:10.0, horizontal: 18.0),
-            child: Text('Payments', style: TextStyle(color: Colors.white),),
+            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 18.0),
+            child: Text(
+              'Payments',
+              style: TextStyle(color: Colors.white),
+            ),
             height: 40,
             width: MediaQuery.of(context).size.width,
           ),
@@ -257,37 +323,37 @@ class _HomePageState extends State<HomePage> {
                     shrinkWrap: true,
                     itemCount: value.paymentlist.length,
                     itemBuilder: (context, index) => index <
-                        value.paymentlist.length
+                            value.paymentlist.length
                         ? Container(
-                      color: Colors.white,
-                      child: ListTile(
-                        title:
-                        Text('${value.paymentlist[index].name}'),
-                        subtitle: Text('${value.paymentlist[index].paymentRemarks}'),
-                        trailing: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: [
-                              Text(
-                                  "Ksh ${(formatnum.format(value.paymentlist[index].sumApplied)).toString()}"),
-                              Expanded(
-                                child: IconButton(
-                                    icon: Icon(
-                                      Icons.cancel,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () {
-                                      value.removePayment(index);
-                                    }),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
+                            color: Colors.white,
+                            child: ListTile(
+                              title: Text('${value.paymentlist[index].name}'),
+                              subtitle: Text(
+                                  '${value.paymentlist[index].paymentRemarks}'),
+                              trailing: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                        "Ksh ${(formatnum.format(value.paymentlist[index].sumApplied)).toString()}"),
+                                    Expanded(
+                                      child: IconButton(
+                                          icon: Icon(
+                                            Icons.cancel,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            value.removePayment(index);
+                                          }),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
                         : Card(
-                      child: Text("Hello"),
-                    ));
+                            child: Text("Hello"),
+                          ));
               },
             ),
           ),
@@ -369,56 +435,209 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Divider(),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+              decoration: BoxDecoration(),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DropdownButton(
+                              hint: Text(
+                                'Select Shop',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              style: TextStyle(color: Colors.black),
+                              isExpanded: false,
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: Colors.black,
+                              ),
+                              value: selecteddriver,
+                              focusColor: Colors.white,
+                              dropdownColor: Colors.white,
+                              items: alldrivers.map((store) {
+                                return DropdownMenuItem(
+                                  value: store['id'],
+                                  child: Text(
+                                    store['Name'].toString(),
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selecteddriver = value;
+                                });
+                                print(value);
+                              }),
+                          DropdownButton(
+                              hint: Text(
+                                'Select Sale Type',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              style: TextStyle(color: Colors.black),
+                              isExpanded: false,
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down,
+                                color: Colors.black,
+                              ),
+                              value: selectedSaleType,
+                              focusColor: Colors.white,
+                              dropdownColor: Colors.white,
+                              items: allSaleTypes.map((store) {
+                                return DropdownMenuItem(
+                                  value: store['id'],
+                                  child: Text(
+                                    store['Name'].toString(),
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedSaleType = value;
+                                });
+                                print(value);
+                              }),
+                        ]),
+                  ])),
+          Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              /* isloading
-                            ? CircularProgressIndicator(
-                                strokeWidth: 10.0,
-                              )
-                            :  */
               Container(
                 child: ElevatedButton(
-                  /*  shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        color: Colors.blue, */
                   child: Text(
                     'Create Sale',
                     style: TextStyle(color: Colors.white),
                   ),
                   onPressed: () async {
-                    /* if (dateInput.text == null ||
-                                  dateInput.text == '') {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content: Text("Hi, I am a snack bar!"),
-                                ));
-                              } */
-
                     AlertDialog(
                       content: Text('success'),
                     );
-                    if (_formKey.currentState!.validate()) {
-                      // print('Date  ...............${pickeddate}');
 
-                      cache = await _prefs.readCache('Token', 'StoreId',
-                          'loggedInUserName', 'storename');
-                      if (context
-                          .read<ProductListProvider>()
-                          .totalpayment >
-                          context.read<ProductListProvider>().totabill) {
+                    cache = await _prefs.readCache(
+                        'Token', 'StoreId', 'loggedInUserName', 'storename');
+                    if (context.read<ProductListProvider>().totalpayment >
+                        context.read<ProductListProvider>().totabill) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(20),
+                                )),
+                            height: 90.0,
+                            child: Center(
+                              child: Text(
+                                'Payment cannot be more than the total bill',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: Colors.transparent,
+                        ),
+                      );
+                    } else if (context
+                            .read<ProductListProvider>()
+                            .totalpayment <=
+                        0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(20),
+                                )),
+                            height: 90.0,
+                            child: Center(
+                              child: Text(
+                                'Add Payment',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: Colors.transparent,
+                        ),
+                      );
+                    } else if (context
+                            .read<ProductListProvider>()
+                            .totalpayment <
+                        context.read<ProductListProvider>().totalPrice()) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(20),
+                                )),
+                            height: 90.0,
+                            child: Center(
+                              child: Text(
+                                'Balance Can not be greater than 0.',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: Colors.transparent,
+                        ),
+                      );
+                    } else {
+                      final balance =
+                          context.read<ProductListProvider>().balancepayment();
+                      final paymentlist =
+                          context.read<ProductListProvider>().paymentlist;
+                      final totalbill =
+                          context.read<ProductListProvider>().totabill;
+                      final products =
+                          context.read<ProductListProvider>().productlist;
+                      final totalpayment =
+                          context.read<ProductListProvider>().totalpayment;
+                      final customerNo =
+                          context.read<ProductListProvider>().customerPhone;
+                      PosSale saleCard = new PosSale(
+                          ref2: customerNo.toString(),
+                          objType: 14,
+                          docNum: 2,
+                          saleType: selectedSaleType,
+                          discSum: discountGiven,
+                          payments: paymentlist,
+                          docTotal: totalbill,
+                          balance: balance,
+                          driver: selecteddriver,
+                          docDate: DateFormat('yyyy-MM-dd')
+                              .parse(dateController.text),
+                          rows: products,
+                          totalPaid: totalpayment,
+                          userName: cache['loggedInUserName']);
+
+                      context.read<GetProducts>().postsale(saleCard);
+
+                      if (responseCode == 1200) {
+                        context.read<ProductListProvider>().setprodLIstempty();
+                        context.read<ProductListProvider>().resetCustmerPhone();
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Container(
                               decoration: BoxDecoration(
-                                  color: Colors.red,
+                                  color: Colors.green,
                                   borderRadius: BorderRadius.all(
                                     Radius.circular(20),
                                   )),
                               height: 90.0,
                               child: Center(
                                 child: Text(
-                                  'Payment cannot be more than the total bill',
+                                  'Sale Posted Succesfully .',
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),
@@ -427,155 +646,35 @@ class _HomePageState extends State<HomePage> {
                             backgroundColor: Colors.transparent,
                           ),
                         );
-                      } else if (context
-                          .read<ProductListProvider>()
-                          .totalpayment <=
-                          0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(20),
-                                  )),
-                              height: 90.0,
-                              child: Center(
-                                child: Text(
-                                  'Add Payment',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        );
-                      } else if (context
-                          .read<ProductListProvider>()
-                          .totalpayment <
-                          context.read<ProductListProvider>().totabill) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(20),
-                                  )),
-                              height: 90.0,
-                              child: Center(
-                                child: Text(
-                                  'Payment canot be less than the total bill.',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        );
+                        context.read<ProductListProvider>().resetsetdiscount();
                       } else {
-                        final balance = context
-                            .read<ProductListProvider>()
-                            .balancepayment();
-                        final paymentlist = context
-                            .read<ProductListProvider>()
-                            .paymentlist;
-                        final totalbill =
-                            context.read<ProductListProvider>().totabill;
-                        final products = context
-                            .read<ProductListProvider>()
-                            .productlist;
-                        final totalpayment = context
-                            .read<ProductListProvider>()
-                            .totalpayment;
-                        final customerNo = context
-                            .read<ProductListProvider>()
-                            .customerPhone;
-                        PosSale saleCard = new PosSale(
-                            ref2: customerNo.toString(),
-                            objType: 14,
-                            docNum: 2,
-                            discSum: 0,
-                            payments: paymentlist,
-                            docTotal: totalbill,
-                            balance: balance,
-                            docDate: DateFormat('yyyy-MM-dd')
-                                .parse(dateInput.text),
-                            rows: products,
-                            totalPaid: totalpayment,
-                            userName: cache['loggedInUserName']);
-
-                        context.read<GetProducts>().postsale(saleCard);
-
-                        if (responseCode == 1200) {
-                          context
-                              .read<ProductListProvider>()
-                              .setprodLIstempty();
-                          context
-                              .read<ProductListProvider>()
-                              .resetCustmerPhone();
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.green,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(20),
-                                    )),
-                                height: 90.0,
-                                child: Center(
-                                  child: Text(
-                                    'Sale Posted Succesfully .',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(20),
+                                  )),
+                              height: 90.0,
+                              child: Center(
+                                child: Text(
+                                  'Sale Not Succesfully $resultDesc',
+                                  style: TextStyle(color: Colors.white),
                                 ),
                               ),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: Colors.transparent,
                             ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(20),
-                                    )),
-                                height: 90.0,
-                                child: Center(
-                                  child: Text(
-                                    'Sale Not Succesfully $resultDesc',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: Colors.transparent,
-                            ),
-                          );
-                        }
-
-                        context
-                            .read<ProductListProvider>()
-                            .resetCustmerPhone();
-
-                        //salepost.setislodaing();
-
-                        //var printeraddress = salepost.getPrinterAddress();
-                        // print(
-                        //     'Printer address fron fuction $printeraddress');
-
-                        // var existingprinter = null;
-                        /* bluetooth.printCustom(
-                                  "${cache['storename']}", 1, 1); */
-
-                        Navigator.pushNamed(context, '/start');
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: Colors.transparent,
+                          ),
+                        );
                       }
+                      context.read<ProductListProvider>().setprodLIstempty();
+                      context.read<ProductListProvider>().resetCustmerPhone();
+                      context.read<ProductListProvider>().resetCustmerPhone();
+                      context.read<ProductListProvider>().resetsetdiscount();
+
+                      Navigator.pushNamed(context, '/start');
                     }
                   },
                 ),

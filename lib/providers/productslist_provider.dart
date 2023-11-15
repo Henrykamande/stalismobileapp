@@ -7,6 +7,7 @@ import 'package:testproject/models/postSale.dart';
 import 'api_service.dart';
 
 class ProductListProvider with ChangeNotifier {
+  double _discount = 0;
   double _totalbill = 0;
   double _totalDepositBill = 0;
   double _balance = 0;
@@ -54,6 +55,7 @@ class ProductListProvider with ChangeNotifier {
     return _accountSelected;
   }
 
+  double get discount => _discount;
   double get totabill => _totalbill;
   double get totaDepositBill => _totalDepositBill;
   double get billBalance => _balance;
@@ -135,6 +137,10 @@ class ProductListProvider with ChangeNotifier {
     return _topUpBalance;
   }
 
+  void addDiscount(discount) {
+    _discount = discount;
+  }
+
   void addTopUpPayment(topUpPayment) {
     _topUpPaymentList.add(topUpPayment);
   }
@@ -193,13 +199,17 @@ class ProductListProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void resetsetdiscount() {
+    _discount = 0;
+  }
+
   double totalPrice() {
     _totalbill = 0;
     _productList.forEach((item) {
       //calculate the total prices
       _totalbill = _totalbill + item.lineTotal;
     });
-    return _totalbill;
+    return _totalbill - _discount;
   }
 
   void addPayment(payment) {
@@ -219,19 +229,19 @@ class ProductListProvider with ChangeNotifier {
 
   void removeProduct(index) {
     if (billBalance == 0) {
-      _totalbill = _totalbill - _productList[index].lineTotal;
+      _totalbill = _totalbill - _productList[index].lineTotal - _discount;
       _productList.removeAt(index);
     }
     if (totalpayment == 0.0 && billBalance == 0.0) {
-      _totalbill = _totalbill - _productList[index].lineTotal;
+      _totalbill = _totalbill - _productList[index].lineTotal - _discount;
       _productList.removeAt(index);
     }
     if (totalpayment == 0.0 && billBalance == 0.0) {
-      _totalbill = _totalbill - _productList[index].lineTotal;
+      _totalbill = _totalbill - _productList[index].lineTotal - _discount;
       _productList.removeAt(index);
     }
 
-    _totalbill = _totalbill - _productList[index].lineTotal;
+    _totalbill = _totalbill - _productList[index].lineTotal - _discount;
     _productList.removeAt(index);
     notifyListeners();
   }
@@ -443,7 +453,7 @@ class ProductListProvider with ChangeNotifier {
   double balancepayment() {
     _balance = 0;
     _balance = _totalbill - totalPaymentcalc();
-    return _balance;
+    return _balance - _discount;
   }
 
   double depositbalance() {
