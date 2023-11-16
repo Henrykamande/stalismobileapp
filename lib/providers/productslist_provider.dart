@@ -201,6 +201,7 @@ class ProductListProvider with ChangeNotifier {
 
   void resetsetdiscount() {
     _discount = 0;
+    _balance = 0;
   }
 
   double totalPrice() {
@@ -240,10 +241,10 @@ class ProductListProvider with ChangeNotifier {
     //   _totalbill = _totalbill - _productList[index].lineTotal - _discount;
     //   _productList.removeAt(index);
     // }
-    //
-    // _totalbill = _totalbill - _productList[index].lineTotal - _discount;
+    _totalbill = _totalbill - _productList[index].lineTotal - _discount;
     _productList.removeAt(index);
     balancepayment();
+
     notifyListeners();
   }
 
