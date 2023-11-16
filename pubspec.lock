@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  blue_thermal_printer:
+    dependency: "direct main"
+    description:
+      name: blue_thermal_printer
+      sha256: "2b8a93f90be335494d2172dbc869c31b95638087f89591b4ad69fd9305eaf80b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.3"
   boolean_selector:
     dependency: transitive
     description:
@@ -215,7 +223,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_bluetooth_basic:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_bluetooth_basic
       sha256: e81a2c5e9340660b4832831b33d9f3c1f1b098c8f924bc1dafef9702c5985921
@@ -286,6 +294,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.17"
+  flutter_scan_bluetooth:
+    dependency: "direct main"
+    description:
+      name: flutter_scan_bluetooth
+      sha256: "01f0a203b328210a93142abf0297433308e571c5b02c654706a11fe9a8839598"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.4"
   flutter_switch:
     dependency: "direct main"
     description:

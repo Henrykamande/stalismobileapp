@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -26,7 +26,6 @@ dependencies:
   email_validator: ^2.0.1
   provider: ^6.0.3
 
-
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
@@ -36,7 +35,6 @@ dependencies:
   snippet_coder_utils: ^1.0.8
   intl: ^0.18.1
   flutter_typeahead: ^4.0.0
-  esc_pos_bluetooth: ^0.4.1
   flutter_launcher_icons: ^0.11.0
   path_provider: ^2.0.4
   qr_flutter: ^4.0.0
@@ -45,8 +43,10 @@ dependencies:
   lite_rolling_switch: ^1.0.0
   flutter_switch: ^0.3.2
   dropdown_search: ^5.0.3
- 
- 
+  blue_thermal_printer: ^1.2.3
+  esc_pos_bluetooth: ^0.4.1
+  flutter_bluetooth_basic: ^0.1.5
+  flutter_scan_bluetooth: ^2.1.4
 
 dev_dependencies:
   flutter_test:
@@ -56,13 +56,12 @@ flutter_icons:
   ios: true
   image_path: "assets/icon/icon.jpg"
   min_sdk_android: 21 # android min sdk min:16, default 21
- 
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

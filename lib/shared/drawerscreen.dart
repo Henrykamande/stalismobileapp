@@ -112,15 +112,15 @@ class DrawerScreen extends StatelessWidget {
           //     Navigator.pushNamed(context, '/gassale');
           //   },
           // ),
-          // ListTile(
-          //   title: const Text('General Settings'),
-          //   onTap: () {
-          //     // Update the state of the app
-          //     // ...
-          //     // Then close the drawer
-          //     Navigator.pushNamed(context, '/generalsettings');
-          //   },
-          // ),
+          ListTile(
+            title: const Text('General Settings'),
+            onTap: () {
+              // Update the state of the app
+              // ...
+              // Then close the drawer
+              Navigator.pushNamed(context, '/generalsettings');
+            },
+          ),
           ListTile(
               title: const Text('Web Portal'),
               onTap:
