@@ -72,6 +72,8 @@ class _HomePageState extends State<HomePage> {
         _devices = devices;
       });
     });
+
+    _startScanDevices();
   }
 
   void _startScanDevices() {
@@ -507,9 +509,6 @@ class _HomePageState extends State<HomePage> {
                       content: Text('success'),
                     );
 
-                    print(defaultPrinter);
-                    print(macaddress);
-                    //testPrinting(defaultPrinter, printerManager);
                     cache = await _prefs.readCache(
                         'Token', 'StoreId', 'loggedInUserName', 'storename');
                     if (context.read<ProductListProvider>().totalpayment >
@@ -558,15 +557,18 @@ class _HomePageState extends State<HomePage> {
 
                       context.read<GetProducts>().postsale(saleCard);
 
-                      if (responseCode == 1200) {
+                      if (responseCode != 1200) {
+                        customSnackBar(
+                            context, "Sale Not Succesfully $resultDesc");
+                      } else {
                         context.read<ProductListProvider>().setprodLIstempty();
                         context.read<ProductListProvider>().resetCustmerPhone();
 
                         customSnackBar(context, "Sale Posted Succesfully");
                         context.read<ProductListProvider>().resetsetdiscount();
-                      } else {
-                        customSnackBar(
-                            context, "Sale Not Succesfully $resultDesc");
+
+                        printingSaleReciept(
+                            defaultPrinter!, saleCard, printerManager);
                       }
                       context.read<ProductListProvider>().setprodLIstempty();
                       context.read<ProductListProvider>().resetCustmerPhone();

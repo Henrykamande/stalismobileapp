@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:intl/intl.dart';
+import 'package:testproject/models/postSale.dart';
 
 import 'package:flutter/services.dart';
 import 'package:image/image.dart';
@@ -10,7 +11,7 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:oktoast/oktoast.dart';
 
 Future<List<int>> demoReceipt(
-    PaperSize paper, CapabilityProfile profile) async {
+    PaperSize paper, CapabilityProfile profile, PosSale saleCard) async {
   final Generator ticket = Generator(paper, profile);
   List<int> bytes = [];
 
@@ -20,7 +21,7 @@ Future<List<int>> demoReceipt(
   // final Image? image = decodeImage(imageBytes);
   // bytes += ticket.image(image);
 
-  bytes += ticket.text('GROCERYLY',
+  bytes += ticket.text('${saleCard.rows}',
       styles: PosStyles(
         align: PosAlign.center,
         height: PosTextSize.size2,
@@ -224,7 +225,8 @@ Future<List<int>> testTicket(PaperSize paper, CapabilityProfile profile) async {
   return bytes;
 }
 
-void testPrinting(PrinterBluetooth printer, printerManager) async {
+void printingSaleReciept(
+    PrinterBluetooth printer, PosSale saleCard, printerManager) async {
   printerManager.selectPrinter(printer);
 
   // TODO Don't forget to choose printer's paper
@@ -236,8 +238,8 @@ void testPrinting(PrinterBluetooth printer, printerManager) async {
   // await printerManager.printTicket(await testTicket(paper));
 
   // DEMO RECEIPT
-  final PosPrintResult res =
-      await printerManager.printTicket((await demoReceipt(paper, profile)));
+  final PosPrintResult res = await printerManager
+      .printTicket((await demoReceipt(paper, profile, saleCard)));
 
   showToast(res.msg);
 }
