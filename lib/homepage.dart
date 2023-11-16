@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:testproject/shared/drawerscreen.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:testproject/utils/custom_select_box.dart';
 import 'package:testproject/utils/http.dart';
 import 'package:testproject/utils/saleValidation.dart';
 
@@ -36,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   List<SaleRow> products = [];
   String customerNo = "";
   List alldrivers = [];
-  var selecteddriver;
+  var selectedDriver = '';
 
   var discountGiven = 0;
   List _devices = [];
@@ -52,7 +53,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    fetchallStores();
+    fetchDrivers();
     fetchallSaleTypes();
     setdate = true;
     _getPrinterAddress();
@@ -73,16 +74,15 @@ class _HomePageState extends State<HomePage> {
     _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
   }
 
-  void fetchallStores() async {
-    var response = await httpGet('drivers');
-    print(response.body);
+  void fetchDrivers() async {
+    final response = await httpGet('drivers');
+    final driversResponse = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {}
-    setState(() {
-      alldrivers = jsonDecode(response.body)['ResponseData'];
-      print("All Stores $alldrivers");
-    });
-    print("all stores $alldrivers");
+    if(driversResponse['ResultCode'] == 1200) {
+      setState(() {
+        alldrivers = driversResponse['ResponseData'];
+      });
+    }
   }
 
   void fetchallSaleTypes() async {
@@ -438,75 +438,31 @@ class _HomePageState extends State<HomePage> {
             );
           }),
           Divider(),
-          Container(
-              padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-              decoration: BoxDecoration(),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          DropdownButton(
-                              hint: Text(
-                                'Select Shop',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              style: TextStyle(color: Colors.black),
-                              isExpanded: false,
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down,
-                                color: Colors.black,
-                              ),
-                              value: selecteddriver,
-                              focusColor: Colors.white,
-                              dropdownColor: Colors.white,
-                              items: alldrivers.map((store) {
-                                return DropdownMenuItem(
-                                  value: store['id'],
-                                  child: Text(
-                                    store['Name'].toString(),
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selecteddriver = value;
-                                });
-                                print(value);
-                              }),
-                          DropdownButton(
-                              hint: Text(
-                                'Select Sale Type',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              style: TextStyle(color: Colors.black),
-                              isExpanded: false,
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down,
-                                color: Colors.black,
-                              ),
-                              value: selectedSaleType,
-                              focusColor: Colors.white,
-                              dropdownColor: Colors.white,
-                              items: allSaleTypes.map((store) {
-                                return DropdownMenuItem(
-                                  value: store['id'],
-                                  child: Text(
-                                    store['Name'].toString(),
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedSaleType = value;
-                                });
-                                print(value);
-                              }),
-                        ]),
-                  ])),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomSelectBox(
+                  selectedVal: selectedDriver,
+                  label: 'Driver / Rider',
+                  items: alldrivers,
+                  onChanged: (val) {
+                    setState(() {
+                      selectedDriver = val as String;
+                    });
+                  }),
+              SizedBox(
+                height: 10,
+              ),
+              CustomSelectBox(
+                  selectedVal: selectedDriver,
+                  label: 'Sale Type',
+                  items: alldrivers,
+                  onChanged: (val) {
+                    setState(() {
+                      selectedDriver = val as String;
+                    });
+                  })
+            ],),
           Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -561,7 +517,7 @@ class _HomePageState extends State<HomePage> {
                           payments: paymentlist,
                           docTotal: totalbill,
                           balance: balance,
-                          driver: selecteddriver,
+                          driver: int.parse(selectedDriver),
                           docDate: DateFormat('yyyy-MM-dd')
                               .parse(dateController.text),
                           rows: products,

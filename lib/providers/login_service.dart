@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:testproject/providers/shared_preferences_services.dart';
+import 'package:testproject/utils/http.dart';
 
 class UserLogin with ChangeNotifier {
   bool isLoggedIn = false;
@@ -13,7 +14,7 @@ class UserLogin with ChangeNotifier {
     final PrefService _prefs = PrefService();
     var response = await http.post(
       Uri.parse(
-          'https://phplaravel-1005299-3647050.cloudwaysapps.com/api/v1/login'),
+          '$backendUrl/login'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

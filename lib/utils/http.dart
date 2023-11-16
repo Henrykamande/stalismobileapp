@@ -1,7 +1,8 @@
 import 'package:http/http.dart' as http;
 import './shared_data.dart';
-//
-var backendUrl = 'https://phplaravel-1005299-3647050.cloudwaysapps.com/api/v1';
+
+// var backendUrl = 'https://phplaravel-1005299-3647050.cloudwaysapps.com/api/v1';
+var backendUrl = 'http://10.0.2.2:8000/api/v1';
 
 
 Future<dynamic> getSharedData() async {
@@ -57,29 +58,3 @@ Future<dynamic> httpGet(String apiUrl) async {
   }
 }
 
-// Future<dynamic> offlineHttpPost(String apiUrl, dynamic data) async {
-//   try {
-//     final url = Uri.parse('$offlineBackendUrl/$apiUrl');
-//     final prefsData = await getSharedData();
-//     final response = await http.post(
-//       url,
-//       headers: prefsData['headers'],
-//       body: data,
-//     );
-//     return response;
-//   } catch (error) {
-//     return error;
-//   }
-// }
-//
-// Future<dynamic> offlineHttpGet(String apiUrl) async {
-//   try {
-//     final prefsData = await getSharedData();
-//     final url = Uri.parse('$offlineBackendUrl/$apiUrl');
-//     final response = await http.get(url, headers: prefsData['headers']);
-//
-//     return response;
-//   } catch (error) {
-//     print(error.toString());
-//   }
-// }
