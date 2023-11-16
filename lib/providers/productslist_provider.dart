@@ -244,7 +244,6 @@ class ProductListProvider with ChangeNotifier {
     _totalbill = _totalbill - _productList[index].lineTotal - _discount;
     _productList.removeAt(index);
     balancepayment();
-
     notifyListeners();
   }
 
@@ -454,13 +453,7 @@ class ProductListProvider with ChangeNotifier {
 
   double balancepayment() {
     _balance = 0;
-
-    _totalpayment = 0;
-    _payments.forEach((item) {
-      _totalpayment += item.sumApplied!;
-    });
-
-    _balance = _totalbill - _totalpayment;
+    _balance = _totalbill - totalPaymentcalc();
     return _balance - _discount;
   }
 

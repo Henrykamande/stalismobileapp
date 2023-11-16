@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
   String customerNo = "";
   List alldrivers = [];
   var selectedDriver = '';
-
+  PrinterBluetooth? defaultPrinter;
   var discountGiven = 0;
   var macaddress = '';
   var selectedSaleType; // Default selected value
@@ -59,15 +59,19 @@ class _HomePageState extends State<HomePage> {
     fetchallSaleTypes();
     setdate = true;
     _getPrinterAddress();
+    _scanPrinters();
+
+    context.read<GetProducts>().fetchshopDetails();
+    _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
+  }
+
+  void _scanPrinters() {
     printerManager.scanResults.listen((devices) async {
       // print('UI: Devices found ${devices.length}');
       setState(() {
         _devices = devices;
       });
     });
-
-    context.read<GetProducts>().fetchshopDetails();
-    _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
   }
 
   void _startScanDevices() {
@@ -98,7 +102,7 @@ class _HomePageState extends State<HomePage> {
     final response = await httpGet('drivers');
     final driversResponse = jsonDecode(response.body);
 
-    if(driversResponse['ResultCode'] == 1200) {
+    if (driversResponse['ResultCode'] == 1200) {
       setState(() {
         alldrivers = driversResponse['ResponseData'];
       });
@@ -144,9 +148,13 @@ class _HomePageState extends State<HomePage> {
       headers: headers,
     );
     var data = await jsonDecode(response.body);
-
+    defaultPrinter =
+        _devices.firstWhere((item) => item.address == data['ResponseData']);
     setState(() {
-      macaddress = data['ResponseData'];
+      defaultPrinter = defaultPrinter;
+
+      print(_devices);
+      print(macaddress);
     });
     return data['ResponseData'];
   }
@@ -482,7 +490,8 @@ class _HomePageState extends State<HomePage> {
                       selectedDriver = val as String;
                     });
                   })
-            ],),
+            ],
+          ),
           Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -497,7 +506,10 @@ class _HomePageState extends State<HomePage> {
                     AlertDialog(
                       content: Text('success'),
                     );
-                    printRecipt(printerManager, _devices);
+
+                    print(defaultPrinter);
+                    print(macaddress);
+                    //testPrinting(defaultPrinter, printerManager);
                     cache = await _prefs.readCache(
                         'Token', 'StoreId', 'loggedInUserName', 'storename');
                     if (context.read<ProductListProvider>().totalpayment >

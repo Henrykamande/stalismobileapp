@@ -62,7 +62,7 @@ class Stalisapp extends StatelessWidget {
             '/gassale': (context) => GasSale(),
             '/customerdepositlist': (context) => CustomerDepositsList(),
             '/transfer': (context) => TransferScreen(),
-            //'/generalsettings': (context) => MyPrinter(),
+            '/generalsettings': (context) => MyPrinter(),
           },
           title: title,
           home: Scaffold(

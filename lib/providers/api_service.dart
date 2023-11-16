@@ -305,8 +305,7 @@ class GetProducts with ChangeNotifier {
 
   Future defaultPrinterAddress(printerAddress) async {
     var headers = await sethenders();
-    print(printerAddress);
-    print(headers['storeid']);
+
     final queryparameters = jsonEncode({
       "store_id": headers['storeid'],
       'address': printerAddress,
