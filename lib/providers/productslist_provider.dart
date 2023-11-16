@@ -454,7 +454,13 @@ class ProductListProvider with ChangeNotifier {
 
   double balancepayment() {
     _balance = 0;
-    _balance = _totalbill - totalPaymentcalc();
+
+    _totalpayment = 0;
+    _payments.forEach((item) {
+      _totalpayment += item.sumApplied!;
+    });
+
+    _balance = _totalbill - _totalpayment;
     return _balance - _discount;
   }
 
