@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/constants/constants.dart';
 import 'package:testproject/models/postSale.dart';
+import 'package:testproject/pages/printerPages/printerPage.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/providers/productslist_provider.dart';
@@ -41,7 +43,6 @@ class _HomePageState extends State<HomePage> {
   var selectedSaleType = '';
 
   var discountGiven = 0;
-  List _devices = [];
   var macaddress = '';
   List allSaleTypes = [];
   // var dateFormat = DateFormat("yyyy-MM-dd");
@@ -49,7 +50,8 @@ class _HomePageState extends State<HomePage> {
 
   TextEditingController dateController = TextEditingController();
   final formatnum = new NumberFormat("#,##0.00", "en_US");
-
+  PrinterBluetoothManager printerManager = PrinterBluetoothManager();
+  List<PrinterBluetooth> _devices = [];
   @override
   void initState() {
     super.initState();
@@ -57,8 +59,26 @@ class _HomePageState extends State<HomePage> {
     fetchallSaleTypes();
     setdate = true;
     _getPrinterAddress();
+    printerManager.scanResults.listen((devices) async {
+      // print('UI: Devices found ${devices.length}');
+      setState(() {
+        _devices = devices;
+      });
+    });
+
     context.read<GetProducts>().fetchshopDetails();
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
+  }
+
+  void _startScanDevices() {
+    setState(() {
+      _devices = [];
+    });
+    printerManager.startScan(Duration(seconds: 4));
+  }
+
+  void _stopScanDevices() {
+    printerManager.stopScan();
   }
 
   void fetchshopDetails() async {
