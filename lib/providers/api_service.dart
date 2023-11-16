@@ -13,6 +13,7 @@ import 'package:testproject/models/paymentsAccounts.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
+import 'package:testproject/utils/http.dart';
 
 import '../constants/constants.dart';
 
@@ -76,7 +77,7 @@ class GetProducts with ChangeNotifier {
     });
     var headers = await sethenders();
 
-    var url = Uri.https(baseUrl, '/api/v1/search-products-mobile-api');
+    var url = Uri.parse('$backendUrl/search-products-mobile-api');
 
     try {
       if (query != null) {
@@ -186,27 +187,12 @@ class GetProducts with ChangeNotifier {
 
     print(jsonDecode(queryparamaeters));
 
-    var url = Uri.https(baseUrl, '/api/v1/create-document');
-    print(url);
     try {
-      response = await http.post(
-        url,
-        headers: headers,
-        body: queryparamaeters,
-      );
-      print(response.body);
+      response = await httpPost('create-document', queryparamaeters);
       data = await jsonDecode(response.body);
 
-      if (data['ResultCode'] == 1200) {
-        _responseCode = data['ResultCode'];
-        print('Response Code ${data['ResultCode']}');
-        return _responseCode;
-      } else {
-        _responseCode = data['ResultDesc'];
-        _resultDes = data[''];
-        notifyListeners();
-        return _responseCode;
-      }
+      notifyListeners();
+      return data;
     } catch (e) {
       print(e);
     }

@@ -38,11 +38,11 @@ class _HomePageState extends State<HomePage> {
   String customerNo = "";
   List alldrivers = [];
   var selectedDriver = '';
+  var selectedSaleType = '';
 
   var discountGiven = 0;
   List _devices = [];
   var macaddress = '';
-  var selectedSaleType; // Default selected value
   List allSaleTypes = [];
   // var dateFormat = DateFormat("yyyy-MM-dd");
   // String todayDate = dateFormat.format(DateTime.now());
@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
     final response = await httpGet('drivers');
     final driversResponse = jsonDecode(response.body);
 
-    if(driversResponse['ResultCode'] == 1200) {
+    if (driversResponse['ResultCode'] == 1200) {
       setState(() {
         alldrivers = driversResponse['ResponseData'];
       });
@@ -86,15 +86,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   void fetchallSaleTypes() async {
-    var response = await httpGet('drivers');
-    print(response.body);
+    final response = await httpGet('sale-types');
+    final driversResponse = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {}
-    setState(() {
-      allSaleTypes = jsonDecode(response.body)['ResponseData'];
-      print("All Stores $allSaleTypes");
-    });
-    print("all stores $allSaleTypes");
+    if (driversResponse['ResultCode'] == 1200) {
+      setState(() {
+        allSaleTypes = driversResponse['ResponseData'];
+      });
+    }
   }
 
   sethenders() async {
@@ -129,6 +128,120 @@ class _HomePageState extends State<HomePage> {
       macaddress = data['ResponseData'];
     });
     return data['ResponseData'];
+  }
+
+  // save sale
+
+  void saveSale() {
+  // validation checks
+    if (selectedSaleType == '') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select sale type!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    // end of validation checks
+
+    // check overpayment
+    if (Provider.of<ProductListProvider>(context, listen: false).totalpayment >
+        Provider.of<ProductListProvider>(context, listen: false).totabill) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Payment cannot be more than the total bill!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    // end of overpayment check
+
+    // check payments
+    if (Provider.of<ProductListProvider>(context, listen: false).totalpayment <=
+        0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add payments!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    // end
+
+    // check if fully paid or debt
+
+    if (Provider.of<ProductListProvider>(context, listen: false).totalpayment <
+        Provider.of<ProductListProvider>(context, listen: false).totalPrice()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Payment pay in full!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+
+    final balance = Provider.of<ProductListProvider>(context, listen: false).balancepayment();
+    final paymentlist = Provider.of<ProductListProvider>(context, listen: false).paymentlist;
+    final totalbill = Provider.of<ProductListProvider>(context, listen: false).totabill;
+    final products = Provider.of<ProductListProvider>(context, listen: false).productlist;
+    final totalpayment = Provider.of<ProductListProvider>(context, listen: false).totalpayment;
+    final customerNo = Provider.of<ProductListProvider>(context, listen: false).customerPhone;
+
+    // post sale data
+    PosSale saleData = new PosSale(
+        ref2: customerNo.toString(),
+        objType: 14,
+        docNum: 2,
+        saleType: selectedSaleType != ''
+            ? int.parse(selectedSaleType)
+            : 0,
+        discSum: discountGiven,
+        payments: paymentlist,
+        docTotal: totalbill,
+        balance: balance,
+        driver: selectedDriver != ''
+            ? int.parse(selectedDriver)
+            : 0,
+        docDate: DateFormat('yyyy-MM-dd')
+            .parse(dateController.text),
+        rows: products,
+        totalPaid: totalpayment,
+        userName: cache['loggedInUserName']);
+    // end of sale data post request
+
+    // hit the provider method
+    Provider.of<GetProducts>(context, listen: false)
+        .postsale(saleData)
+        .then((value) {
+     // check if request was successful
+      if (value['ResultCode'] == 1200) {
+        Provider.of<ProductListProvider>(context, listen: false).setprodLIstempty();
+        Provider.of<ProductListProvider>(context, listen: false).resetCustmerPhone();
+        Provider.of<ProductListProvider>(context, listen: false).resetsetdiscount();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sale successful!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+      }
+      // end of the  success check
+
+      // check if an error surfaced
+      if (value['ResultCode'] == 1500) {
+        ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(
+            content: Text(value['ResultDesc']),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+      // end of error check
+    });
+    // of of provider request method
   }
 
   @override
@@ -454,15 +567,16 @@ class _HomePageState extends State<HomePage> {
                 height: 10,
               ),
               CustomSelectBox(
-                  selectedVal: selectedDriver,
+                  selectedVal: selectedSaleType,
                   label: 'Sale Type',
-                  items: alldrivers,
+                  items: allSaleTypes,
                   onChanged: (val) {
                     setState(() {
-                      selectedDriver = val as String;
+                      selectedSaleType = val as String;
                     });
                   })
-            ],),
+            ],
+          ),
           Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -473,77 +587,7 @@ class _HomePageState extends State<HomePage> {
                     'Create Sale',
                     style: TextStyle(color: Colors.white),
                   ),
-                  onPressed: () async {
-                    AlertDialog(
-                      content: Text('success'),
-                    );
-
-                    cache = await _prefs.readCache(
-                        'Token', 'StoreId', 'loggedInUserName', 'storename');
-                    if (context.read<ProductListProvider>().totalpayment >
-                        context.read<ProductListProvider>().totabill) {
-                      customSnackBar(context,
-                          "Payment cannot be more than the total bill");
-                    } else if (context
-                            .read<ProductListProvider>()
-                            .totalpayment <=
-                        0) {
-                      customSnackBar(context, "Add Payment");
-                    } else if (context
-                            .read<ProductListProvider>()
-                            .totalpayment <
-                        context.read<ProductListProvider>().totalPrice()) {
-                      customSnackBar(
-                          context, "Balance Can not be greater than 0.");
-                    } else {
-                      final balance =
-                          context.read<ProductListProvider>().balancepayment();
-                      final paymentlist =
-                          context.read<ProductListProvider>().paymentlist;
-                      final totalbill =
-                          context.read<ProductListProvider>().totabill;
-                      final products =
-                          context.read<ProductListProvider>().productlist;
-                      final totalpayment =
-                          context.read<ProductListProvider>().totalpayment;
-                      final customerNo =
-                          context.read<ProductListProvider>().customerPhone;
-                      PosSale saleCard = new PosSale(
-                          ref2: customerNo.toString(),
-                          objType: 14,
-                          docNum: 2,
-                          saleType: selectedSaleType,
-                          discSum: discountGiven,
-                          payments: paymentlist,
-                          docTotal: totalbill,
-                          balance: balance,
-                          driver: int.parse(selectedDriver),
-                          docDate: DateFormat('yyyy-MM-dd')
-                              .parse(dateController.text),
-                          rows: products,
-                          totalPaid: totalpayment,
-                          userName: cache['loggedInUserName']);
-
-                      context.read<GetProducts>().postsale(saleCard);
-
-                      if (responseCode == 1200) {
-                        context.read<ProductListProvider>().setprodLIstempty();
-                        context.read<ProductListProvider>().resetCustmerPhone();
-
-                        customSnackBar(context, "Sale Posted Succesfully");
-                        context.read<ProductListProvider>().resetsetdiscount();
-                      } else {
-                        customSnackBar(
-                            context, "Sale Not Succesfully $resultDesc");
-                      }
-                      context.read<ProductListProvider>().setprodLIstempty();
-                      context.read<ProductListProvider>().resetCustmerPhone();
-                      context.read<ProductListProvider>().resetCustmerPhone();
-                      context.read<ProductListProvider>().resetsetdiscount();
-
-                      Navigator.pushNamed(context, '/start');
-                    }
-                  },
+                  onPressed: saveSale,
                 ),
               )
             ],
