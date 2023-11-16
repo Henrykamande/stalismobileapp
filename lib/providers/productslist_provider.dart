@@ -201,6 +201,7 @@ class ProductListProvider with ChangeNotifier {
 
   void resetsetdiscount() {
     _discount = 0;
+    _balance = 0;
   }
 
   double totalPrice() {
@@ -228,21 +229,22 @@ class ProductListProvider with ChangeNotifier {
   }
 
   void removeProduct(index) {
-    if (billBalance == 0) {
-      _totalbill = _totalbill - _productList[index].lineTotal - _discount;
-      _productList.removeAt(index);
-    }
-    if (totalpayment == 0.0 && billBalance == 0.0) {
-      _totalbill = _totalbill - _productList[index].lineTotal - _discount;
-      _productList.removeAt(index);
-    }
-    if (totalpayment == 0.0 && billBalance == 0.0) {
-      _totalbill = _totalbill - _productList[index].lineTotal - _discount;
-      _productList.removeAt(index);
-    }
-
+    // if (billBalance == 0) {
+    //   _totalbill = _totalbill - _productList[index].lineTotal - _discount;
+    //   _productList.removeAt(index);
+    // }
+    // if (totalpayment == 0.0 && billBalance == 0.0) {
+    //   _totalbill = _totalbill - _productList[index].lineTotal - _discount;
+    //   _productList.removeAt(index);
+    // }
+    // if (totalpayment == 0.0 && billBalance == 0.0) {
+    //   _totalbill = _totalbill - _productList[index].lineTotal - _discount;
+    //   _productList.removeAt(index);
+    // }
     _totalbill = _totalbill - _productList[index].lineTotal - _discount;
     _productList.removeAt(index);
+    balancepayment();
+
     notifyListeners();
   }
 

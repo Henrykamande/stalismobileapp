@@ -14,6 +14,7 @@ import 'package:testproject/shared/drawerscreen.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:testproject/utils/http.dart';
+import 'package:testproject/utils/saleValidation.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -411,29 +412,31 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               )),
-          Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Balance:',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.bold,
+          Consumer<ProductListProvider>(builder: (context, value, child) {
+            return Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Balance:',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  '${formatnum.format(context.read<ProductListProvider>().balancepayment())}',
-                  style: TextStyle(
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    '${formatnum.format(value.balancepayment())}',
+                    style: TextStyle(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          }),
           Divider(),
           Container(
               padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -523,74 +526,19 @@ class _HomePageState extends State<HomePage> {
                         'Token', 'StoreId', 'loggedInUserName', 'storename');
                     if (context.read<ProductListProvider>().totalpayment >
                         context.read<ProductListProvider>().totabill) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Container(
-                            decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(20),
-                                )),
-                            height: 90.0,
-                            child: Center(
-                              child: Text(
-                                'Payment cannot be more than the total bill',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: Colors.transparent,
-                        ),
-                      );
+                      customSnackBar(context,
+                          "Payment cannot be more than the total bill");
                     } else if (context
                             .read<ProductListProvider>()
                             .totalpayment <=
                         0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Container(
-                            decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(20),
-                                )),
-                            height: 90.0,
-                            child: Center(
-                              child: Text(
-                                'Add Payment',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: Colors.transparent,
-                        ),
-                      );
+                      customSnackBar(context, "Add Payment");
                     } else if (context
                             .read<ProductListProvider>()
                             .totalpayment <
                         context.read<ProductListProvider>().totalPrice()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Container(
-                            decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(20),
-                                )),
-                            height: 90.0,
-                            child: Center(
-                              child: Text(
-                                'Balance Can not be greater than 0.',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: Colors.transparent,
-                        ),
-                      );
+                      customSnackBar(
+                          context, "Balance Can not be greater than 0.");
                     } else {
                       final balance =
                           context.read<ProductListProvider>().balancepayment();
@@ -626,48 +574,11 @@ class _HomePageState extends State<HomePage> {
                         context.read<ProductListProvider>().setprodLIstempty();
                         context.read<ProductListProvider>().resetCustmerPhone();
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(20),
-                                  )),
-                              height: 90.0,
-                              child: Center(
-                                child: Text(
-                                  'Sale Posted Succesfully .',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        );
+                        customSnackBar(context, "Sale Posted Succesfully");
                         context.read<ProductListProvider>().resetsetdiscount();
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(20),
-                                  )),
-                              height: 90.0,
-                              child: Center(
-                                child: Text(
-                                  'Sale Not Succesfully $resultDesc',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        );
+                        customSnackBar(
+                            context, "Sale Not Succesfully $resultDesc");
                       }
                       context.read<ProductListProvider>().setprodLIstempty();
                       context.read<ProductListProvider>().resetCustmerPhone();
