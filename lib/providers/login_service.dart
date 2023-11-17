@@ -13,8 +13,7 @@ class UserLogin with ChangeNotifier {
   Future<bool> loginApi(String password, String email) async {
     final PrefService _prefs = PrefService();
     var response = await http.post(
-      Uri.parse(
-          '$backendUrl/login'),
+      Uri.parse('$backendUrl/login'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -27,7 +26,6 @@ class UserLogin with ChangeNotifier {
         print(data.length); */
       Map<String, dynamic> datamap = await json.decode(response.body);
       if (datamap['ResultCode'] == 1500) {}
-
 
       String token = datamap['ResponseData']['authToken'];
       int storeid = datamap['ResponseData']['store_id'];
