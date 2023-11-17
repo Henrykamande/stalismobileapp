@@ -247,7 +247,7 @@ class _HomePageState extends State<HomePage> {
         docTotal: totalbill,
         balance: balance,
         driver: selectedDriver != '' ? int.parse(selectedDriver) : 0,
-        docDate: DateFormat('yyyy-MM-dd').parse(dateController.text),
+        docDate: DateFormat('yyyy-MM-dd').parse(todayDate),
         rows: products,
         totalPaid: totalpayment,
         userName: cache['loggedInUserName']);
