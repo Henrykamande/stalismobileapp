@@ -181,6 +181,10 @@ class _HomePageState extends State<HomePage> {
       pickedBy = pickedbyvalue;
     });
   }
+
+  void setDsicount(val) {
+    val != null ? discountGiven = int.parse(val.toString()) : discountGiven = 0;
+  }
   // save sale
 
   void saveSale() {
@@ -459,27 +463,24 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding: const EdgeInsets.all(5.0),
                 child: TextFormField(
-                  key: _formKey,
-                  initialValue: "0",
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Discount Amount',
-                    fillColor: Colors.white,
-                    filled: false,
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.red, width: 1.0),
+                    key: _formKey,
+                    initialValue: "0",
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Discount Amount',
+                      fillColor: Colors.white,
+                      filled: false,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red, width: 1.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 1.0),
-                    ),
-                  ),
-                  onChanged: (val) => setState(() {
-                    value.addDiscount(double.parse(val.toString()));
-                    val.length > 0
-                        ? discountGiven = int.parse(val.toString())
-                        : discountGiven = 0;
-                  }),
-                ),
+                    onChanged: (val) => {
+                          value.addDiscount(double.parse(val.toString())),
+                          setDsicount(val)
+                        }),
               ),
             );
           }),
