@@ -209,29 +209,7 @@ class _HomePageState extends State<HomePage> {
     }
     // end of overpayment check
 
-    // check payments
-    if (Provider.of<ProductListProvider>(context, listen: false).totalpayment <=
-        0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add payments!'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
     // end
-
-    // check if fully paid or debt
-
-    // if (Provider.of<ProductListProvider>(context, listen: false).totalpayment <
-    //     Provider.of<ProductListProvider>(context, listen: false).totalPrice()) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(
-    //       content: Text('Payment pay in full!'),
-    //       backgroundColor: Colors.red,
-    //     ),
-    //   );
-    // }
 
     if (selectedCustomerId == "" &&
         Provider.of<ProductListProvider>(context, listen: false)
