@@ -127,7 +127,7 @@ class DrawerScreen extends StatelessWidget {
                   // Update the state of the app
                   // ...
                   // Then close the drawer
-                  () => launch('https://stalis.softcloudtech.co.ke/login')),
+                  () => launch('https://softcloudpos.netlify.app/login')),
         ],
       ),
     ));

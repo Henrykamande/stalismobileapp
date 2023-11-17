@@ -151,8 +151,8 @@ class _SearchProductState extends State<SearchProduct> {
                                           title: Text(result[index]['Name']),
                                           subtitle: Text(
                                               "Selling Price: Ksh ${result[index]['SellingPrice'].toString()}"),
-                                          /*trailing: Text(
-                                            "Av.Qty:  ${result[index]['AvailableQty']..toString()}"), */
+                                          trailing: Text(
+                                              "Av.Qty:  ${result[index]['AvailableQty']..toString()}"),
                                         ),
                                       ),
                                     )
