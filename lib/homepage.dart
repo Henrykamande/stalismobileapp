@@ -322,10 +322,10 @@ class _HomePageState extends State<HomePage> {
           child: Column(
         children: [
           SizedBox(
-            child: _buildTodayDate(),
-          ),
-          SizedBox(
-            height: 20,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              child: _buildTodayDate(),
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
