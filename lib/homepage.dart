@@ -227,11 +227,23 @@ class _HomePageState extends State<HomePage> {
 
     // check if fully paid or debt
 
-    if (Provider.of<ProductListProvider>(context, listen: false).totalpayment <
-        Provider.of<ProductListProvider>(context, listen: false).totalPrice()) {
+    // if (Provider.of<ProductListProvider>(context, listen: false).totalpayment <
+    //     Provider.of<ProductListProvider>(context, listen: false).totalPrice()) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('Payment pay in full!'),
+    //       backgroundColor: Colors.red,
+    //     ),
+    //   );
+    // }
+
+    if (selectedCustomerId == "" &&
+        Provider.of<ProductListProvider>(context, listen: false)
+                .balancepayment() >
+            0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Payment pay in full!'),
+          content: Text('Select Customer or enter full payment'),
           backgroundColor: Colors.red,
         ),
       );
