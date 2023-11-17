@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
   var selectedDriver = '';
   PrinterBluetooth? defaultPrinter;
   var selectedSaleType = '';
+  var pickedBy = "";
 
   String todayDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
   final paymentTextStyle = const TextStyle(
@@ -165,6 +166,11 @@ class _HomePageState extends State<HomePage> {
     return data['ResponseData'];
   }
 
+  void setPickedBy(pickedbyvalue) {
+    setState(() {
+      pickedBy = pickedbyvalue;
+    });
+  }
   // save sale
 
   void saveSale() {
@@ -234,6 +240,7 @@ class _HomePageState extends State<HomePage> {
         ref2: customerNo.toString(),
         objType: 14,
         docNum: 2,
+        pickedBy: pickedBy,
         saleType: selectedSaleType != '' ? int.parse(selectedSaleType) : 0,
         discSum: discountGiven,
         payments: paymentlist,
@@ -259,6 +266,7 @@ class _HomePageState extends State<HomePage> {
         Provider.of<ProductListProvider>(context, listen: false)
             .resetsetdiscount();
 
+
         // printingSaleReciept(defaultPrinter!, saleData, printerManager);
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -267,6 +275,7 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Colors.green,
           ),
         );
+     //   printingSaleReciept(defaultPrinter!, saleData, printerManager);
       }
       // end of the  success check
 
@@ -594,18 +603,44 @@ class _HomePageState extends State<HomePage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CustomSelectBox(
-                  selectedVal: selectedDriver,
-                  label: 'Driver / Rider',
-                  items: alldrivers,
-                  onChanged: (val) {
-                    setState(() {
-                      selectedDriver = val as String;
-                    });
-                  }),
-              SizedBox(
-                height: 10,
-              ),
+              Consumer<ProductListProvider>(builder: (context, value, child) {
+                return Container(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: TextFormField(
+                      initialValue: "0",
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Picked By',
+                        fillColor: Colors.white,
+                        filled: false,
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red, width: 1.0),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.blue, width: 1.0),
+                        ),
+                      ),
+                      onChanged: (val) => {
+                        setPickedBy(val),
+                      },
+                    ),
+                  ),
+                );
+              }),
+              // CustomSelectBox(
+              //     selectedVal: selectedDriver,
+              //     label: 'Driver / Rider',
+              //     items: alldrivers,
+              //     onChanged: (val) {
+              //       setState(() {
+              //         selectedDriver = val as String;
+              //       });
+              //     }),
+              // SizedBox(
+              //   height: 10,
+              // ),
               CustomSelectBox(
                   selectedVal: selectedSaleType,
                   label: 'Sale Type',

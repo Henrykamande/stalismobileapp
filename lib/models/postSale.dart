@@ -19,6 +19,7 @@ class PosSale {
     this.ref2,
     this.driver,
     this.saleType,
+    this.pickedBy,
     this.customerName,
     required this.docDate,
     required this.discSum,
@@ -37,6 +38,7 @@ class PosSale {
   double balance;
   String? ref2;
   String? ref1;
+  String? pickedBy;
   String? customerName;
   DateTime docDate;
   int discSum;
@@ -49,6 +51,7 @@ class PosSale {
         objType: json["ObjType"],
         driver: json["driver"],
         saleType: json["saleType"],
+        pickedBy: json["pickedBy"],
         ref2: json['ref2'],
         docNum: json["DocNum"],
         cardCode: json["CardCode"],
@@ -70,6 +73,7 @@ class PosSale {
         "drive": driver,
         "saleType": saleType,
         "DocNum": docNum,
+        "pickedBy": pickedBy,
         "CardCode": cardCode,
         "DocTotal": docTotal,
         "Balance": balance,
