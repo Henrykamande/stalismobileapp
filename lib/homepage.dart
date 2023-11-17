@@ -39,6 +39,8 @@ class _HomePageState extends State<HomePage> {
   List<SaleRow> products = [];
   String customerNo = "";
   List alldrivers = [];
+  List allCustomers = [];
+  var selectedCustomerId = "";
   var selectedDriver = '';
   PrinterBluetooth? defaultPrinter;
   var selectedSaleType = '';
@@ -63,6 +65,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     fetchDrivers();
     fetchallSaleTypes();
+    fetchCustomers();
     setdate = true;
     _getPrinterAddress();
     _scanPrinters();
@@ -113,6 +116,17 @@ class _HomePageState extends State<HomePage> {
     if (driversResponse['ResultCode'] == 1200) {
       setState(() {
         alldrivers = driversResponse['ResponseData'];
+      });
+    }
+  }
+
+  void fetchCustomers() async {
+    final response = await httpGet('customers');
+    final customersResponse = jsonDecode(response.body);
+
+    if (customersResponse['ResultCode'] == 1200) {
+      setState(() {
+        allCustomers = customersResponse['ResponseData'];
       });
     }
   }
@@ -175,6 +189,7 @@ class _HomePageState extends State<HomePage> {
 
   void saveSale() {
     // validation checks
+
     if (selectedSaleType == '') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -241,6 +256,8 @@ class _HomePageState extends State<HomePage> {
         objType: 14,
         docNum: 2,
         pickedBy: pickedBy,
+        cardCode:
+            selectedCustomerId != '' ? int.parse(selectedCustomerId) : null,
         saleType: selectedSaleType != '' ? int.parse(selectedSaleType) : 0,
         discSum: discountGiven,
         payments: paymentlist,
@@ -266,8 +283,10 @@ class _HomePageState extends State<HomePage> {
         Provider.of<ProductListProvider>(context, listen: false)
             .resetsetdiscount();
 
-
-        // printingSaleReciept(defaultPrinter!, saleData, printerManager);
+        setState(() {
+          selectedSaleType = '';
+          selectedCustomerId = "";
+        });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -335,6 +354,18 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: _buildTodayDate(),
             ),
+          ),
+          CustomSelectBox(
+              selectedVal: selectedCustomerId,
+              label: 'Select Customer',
+              items: allCustomers,
+              onChanged: (val) {
+                setState(() {
+                  selectedCustomerId = val as String;
+                });
+              }),
+          SizedBox(
+            height: 20,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -608,8 +639,7 @@ class _HomePageState extends State<HomePage> {
                   child: Padding(
                     padding: const EdgeInsets.all(5.0),
                     child: TextFormField(
-                      initialValue: "0",
-                      keyboardType: TextInputType.number,
+                      initialValue: "",
                       decoration: InputDecoration(
                         labelText: 'Picked By',
                         fillColor: Colors.white,
