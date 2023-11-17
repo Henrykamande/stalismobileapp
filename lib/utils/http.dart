@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import './shared_data.dart';
 
 var backendUrl = 'https://phplaravel-1005299-3647050.cloudwaysapps.com/api/v1';
-//var backendUrl = 'http://10.0.2.2:8000/api/v1';
+// var backendUrl = 'http://127.0.0.1:8000/api/v1';
 
 Future<dynamic> getSharedData() async {
   final prefsData = await sharedData();

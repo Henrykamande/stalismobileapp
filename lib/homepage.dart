@@ -43,6 +43,10 @@ class _HomePageState extends State<HomePage> {
   PrinterBluetooth? defaultPrinter;
   var selectedSaleType = '';
 
+  String todayDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
+  final paymentTextStyle = const TextStyle(
+      fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black54);
+
   var discountGiven = 0;
   var macaddress = '';
   List allSaleTypes = [];
@@ -255,7 +259,7 @@ class _HomePageState extends State<HomePage> {
         Provider.of<ProductListProvider>(context, listen: false)
             .resetsetdiscount();
 
-        printingSaleReciept(defaultPrinter!, saleData, printerManager);
+        // printingSaleReciept(defaultPrinter!, saleData, printerManager);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -318,7 +322,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
         children: [
           SizedBox(
-            child: _buildDatePicker(context),
+            child: _buildTodayDate(),
           ),
           SizedBox(
             height: 20,
@@ -630,6 +634,23 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       )),
+    );
+  }
+
+
+  Widget _buildTodayDate() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Date:',
+          style: paymentTextStyle,
+        ),
+        Text(
+          todayDate,
+          style: paymentTextStyle,
+        )
+      ],
     );
   }
 

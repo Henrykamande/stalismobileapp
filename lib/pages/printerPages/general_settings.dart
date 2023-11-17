@@ -292,7 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _testPrint(PrinterBluetooth? printer) async {
-    printerManager.selectPrinter(printer);
+    printerManager.selectPrinter(printer!);
 
     // TODO Don't forget to choose printer's paper
     const PaperSize paper = PaperSize.mm80;
