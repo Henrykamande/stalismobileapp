@@ -45,6 +45,7 @@ class _HomePageState extends State<HomePage> {
   PrinterBluetooth? defaultPrinter;
   var selectedSaleType = '';
   var pickedBy = "";
+  var _isLoading = false;
 
   String todayDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
   final paymentTextStyle = const TextStyle(
@@ -264,6 +265,10 @@ class _HomePageState extends State<HomePage> {
         userName: cache['loggedInUserName']);
     // end of sale data post request
 
+    setState(() {
+      _isLoading = true;
+    });
+
     // hit the provider method
     Provider.of<GetProducts>(context, listen: false)
         .postsale(saleData)
@@ -280,6 +285,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           selectedSaleType = '';
           selectedCustomerId = "";
+          _isLoading = false;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -302,6 +308,10 @@ class _HomePageState extends State<HomePage> {
         );
       }
       // end of error check
+
+      setState(() {
+        _isLoading = false;
+      });
     });
     // of of provider request method
   }
@@ -678,7 +688,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                child: ElevatedButton(
+                child: _isLoading ? CircularProgressIndicator() : ElevatedButton(
                   child: Text(
                     'Create Sale',
                     style: TextStyle(color: Colors.white),
