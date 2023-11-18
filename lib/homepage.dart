@@ -322,7 +322,6 @@ class _HomePageState extends State<HomePage> {
     final resultDesc = Provider.of<GetProducts>(context).resultDesc;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade700,
         title: Center(
