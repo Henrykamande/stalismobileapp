@@ -46,6 +46,13 @@ class _HomePageState extends State<HomePage> {
   var selectedSaleType = '';
   var pickedBy = "";
   var _isLoading = false;
+  var _selectedCustomer = {};
+  final FocusNode _customerNameFocusNode = FocusNode();
+  var customerSearchController = TextEditingController();
+  List<dynamic> _customers = [];
+  var _customerFocusNodes = <FocusNode>[];
+  final FocusNode _customerSearchFocusNode = FocusNode();
+  int _currentIndex = -1;
 
   String todayDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
   final paymentTextStyle = const TextStyle(
@@ -74,6 +81,71 @@ class _HomePageState extends State<HomePage> {
     context.read<GetProducts>().fetchshopDetails();
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
   }
+
+  // select customer method
+  void _selectCustomer(item) {
+    setState(() {
+      customerSearchController.text = '';
+      _selectedCustomer = item;
+      selectedCustomerId = item['id'].toString();
+      _customers = [];
+    });
+  }
+  // end
+
+  // search customers method
+  void _searchCustomers() async {
+    final searchQuery = customerSearchController.text;
+    _customerFocusNodes = [];
+
+    if (searchQuery != '') {
+      var params = {
+        'searchText': searchQuery,
+      };
+
+      var headers = await sethenders();
+      var url =
+      Uri.https(baseUrl, '/api/v1/search-customer');
+      var response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(params),
+      );
+
+      var customerResults = jsonDecode(response.body);
+
+
+      print(customerResults);
+      List<dynamic> items = customerResults['ResponseData'];
+
+      if (searchQuery != '') {
+        setState(() {
+          _customers = items;
+
+          for (var node in _customerFocusNodes) {
+            node.unfocus();
+          }
+          // end
+          _customerFocusNodes
+              .addAll(List.generate(items.length, (index) => FocusNode()));
+        });
+      }
+
+      if (searchQuery == '') {
+        setState(() {
+          _customers = [];
+        });
+      }
+    } else {
+      setState(() {
+        customerSearchController.text = '';
+        _customers = [];
+        // _currentIndex = -1;
+      });
+    }
+  }
+  // end
+
 
   void _scanPrinters() {
     printerManager.scanResults.listen((devices) async {
@@ -285,6 +357,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           selectedSaleType = '';
           selectedCustomerId = "";
+          _selectedCustomer = {};
           _isLoading = false;
         });
 
@@ -303,7 +376,7 @@ class _HomePageState extends State<HomePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(value['ResultDesc']),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -350,355 +423,471 @@ class _HomePageState extends State<HomePage> {
         storename: storename,
       ),
       body: SingleChildScrollView(
-          child: Column(
-        children: [
-          SizedBox(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              child: _buildTodayDate(),
-            ),
-          ),
-          CustomSelectBox(
-              selectedVal: selectedCustomerId,
-              label: 'Select Customer',
-              items: allCustomers,
-              onChanged: (val) {
-                setState(() {
-                  selectedCustomerId = val as String;
-                });
-              }),
-          SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton.icon(
-                  onPressed: () {
-                    context
-                        .read<ProductListProvider>()
-                        .setPreviousRoute('/start');
-
-                    Navigator.pushNamed(context, '/searchproduct');
-                  },
-                  icon: Icon(Icons.add),
-                  label: Text('Add Sale Item')),
-              TextButton.icon(
-                onPressed: () {
-                  context
-                      .read<ProductListProvider>()
-                      .setPreviousRoute('/start');
-
-                  Navigator.pushNamed(context, '/paymentsearch');
-                },
-                icon: Icon(Icons.add),
-                label: Text('Add Payment'),
-                style: ButtonStyle(
-                    foregroundColor: MaterialStateColor.resolveWith(
-                        (states) => Colors.pink)),
-              )
-            ],
-          ),
-          Container(
-            color: Colors.white,
-            child: Consumer<ProductListProvider>(
-              builder: (context, value, child) {
-                return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: value.productlist.length,
-                    itemBuilder: (context, index) => index <
-                            value.productlist.length
-                        ? Container(
-                            color: Colors.white,
-                            child: ListTile(
-                              title: Text(
-                                value.productlist[index].name.toString(),
-                                style: TextStyle(
-                                    fontSize: 13.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "Qty: ${(value.productlist[index].quantity).toString()}",
-                                      style: TextStyle(
-                                          fontSize: 11.0,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "Price: ${value.productlist[index].price.toString()}",
-                                      style: TextStyle(
-                                          fontSize: 11.0,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              trailing: Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Column(
-                                  children: [
-                                    Text(formatnum
-                                        .format(
-                                            value.productlist[index].lineTotal)
-                                        .toString()),
-                                    Expanded(
-                                      child: IconButton(
-                                          icon: Icon(
-                                            Icons.cancel,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () {
-                                            value.removeProduct(index);
-                                          }),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                        : Card(
-                            child: Text("No product added"),
-                          ));
-              },
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Consumer<ProductListProvider>(builder: (context, value, child) {
-            return Container(
-              child: Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: TextFormField(
-                    key: _formKey,
-                    initialValue: "0",
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Discount Amount',
-                      fillColor: Colors.white,
-                      filled: false,
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red, width: 1.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 1.0),
-                      ),
+          child: Stack(
+            children:  [
+              Column(
+                children: [
+                  SizedBox(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                      child: _buildTodayDate(),
                     ),
-                    onChanged: (val) => {
-                          value.addDiscount(double.parse(val.toString())),
-                          setDsicount(val)
-                        }),
-              ),
-            );
-          }),
-          Container(
-            color: Colors.black54,
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 18.0),
-            child: Text(
-              'Payments',
-              style: TextStyle(color: Colors.white),
-            ),
-            height: 40,
-            width: MediaQuery.of(context).size.width,
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Container(
-            child: Consumer<ProductListProvider>(
-              builder: (context, value, child) {
-                return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: value.paymentlist.length,
-                    itemBuilder: (context, index) => index <
-                            value.paymentlist.length
-                        ? Container(
-                            color: Colors.white,
-                            child: ListTile(
-                              title: Text('${value.paymentlist[index].name}'),
-                              subtitle: Text(
-                                  '${value.paymentlist[index].paymentRemarks}'),
-                              trailing: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 18.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton.icon(
+                            onPressed: () {
+                              context
+                                  .read<ProductListProvider>()
+                                  .setPreviousRoute('/start');
+
+                              Navigator.pushNamed(context, '/searchproduct');
+                            },
+                            icon: Icon(Icons.add),
+                            label: Text('Add Sale Item')),
+                        TextButton.icon(
+                          onPressed: () {
+                            context
+                                .read<ProductListProvider>()
+                                .setPreviousRoute('/start');
+
+                            Navigator.pushNamed(context, '/paymentsearch');
+                          },
+                          icon: Icon(Icons.add),
+                          label: Text('Add Payment'),
+                          style: ButtonStyle(
+                              foregroundColor: MaterialStateColor.resolveWith(
+                                      (states) => Colors.pink)),
+                        )
+                      ],
+                    ),
+                  ),
+                  Container(
+                    color: Colors.white,
+                    child: Consumer<ProductListProvider>(
+                      builder: (context, value, child) {
+                        return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: value.productlist.length,
+                            itemBuilder: (context, index) => index <
+                                value.productlist.length
+                                ? Container(
+                              color: Colors.white,
+                              child: ListTile(
+                                title: Text(
+                                  value.productlist[index].name.toString(),
+                                  style: TextStyle(
+                                      fontSize: 13.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Row(
                                   children: [
-                                    Text(
-                                        "Ksh ${(formatnum.format(value.paymentlist[index].sumApplied)).toString()}"),
-                                    Expanded(
-                                      child: IconButton(
-                                          icon: Icon(
-                                            Icons.cancel,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () {
-                                            value.removePayment(index);
-                                          }),
-                                    )
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "Qty: ${(value.productlist[index].quantity).toString()}",
+                                        style: TextStyle(
+                                            fontSize: 11.0,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "Price: ${value.productlist[index].price.toString()}",
+                                        style: TextStyle(
+                                            fontSize: 11.0,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
                                   ],
                                 ),
+                                trailing: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Column(
+                                    children: [
+                                      Text(formatnum
+                                          .format(
+                                          value.productlist[index].lineTotal)
+                                          .toString()),
+                                      Expanded(
+                                        child: IconButton(
+                                            icon: Icon(
+                                              Icons.cancel,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () {
+                                              value.removeProduct(index);
+                                            }),
+                                      )
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
-                          )
-                        : Card(
-                            child: Text("Hello"),
-                          ));
-              },
-            ),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total Bill:',
-                  style: TextStyle(
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.bold,
+                            )
+                                : Card(
+                              child: Text("No product added"),
+                            ));
+                      },
+                    ),
                   ),
-                ),
-                Consumer<ProductListProvider>(
-                  builder: (context, value, child) {
-                    return Text(
-                      '${formatnum.format(value.totalPrice())}',
-                      style: TextStyle(
-                        fontSize: 13.0,
-                        fontWeight: FontWeight.bold,
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Container(
+                    color: Colors.black54,
+                    padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 18.0),
+                    child: Text(
+                      'Payments',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    height: 40,
+                    width: MediaQuery.of(context).size.width,
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Container(
+                    child: Consumer<ProductListProvider>(
+                      builder: (context, value, child) {
+                        return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: value.paymentlist.length,
+                            itemBuilder: (context, index) => index <
+                                value.paymentlist.length
+                                ? Container(
+                              color: Colors.white,
+                              child: ListTile(
+                                title: Text('${value.paymentlist[index].name}'),
+                                subtitle: Text(
+                                    '${value.paymentlist[index].paymentRemarks}'),
+                                trailing: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                          "Ksh ${(formatnum.format(value.paymentlist[index].sumApplied)).toString()}"),
+                                      Expanded(
+                                        child: IconButton(
+                                            icon: Icon(
+                                              Icons.cancel,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () {
+                                              value.removePayment(index);
+                                            }),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                                : Card(
+                              child: Text("Hello"),
+                            ));
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total Bill:',
+                          style: TextStyle(
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Consumer<ProductListProvider>(
+                          builder: (context, value, child) {
+                            return Text(
+                              '${formatnum.format(value.totalPrice())}',
+                              style: TextStyle(
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total Paid:',
+                            style: TextStyle(
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Consumer<ProductListProvider>(
+                            builder: (context, value, child) {
+                              return Text(
+                                '${formatnum.format(value.totalPaymentcalc())}',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      )),
+                  Consumer<ProductListProvider>(builder: (context, value, child) {
+                    return Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Balance:',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${formatnum.format(value.balancepayment())}',
+                            style: TextStyle(
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     );
-                  },
-                ),
-              ],
-            ),
-          ),
-          Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total Paid:',
-                    style: TextStyle(
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  }),
+                  Divider(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Consumer<ProductListProvider>(builder: (context, value, child) {
+                        return Container(
+                          child: Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: TextFormField(
+                              initialValue: "",
+                              decoration: InputDecoration(
+                                labelText: 'Picked By',
+                                fillColor: Colors.white,
+                                filled: false,
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red, width: 1.0),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide:
+                                  BorderSide(color: Colors.blue, width: 1.0),
+                                ),
+                              ),
+                              onChanged: (val) => {
+                                setPickedBy(val),
+                              },
+                            ),
+                          ),
+                        );
+                      }),
+                      CustomSelectBox(
+                          selectedVal: selectedSaleType,
+                          label: 'Sale Type',
+                          items: allSaleTypes,
+                          onChanged: (val) {
+                            setState(() {
+                              selectedSaleType = val as String;
+                            });
+                          })
+                    ],
                   ),
-                  Consumer<ProductListProvider>(
-                    builder: (context, value, child) {
-                      return Text(
-                        '${formatnum.format(value.totalPaymentcalc())}',
-                        style: TextStyle(
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.bold,
+                  Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        child: _isLoading ? CircularProgressIndicator() : ElevatedButton(
+                          child: Text(
+                            'Create Sale',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: saveSale,
                         ),
-                      );
-                    },
-                  ),
+                      )
+                    ],
+                  )
                 ],
-              )),
-          Consumer<ProductListProvider>(builder: (context, value, child) {
-            return Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              Positioned(child: _buildCustomerSection())
+            ]
+          )),
+    );
+  }
+
+
+  Widget _buildCustomerSection() {
+    return Stack(
+      children: [
+        Row(
+          children: [
+            Container(
+              height: 200,
+              width: MediaQuery.of(context).size.width,
+              padding: const EdgeInsets.only(top: 45.0),
+              child: Column(
                 children: [
-                  Text(
-                    'Balance:',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.bold,
+                  const Divider(),
+                  if (_selectedCustomer.isNotEmpty)
+                    Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 250,
+                              child: Text(
+                                _selectedCustomer['Name'] ?? '',
+                                style: const TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 30,
+                            )
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    '${formatnum.format(value.balancepayment())}',
-                    style: TextStyle(
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.bold,
+                ],
+              ),
+            )
+          ],
+        ),
+        Positioned(
+          child: FocusScope(
+            autofocus: true,
+            child: SizedBox(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildCustomerSearchBox()
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            );
-          }),
-          Divider(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Consumer<ProductListProvider>(builder: (context, value, child) {
-                return Container(
-                  child: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: TextFormField(
-                      initialValue: "",
-                      decoration: InputDecoration(
-                        labelText: 'Picked By',
-                        fillColor: Colors.white,
-                        filled: false,
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.red, width: 1.0),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.blue, width: 1.0),
-                        ),
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildCustomerSearchBox() {
+    return Container(
+      width: 250,
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            color: Colors.grey[200],
+            width: 330,
+            child: const Text('Search Customer'),
+          ),
+          SizedBox(
+            height: 30,
+            child: RawKeyboardListener(
+              focusNode: _customerSearchFocusNode,
+              child: TextFormField(
+                focusNode: _customerNameFocusNode,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(2.0),
+                    ),
+                    contentPadding: const EdgeInsets.only(
+                        bottom: 8.0, left: 10.0, top: 3.0)),
+                controller: customerSearchController,
+                onChanged: (value) {
+                  _searchCustomers();
+                },
+              ),
+            ),
+          ),
+          if (_customerFocusNodes.isNotEmpty)
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: _customers.length,
+              itemBuilder: (ctx, i) {
+                final isSelected = _currentIndex == i;
+                final myFocusNode = _customerFocusNodes[i];
+                myFocusNode.addListener(() {
+                  if (myFocusNode.hasFocus) {
+                    setState(() {
+                      _currentIndex = i;
+                      myFocusNode.requestFocus();
+                    });
+                  }
+                });
+                return RawKeyboardListener(
+                  focusNode: myFocusNode,
+                  onKey: (event) {
+                    if (event is RawKeyDownEvent &&
+                        event.logicalKey == LogicalKeyboardKey.enter) {
+                      //  _addRow(_customers[i], i);
+                    }
+                  },
+                  child: Container(
+                    color: isSelected ? Colors.blue : Colors.grey[600],
+                    child: ListTile(
+                      selectedTileColor: Colors.black,
+                      title: Text(
+                        _customers[i]['Name'],
+                        style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.white),
                       ),
-                      onChanged: (val) => {
-                        setPickedBy(val),
+                      // subtitle: Text(
+                      //     'Credit Limit: ${_customers[i]['creditLimit']}',
+                      //     style: TextStyle(
+                      //         color: isSelected ? Colors.white : Colors.white)),
+                      // trailing: Column(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [Text('In Stock: ${_products[i]['AvailableQty']}', style: TextStyle(color: isSelected ? Colors.white : Colors.black))],
+                      // ),
+                      onTap: () {
+                        print('selecting customer');
+                        _selectCustomer(_customers[i]);
                       },
                     ),
                   ),
                 );
-              }),
-              // CustomSelectBox(
-              //     selectedVal: selectedDriver,
-              //     label: 'Driver / Rider',
-              //     items: alldrivers,
-              //     onChanged: (val) {
-              //       setState(() {
-              //         selectedDriver = val as String;
-              //       });
-              //     }),
-              // SizedBox(
-              //   height: 10,
-              // ),
-              CustomSelectBox(
-                  selectedVal: selectedSaleType,
-                  label: 'Sale Type',
-                  items: allSaleTypes,
-                  onChanged: (val) {
-                    setState(() {
-                      selectedSaleType = val as String;
-                    });
-                  })
-            ],
-          ),
-          Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                child: _isLoading ? CircularProgressIndicator() : ElevatedButton(
-                  child: Text(
-                    'Create Sale',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onPressed: saveSale,
-                ),
-              )
-            ],
-          )
+              },
+            ),
         ],
-      )),
+      ),
     );
   }
 
