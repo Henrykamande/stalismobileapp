@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:testproject/databasesql/sqldatabaseconnection.dart';
 import 'package:testproject/pages/productsPages/addProductForm.dart';
 import 'package:testproject/models/paidamount.dart';
 import 'package:testproject/models/product.dart';
@@ -146,7 +147,7 @@ class _SalePaymentState extends State<SalePayment> {
               Expanded(
                 child: Container(
                   child: FutureBuilder<List<dynamic>>(
-                      future: salepayment,
+                      future: DatabaseHelper.instance.getAllAccounts(),
                       builder: (context, snapshot) {
                         if (snapshot.data == null) {
                           print('payment ${snapshot.data}');

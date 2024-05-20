@@ -500,6 +500,7 @@ class _AddGasProductFormState extends State<AddGasProductForm> {
                           }
 
                           final newproduct = new SaleRow(
+                            cardCode: _selectedProd['CardCode'],
                             gasType: gasType,
                             ref1: ref1,
                             name: _selectedProd['Name'],

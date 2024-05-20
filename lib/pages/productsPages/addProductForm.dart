@@ -18,7 +18,7 @@ class _AddProductFormState extends State<AddProductForm> {
   final _formKey = GlobalKey<FormState>();
   var _qtyToSell = 1;
   var _sellingPrice;
-   double _total = 0;
+  double _total = 0;
   String _productName = "";
   int _linenum = 0;
   List priceListsNames = [];
@@ -58,7 +58,7 @@ class _AddProductFormState extends State<AddProductForm> {
       priceListsNames.add(_selectedProd['itm4'][i]['Name']);
     }
     print('Price Lists Names $priceListsNames'); */
-    List itm4list = _selectedProd["itm4"];
+    //List itm4list = _selectedProd["itm4"];
     final previousrouteString = productsData.previousRoute;
     TextEditingController controllerText;
     //print(_selectedProd['itm4']);
@@ -99,7 +99,7 @@ class _AddProductFormState extends State<AddProductForm> {
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: TextFormField(
-                            initialValue: _selectedProd['Name'],
+                            initialValue: _selectedProd['Name'].toString(),
                             readOnly: true,
                             decoration: InputDecoration(
                               hintText: "Enter Product Name",
@@ -122,115 +122,110 @@ class _AddProductFormState extends State<AddProductForm> {
                 Consumer<ProductListProvider>(
                   builder: (context, value, child) {
                     return Column(
+                      children: [
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                          initialValue: _qtyToSell.toString(),
-                                          keyboardType:
-                                              TextInputType.numberWithOptions(
-                                                  decimal: true),
-                                          decoration: InputDecoration(
-                                            labelText: 'Qty To Sell',
-                                            fillColor: Colors.white,
-                                            filled: true,
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.red,
-                                                  width: 1.0),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                  color: Colors.blue,
-                                                  width: 1.0),
-                                            ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextFormField(
+                                    initialValue: _qtyToSell.toString(),
+                                    keyboardType:
+                                        TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    decoration: InputDecoration(
+                                      labelText: 'Qty To Sell',
+                                      fillColor: Colors.white,
+                                      filled: true,
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.red, width: 1.0),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.blue, width: 1.0),
+                                      ),
+                                    ),
+                                    validator: (val) => val!.isEmpty
+                                        ? 'Please Enter Qty to Sell'
+                                        : null,
+                                    onChanged: (val) => setState(() {
+                                      _qtyToSell = int.parse(
+                                        val,
+                                      );
+                                      _total =
+                                          double.parse(_qtyToSell.toString()) *
+                                              double.parse(
+                                                  _sellingPrice.toString());
+                                    }),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Consumer<ProductListProvider>(
+                                    builder: (context, value, child) {
+                                      return TextFormField(
+                                        initialValue: _sellingPrice.toString(),
+                                        keyboardType:
+                                            TextInputType.numberWithOptions(
+                                                decimal: true),
+                                        decoration: InputDecoration(
+                                          labelText: 'Selling Price',
+                                          fillColor: Colors.white,
+                                          filled: true,
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.red, width: 1.0),
                                           ),
-                                          validator: (val) => val!.isEmpty
-                                              ? 'Please Enter Qty to Sell'
-                                              : null,
-                                          onChanged: (val) => setState(() {
-                                            _qtyToSell = int.parse(
-                                              val,
-                                            );
-                                            _total = double.parse( _qtyToSell.toString()) * double.parse(_sellingPrice.toString());
-                                          }),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.blue, width: 1.0),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Consumer<ProductListProvider>(
-                                          builder: (context, value, child) {
-                                            return TextFormField(
-                                              initialValue:
-                                                  _sellingPrice.toString(),
-                                              keyboardType: TextInputType
-                                                  .numberWithOptions(
-                                                      decimal: true),
-                                              decoration: InputDecoration(
-                                                labelText: 'Selling Price',
-                                                fillColor: Colors.white,
-                                                filled: true,
-                                                focusedBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      color: Colors.red,
-                                                      width: 1.0),
-                                                ),
-                                                enabledBorder:
-                                                    OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      color: Colors.blue,
-                                                      width: 1.0),
-                                                ),
-                                              ),
-                                              validator: (val) {
-                                                setState(() {
-                                                  _sellingPrice = val;
-                                                  _total = double.parse(_qtyToSell.toString()) *
-                                                      double.parse((val!.toString()));
-                                                });
-                                              },
-                                              onChanged: (val) => setState(() {
-                                                _sellingPrice = val;
-                                                _total =
-                                                    double.parse(_qtyToSell.toString()) * double.parse((val));
-                                              }),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ]),
-                            ],
-                          );
+                                        validator: (val) {
+                                          setState(() {
+                                            _sellingPrice = val;
+                                            _total = double.parse(
+                                                    _qtyToSell.toString()) *
+                                                double.parse((val!.toString()));
+                                          });
+                                        },
+                                        onChanged: (val) => setState(() {
+                                          _sellingPrice = val;
+                                          _total = double.parse(
+                                                  _qtyToSell.toString()) *
+                                              double.parse((val));
+                                        }),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ]),
+                      ],
+                    );
                   },
                 ),
-                 Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                            hintText: "Enter Ref/Serial No",
-                            labelText: 'Ref/Serial No',
-                            fillColor: Colors.white,
-                            filled: true,
-                            focusedBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.red, width: 1.0),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.blue, width: 1.0),
-                            ),
-                          ),
-                        ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      hintText: "Enter Ref/Serial No",
+                      labelText: 'Ref/Serial No',
+                      fillColor: Colors.white,
+                      filled: true,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red, width: 1.0),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blue, width: 1.0),
+                      ),
+                    ),
+                  ),
+                ),
                 SizedBox(
                   height: 20.0,
                 ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/constants/constants.dart';
+import 'package:testproject/databasesql/sqldatabaseconnection.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/pages/printerPages/printerPage.dart';
 import 'package:testproject/providers/api_service.dart';
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage> {
   List<SaleRow> products = [];
   String customerNo = "";
   List alldrivers = [];
-  List allCustomers = [];
+  var allCustomers;
   var selectedCustomerId = "";
   var selectedDriver = '';
   PrinterBluetooth? defaultPrinter;
@@ -67,8 +68,9 @@ class _HomePageState extends State<HomePage> {
     fetchDrivers();
     fetchallSaleTypes();
     fetchCustomers();
+    sethenders();
     setdate = true;
-    _getPrinterAddress();
+    //_getPrinterAddress();
     _scanPrinters();
 
     context.read<GetProducts>().fetchshopDetails();
@@ -122,14 +124,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void fetchCustomers() async {
-    final response = await httpGet('customers');
-    final customersResponse = jsonDecode(response.body);
+    allCustomers = await DatabaseHelper.instance.getAllCustomers();
 
-    if (customersResponse['ResultCode'] == 1200) {
-      setState(() {
-        allCustomers = customersResponse['ResponseData'];
-      });
-    }
+    setState(() {
+      allCustomers = allCustomers!;
+    });
   }
 
   void fetchallSaleTypes() async {
@@ -161,25 +160,25 @@ class _HomePageState extends State<HomePage> {
     return headers;
   }
 
-  _getPrinterAddress() async {
-    var headers = await sethenders();
-    var url =
-        Uri.https(baseUrl, '/api/v1/store-mac-address/${headers['storeid']}');
-    var response = await http.get(
-      url,
-      headers: headers,
-    );
-    var data = await jsonDecode(response.body);
-    defaultPrinter =
-        _devices.firstWhere((item) => item.address == data['ResponseData']);
-    setState(() {
-      defaultPrinter = defaultPrinter;
+  // _getPrinterAddress() async {
+  //   var headers = await sethenders();
+  //   var url =
+  //       Uri.https(baseUrl, '/api/v1/store-mac-address/${headers['storeid']}');
+  //   var response = await http.get(
+  //     url,
+  //     headers: headers,
+  //   );
+  //   var data = await jsonDecode(response.body);
+  //   defaultPrinter =
+  //       _devices.firstWhere((item) => item.address == data['ResponseData']);
+  //   setState(() {
+  //     defaultPrinter = defaultPrinter;
 
-      print(_devices);
-      print(macaddress);
-    });
-    return data['ResponseData'];
-  }
+  //     print(_devices);
+  //     print(macaddress);
+  //   });
+  //   return data['ResponseData'];
+  // }
 
   void setPickedBy(pickedbyvalue) {
     setState(() {
@@ -195,15 +194,15 @@ class _HomePageState extends State<HomePage> {
   void saveSale() {
     // validation checks
 
-    if (selectedSaleType == '') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select sale type!'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+    // if (selectedSaleType == '') {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('Please select sale type!'),
+    //       backgroundColor: Colors.red,
+    //     ),
+    //   );
+    //   return;
+    // }
     // end of validation checks
 
     // check overpayment
@@ -264,62 +263,69 @@ class _HomePageState extends State<HomePage> {
         totalPaid: totalpayment,
         userName: cache['loggedInUserName']);
     // end of sale data post request
-
+    print("Print sale data");
     setState(() {
       _isLoading = true;
     });
 
     // hit the provider method
-    Provider.of<GetProducts>(context, listen: false)
-        .postsale(saleData)
-        .then((value) {
+    // Provider.of<GetProducts>(context, listen: false)
+    //     .postsale(saleData)
+    DatabaseHelper.instance.postSale(saleData).then((value) {
       // check if request was successful
-      if (value['ResultCode'] == 1200) {
-        Provider.of<ProductListProvider>(context, listen: false)
-            .setprodLIstempty();
-        Provider.of<ProductListProvider>(context, listen: false)
-            .resetCustmerPhone();
-        Provider.of<ProductListProvider>(context, listen: false)
-            .resetsetdiscount();
-
-        setState(() {
-          selectedSaleType = '';
-          selectedCustomerId = "";
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sale successful!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-     //   printingSaleReciept(defaultPrinter!, saleData, printerManager);
-      }
-      // end of the  success check
-
-      // check if an error surfaced
-      if (value['ResultCode'] == 1500) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(value['ResultDesc']),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-      // end of error check
+      //if (value['ResultCode'] == 1200) {
+      Provider.of<ProductListProvider>(context, listen: false)
+          .setprodLIstempty();
+      Provider.of<ProductListProvider>(context, listen: false)
+          .resetCustmerPhone();
+      Provider.of<ProductListProvider>(context, listen: false)
+          .resetsetdiscount();
 
       setState(() {
+        selectedSaleType = '';
+        selectedCustomerId = "";
         _isLoading = false;
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sale successful!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      //   printingSaleReciept(defaultPrinter!, saleData, printerManager);
+    }
+        // end of the  success check
+
+        // check if an error surfaced
+        // if (value['ResultCode'] == 1500) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //       content: Text(value['ResultDesc']),
+        //       backgroundColor: Colors.green,
+        //     ),
+        //   );
+        // }
+        //} // end of error check
+        );
+    setState(() {
+      _isLoading = false;
     });
+
     // of of provider request method
   }
 
   @override
+  void dispose() {
+    // Close the database connection when the widget is disposed
+    DatabaseHelper.instance.database?.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final responseCode = Provider.of<GetProducts>(context).responseCode;
-    final resultDesc = Provider.of<GetProducts>(context).resultDesc;
+    // final responseCode = Provider.of<GetProducts>(context).responseCode;
+    // final resultDesc = Provider.of<GetProducts>(context).resultDesc;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -345,6 +351,20 @@ class _HomePageState extends State<HomePage> {
               color: Colors.white,
             ),
           ),
+          TextButton(
+            onPressed: DatabaseHelper.instance.databaseConnection,
+            child: Icon(
+              Icons.sync,
+              color: Colors.white,
+            ),
+          ),
+          TextButton(
+            onPressed: DatabaseHelper.instance.fetchAllInvoiceDetails,
+            child: Icon(
+              Icons.sync,
+              color: Colors.red,
+            ),
+          )
         ],
       ),
       drawer: DrawerScreen(
@@ -672,15 +692,15 @@ class _HomePageState extends State<HomePage> {
               // SizedBox(
               //   height: 10,
               // ),
-              CustomSelectBox(
-                  selectedVal: selectedSaleType,
-                  label: 'Sale Type',
-                  items: allSaleTypes,
-                  onChanged: (val) {
-                    setState(() {
-                      selectedSaleType = val as String;
-                    });
-                  })
+              // CustomSelectBox(
+              //     selectedVal: selectedSaleType,
+              //     label: 'Sale Type',
+              //     items: allSaleTypes,
+              //     onChanged: (val) {
+              //       setState(() {
+              //         selectedSaleType = val as String;
+              //       });
+              //     })
             ],
           ),
           Divider(),
@@ -688,13 +708,15 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                child: _isLoading ? CircularProgressIndicator() : ElevatedButton(
-                  child: Text(
-                    'Create Sale',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onPressed: saveSale,
-                ),
+                child: _isLoading
+                    ? CircularProgressIndicator()
+                    : ElevatedButton(
+                        child: Text(
+                          'Create Sale',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: saveSale,
+                      ),
               )
             ],
           )
@@ -702,7 +724,6 @@ class _HomePageState extends State<HomePage> {
       )),
     );
   }
-
 
   Widget _buildTodayDate() {
     return Row(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:testproject/databasesql/database_helper.dart';
+import 'package:testproject/databasesql/sqldatabaseconnection.dart';
 import 'package:testproject/pages/payment/addPayment.dart';
 import 'package:testproject/pages/productsPages/addGasProductForm.dart';
 import 'package:testproject/pages/productsPages/addProductForm.dart';
@@ -13,6 +15,7 @@ class SearchProduct extends StatefulWidget {
 }
 
 class _SearchProductState extends State<SearchProduct> {
+  String? _searchProductTerm;
   late Future<List<dynamic>> productlistdata;
 
   String _searchquery = "";
@@ -48,9 +51,17 @@ class _SearchProductState extends State<SearchProduct> {
   }
 
   @override
+  void dispose() {
+    // Close the database connection when the widget is disposed
+    DatabaseHelper.instance.database?.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductListProvider>(context);
-    final previousrouteString = productsData.previousRoute;
+
+    //final previousrouteString = productsData.previousRoute;
 
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
@@ -91,6 +102,9 @@ class _SearchProductState extends State<SearchProduct> {
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
                   onChanged: (val) {
+                    setState(() {
+                      _searchProductTerm = val;
+                    });
                     _setSearchterm(val);
                   },
                   decoration: InputDecoration(
@@ -112,59 +126,53 @@ class _SearchProductState extends State<SearchProduct> {
                 child: Container(
                   child: Consumer<GetProducts>(
                     builder: (context, value, child) {
-                      return FutureBuilder<List<dynamic>>(
-                          future: value.getProductsList(_searchquery),
-                          builder: (context, snapshot) {
-                            if (snapshot.data == null) {}
-                            if (snapshot.hasData) {
-                              List<dynamic> result = snapshot.data!;
-
-                              return (_searchquery != '')
-                                  ? ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount: result.length,
-                                      itemBuilder: (context, index) => InkWell(
-                                        onTap: () {
-                                          //print(result[index]['name']);
-
-                                          /*   final selectedproduct = new ResponseDatum(
-                                          name: result[index]['Name'],
-                                          sellingPrice: double.parse(
-                                              result[index]['SellingPrice']),
-                                          id: result[index]['id'],
-                                          availableQty: result[index]
-                                              ['AvailableQty'],
-                                          o_p_l_n_s_id: result[index]
-                                              ['o_p_l_n_s_id'],
-                                        );*/
-                                          value.selectedProduct(result[index]);
-                                          //_showaddProductPane();
-                                          //print(selectedproduct.id);\
-                                          if (previousrouteString ==
-                                              '/gassale') {
-                                            _gasaddProductPane();
-                                          } else {
-                                            _showaddProductPane();
-                                          }
-                                        },
-                                        child: ListTile(
-                                          title: Text(result[index]['Name']),
-                                          subtitle: Text(
-                                              "Selling Price: Ksh ${result[index]['SellingPrice'].toString()}"),
-                                          trailing: Text(
-                                              "Av.Qty:  ${result[index]['AvailableQty']..toString()}"),
-                                        ),
-                                      ),
-                                    )
-                                  : Text('Enter product to search');
-                            } else if (snapshot.hasError) {
-                              return Text('${snapshot.error}');
-                            }
-
+                      return FutureBuilder<List<Map<String, dynamic>>>(
+                        future: DatabaseHelper.instance
+                            .getAllProducts(_searchProductTerm),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return Center(
                               child: CircularProgressIndicator(),
                             );
-                          });
+                          } else if (snapshot.hasError) {
+                            return Text('${snapshot.error}');
+                          } else if (!snapshot.hasData ||
+                              snapshot.data == null) {
+                            return Center(
+                              child: Text("No data available."),
+                            );
+                          }
+
+                          List<Map<String, dynamic>> result = snapshot.data!;
+                          print(
+                              '...............................................................result earch...$result');
+
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: result.length,
+                            itemBuilder: (context, index) => InkWell(
+                              onTap: () {
+                                print(result);
+                                value.selectedProduct(result[index]);
+                                // if (previousrouteString == '/gassale') {
+                                //   _gasaddProductPane();
+                                // } else {
+                                //   _showaddProductPane();
+                                // }
+                                _showaddProductPane();
+                              },
+                              child: ListTile(
+                                title: Text(result[index]['Name']),
+                                subtitle: Text(
+                                    "Selling Price: Ksh ${result[index]['SellingPrice']}"),
+                                trailing: Text(
+                                    "Av.Qty: ${result[index]['AvailableQty']}"),
+                              ),
+                            ),
+                          );
+                        },
+                      );
                     },
                   ),
                 ),

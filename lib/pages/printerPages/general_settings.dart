@@ -356,7 +356,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(primary: Colors.brown),
+                      //style: ElevatedButton.styleFrom(primary: Colors.brown),
                       onPressed: () {
                         _startScanDevices();
                       },
@@ -374,7 +374,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding:
                       const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(primary: Colors.brown),
+                    //style: ElevatedButton.styleFrom(primary: Colors.brown),
                     onPressed: () {
                       _testPrint(_selectedPrinter);
                     },

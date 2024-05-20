@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:testproject/databasesql/sqldatabaseconnection.dart';
 import 'package:testproject/pages/Transfer/transfer_screen.dart';
 import 'package:testproject/pages/creditmemo/creditnote.dart';
 import 'package:testproject/pages/deposit/deposit.dart';
@@ -45,8 +46,12 @@ class Stalisapp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (cxt) => PrinterService(),
         ),
+        // ChangeNotifierProvider(
+        //   create: (cxt) => DatabaseHelper(),
+        // )
       ],
       child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           initialRoute: '/',
           routes: {
             '/login': (context) => LoginPage(),

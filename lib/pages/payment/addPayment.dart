@@ -167,7 +167,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                       if (_formKey.currentState!.validate()) {
                         Payment newpayment = Payment(
                           sumApplied: _amountPaid,
-                          oACTSId: accountSelected.oACTSId,
+                          accountId: accountSelected.accountId,
                           name: accountSelected.name,
                           paymentRemarks: remarks,
                         );

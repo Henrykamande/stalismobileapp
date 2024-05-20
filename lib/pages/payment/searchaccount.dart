@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:testproject/databasesql/sqldatabaseconnection.dart';
 import 'package:testproject/pages/payment/addPayment.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/models/accountmodel.dart';
@@ -30,30 +32,31 @@ class _PaymentSearchState extends State<PaymentSearch> {
   var _isLoading = false;
 
   var accounts = [];
+  var numberOfAccounts;
   // GetProducts _accountslistbulder = GetProducts();
 
-  void fetchAccounts() async {
-    setState(() {
-      _isLoading = true;
-    });
-    final response = await httpGet('bank-accounts');
-    final accountsResponse = jsonDecode(response.body);
+  // void fetchAccounts() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+  //   final response = await httpGet('bank-accounts');
+  //   final accountsResponse = jsonDecode(response.body);
 
-    if(accountsResponse['ResultCode'] == 1200) {
-      setState(() {
-        accounts = accountsResponse['ResponseData'];
-      });
-    }
+  //   if (accountsResponse['ResultCode'] == 1200) {
+  //     setState(() {
+  //       accounts = accountsResponse['ResponseData'];
+  //     });
+  //   }
 
-    setState(() {
-      _isLoading = false;
-    });
-
-  }
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  // }
 
   void initState() {
     super.initState();
-    fetchAccounts();
+    //fetchAccounts();
+    getListOfAccounts();
     //amountPaid = TextEditingController();
   }
 
@@ -69,9 +72,27 @@ class _PaymentSearchState extends State<PaymentSearch> {
         });
   }
 
+  void getListOfAccounts() async {
+    var accountsLocal = await DatabaseHelper.instance.getAllAccounts();
+    print(
+        "************************************************************ $accountsLocal");
+    setState(() {
+      numberOfAccounts = accountsLocal!.length;
+      accounts = accountsLocal;
+    });
+  }
+
+  @override
+  void dispose() {
+    // Close the database connection when the widget is disposed
+    DatabaseHelper.instance.database?.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final paymentsData = Provider.of<ProductListProvider>(context);
+
     final previousrouteString = paymentsData.previousRoute;
 
     return Scaffold(
@@ -83,46 +104,45 @@ class _PaymentSearchState extends State<PaymentSearch> {
         elevation: 0.0,
       ),
       resizeToAvoidBottomInset: true,
-      body: _isLoading == true ? Center(child: CircularProgressIndicator())  : SafeArea(
-        child: Container(
-          child: Column(
-            children: [
-              SizedBox(
-                height: 20.0,
-              ),
-              Expanded(
-                child: Container(
-                  height: 300,
-                  child: ListView.builder(
-                    itemCount: accounts.length,
-                    itemBuilder: (context, index) => InkWell(
-                      onTap: () async {
-                        Payment selectedAccount = new Payment(
-                          oACTSId: accounts[index]['id'],
-                          name: accounts[index]['Name'],
-                        );
+      body: _isLoading == true
+          ? Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: Container(
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 20.0,
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 300,
+                        child: ListView.builder(
+                          itemCount: numberOfAccounts,
+                          itemBuilder: (context, index) => InkWell(
+                            onTap: () async {
+                              Payment selectedAccount = new Payment(
+                                accountId: accounts[index]['id'],
+                                name: accounts[index]['Name'],
+                              );
 
-                        /*  openAddPaymentDialog(paymentsData,
+                              /*  openAddPaymentDialog(paymentsData,
                                     selectedAccount, previousrouteString);
  */
 
-                        await paymentsData
-                            .accountchoice(selectedAccount);
-                        _showaddPaymentPane();
-                      },
-                      child: ListTile(
-                        title: Text(accounts[index]['Name']),
+                              await paymentsData.accountchoice(selectedAccount);
+                              _showaddPaymentPane();
+                            },
+                            child: ListTile(
+                              title: Text(accounts[index]['Name']!),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
-
-
 }

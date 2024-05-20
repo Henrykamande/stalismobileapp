@@ -9,27 +9,28 @@ PosSale posSaleFromJson(String str) => PosSale.fromJson(json.decode(str));
 String posSaleToJson(PosSale data) => json.encode(data.toJson());
 
 class PosSale {
-  PosSale({
-    required this.objType,
-    required this.docNum,
-    this.cardCode,
-    required this.docTotal,
-    required this.balance,
-    this.ref1,
-    this.ref2,
-    this.driver,
-    this.saleType,
-    this.pickedBy,
-    this.customerName,
-    required this.docDate,
-    required this.discSum,
-    required this.payments,
-    required this.rows,
-    required this.totalPaid,
-    required this.userName,
-  });
+  PosSale(
+      {required this.objType,
+      required this.docNum,
+      this.cardCode,
+      required this.docTotal,
+      required this.balance,
+      this.ref1,
+      this.ref2,
+      this.driver,
+      this.saleType,
+      this.pickedBy,
+      this.customerName,
+      required this.docDate,
+      required this.discSum,
+      required this.payments,
+      required this.rows,
+      required this.totalPaid,
+      required this.userName,
+      this.soldBy});
 
   int objType;
+  int? soldBy;
   int docNum;
   int? cardCode;
   int? driver;
@@ -48,6 +49,7 @@ class PosSale {
   String userName;
 
   factory PosSale.fromJson(Map<String, dynamic> json) => PosSale(
+        soldBy: json['soldBy'],
         objType: json["ObjType"],
         driver: json["driver"],
         saleType: json["saleType"],
@@ -92,63 +94,97 @@ class PosSale {
 
 class Payment {
   Payment(
-      {this.sumApplied, required this.oACTSId, this.name, this.paymentRemarks});
+      {this.sumApplied,
+      required this.accountId,
+      this.name,
+      this.paymentRemarks,
+      this.cardCode,
+      this.soldBy,
+      this.recieptNo,
+      this.invoiceId,
+      this.storeId});
 
   int? sumApplied;
-  int oACTSId;
+  int? recieptNo;
+  int? cardCode;
+  int accountId;
   String? name;
+  int? storeId;
+  int? soldBy;
+  int? invoiceId;
   String? paymentRemarks;
 
   factory Payment.fromJson(Map<String, dynamic> json) => Payment(
+      recieptNo: json["reciept_no"],
+      invoiceId: json['invoice_id'],
+      soldBy: json['soldBy'],
+      cardCode: json['cardCode'],
+      storeId: json['store_id'],
       sumApplied: json["SumApplied"],
-      oACTSId: json["o_a_c_t_s_id"],
+      accountId: json["o_a_c_t_s_id"],
       name: json['name'],
       paymentRemarks: json['paymentRemarks']);
 
   Map<String, dynamic> toJson() => {
-        "SumApplied": sumApplied,
-        "o_a_c_t_s_id": oACTSId,
-        "name": name,
-        "PaymentRemarks": paymentRemarks,
+        "receipt_no": recieptNo,
+        "invoice_id": invoiceId,
+        "sold_by": soldBy,
+        "card_code": cardCode,
+        "store_id": storeId,
+        "Sum_applied": sumApplied,
+        "account_id": accountId,
+        "payment_remarks": paymentRemarks,
       };
 }
 
 class SaleRow {
-  SaleRow({
-    this.gasType,
-    this.name,
-    this.ref1,
-    required this.oPLNSId,
-    required this.price,
-    required this.quantity,
-    this.uomEntry,
-    required this.oITMSId,
-    this.discSum,
-    required this.lineTotal,
-    required this.lineNum,
-    this.commission,
-    this.taxId,
-    this.taxRate,
-    this.taxAmount,
-  });
+  SaleRow(
+      {this.storeId,
+      this.cancelled,
+      this.gasType,
+      this.name,
+      this.ref1,
+      this.oPLNSId,
+      this.price,
+      this.quantity,
+      this.cardCode,
+      this.invoiceId,
+      this.uomEntry,
+      required this.oITMSId,
+      this.discSum,
+      required this.lineTotal,
+      required this.lineNum,
+      this.commission,
+      this.taxId,
+      this.taxRate,
+      this.taxAmount,
+      this.receiptNo});
   String? name;
+  int? invoiceId;
+  int? storeId;
+  int? receiptNo;
+  int? cardCode;
   String? gasType;
-  int oPLNSId;
-  double price;
-  int quantity;
+  int? oPLNSId;
+  double? price;
+  int? quantity;
   dynamic uomEntry;
   int oITMSId;
   int? discSum;
   double lineTotal;
   int lineNum;
   int? commission;
+  int? cancelled;
   dynamic? taxId;
   dynamic? taxRate;
   dynamic? taxAmount;
   String? ref1;
 
   factory SaleRow.fromJson(Map<String, dynamic> json) => SaleRow(
+      storeId: json['store_id'],
+      cardCode: json['cardCode'],
       name: json["name"],
+      invoiceId: json['invoice_id'],
       oPLNSId: json["o_p_l_n_s_id"],
       price: json["Price"],
       quantity: json["Quantity"],
@@ -159,26 +195,32 @@ class SaleRow {
       lineNum: json["LineNum"],
       commission: json["Commission"],
       taxId: json["TaxId"],
+      cancelled: json['cancelled'],
       taxRate: json["TaxRate"],
       taxAmount: json["TaxAmount"],
       ref1: json["ref1"],
+      receiptNo: json['receipt_no'],
       gasType: json['gasType']);
 
   Map<String, dynamic> toJson() => {
         "name": name,
-        "o_p_l_n_s_id": oPLNSId,
+        "store_id": storeId,
+        "invoice_id": invoiceId,
         "Price": price,
-        "Quantity": quantity,
-        "UomEntry": uomEntry,
-        "o_i_t_m_s_id": oITMSId,
-        "DiscSum": discSum,
-        "LineTotal": lineTotal,
-        "LineNum": lineNum,
-        "Commission": commission,
-        "TaxId": taxId,
-        "TaxRate": taxRate,
-        "TaxAmount": taxAmount,
-        "ref1": ref1,
-        "gasType": gasType,
+        "quantity": quantity,
+        "uom_entry": uomEntry,
+        "product_id": oITMSId,
+        //"DiscSum": discSum,
+        "line_total": lineTotal,
+        "row_id": lineNum,
+        //"Commission": commission,
+        //"TaxId": taxId,
+        //"TaxRate": taxRate,
+        // "TaxAmount": taxAmount,
+        //"ref1": ref1,
+        //"gasType": gasType,
+        "receipt_no": receiptNo,
+        "cancelled": cancelled,
+        "card_code": cardCode,
       };
 }

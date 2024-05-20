@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:testproject/databasesql/sqldatabaseconnection.dart';
 
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
@@ -13,10 +14,9 @@ class SoldProducts extends StatefulWidget {
 }
 
 class _SoldProductsState extends State<SoldProducts> {
-
   PrefService _prefs = PrefService();
 
-  late Future<List<dynamic>> soldproducts;
+  late Future<List<Map<String, dynamic>>> soldproducts;
   Map<String, dynamic> _generalSettingDetails = {};
 
   final formatnum = new NumberFormat("#,##0.00", "en_US");
@@ -31,7 +31,7 @@ class _SoldProductsState extends State<SoldProducts> {
 
   @override
   void initState() {
-    soldproducts = _listbulder.fetchSoldProducts(_searchquery);
+    soldproducts = DatabaseHelper.instance.getAllSoldProducts()!;
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
 
     super.initState();
@@ -58,6 +58,13 @@ class _SoldProductsState extends State<SoldProducts> {
       storename = cache['storename'];
     });
     return headers;
+  }
+
+  @override
+  void dispose() {
+    // Close the database connection when the widget is disposed
+    DatabaseHelper.instance.database?.close();
+    super.dispose();
   }
 
   @override
@@ -125,15 +132,16 @@ class _SoldProductsState extends State<SoldProducts> {
               Expanded(
                 child: Container(
                     child: FutureBuilder<List<dynamic>>(
-                        future: context
-                            .read<GetProducts>()
-                            .fetchSoldProducts(_searchquery),
+                        future: soldproducts,
+                        //context
+                        //     .read<GetProducts>()
+                        //     .fetchSoldProducts(_searchquery),
                         builder: (context, snapshot) {
                           if (snapshot.data == null) {}
                           if (snapshot.hasData) {
                             List<dynamic> result = snapshot.data!;
                             //setSalesData(result);
-
+                            print('result $result');
                             return (result != [])
                                 ? ListView.builder(
                                     shrinkWrap: true,
@@ -146,8 +154,7 @@ class _SoldProductsState extends State<SoldProducts> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(result[index]['product']
-                                                    ['Name']
+                                            Text(result[index]['name']
                                                 .toString()),
                                             (result[index]['ref1'] != null)
                                                 ? Text(
@@ -160,7 +167,7 @@ class _SoldProductsState extends State<SoldProducts> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                                "Quantity Sold: ${result[index]['Quantity'].toString()}"),
+                                                "Quantity Sold: ${result[index]['quantity'].toString()}"),
                                             Row(
                                               children: [
                                                 (result[index]['ref2'] != null)
@@ -173,9 +180,10 @@ class _SoldProductsState extends State<SoldProducts> {
                                         ),
                                         trailing: Column(
                                           children: [
+                                            //${formatnum.format(result[index]['LineTotal']).toString()}
                                             Expanded(
                                               child: Text(
-                                                  "Total Ksh ${formatnum.format(result[index]['LineTotal']).toString()}"),
+                                                  "Total Ksh:  ${result[index]['line_total'].toString()}"),
                                             ),
                                             Expanded(
                                               child: IconButton(
@@ -230,8 +238,7 @@ class _SoldProductsState extends State<SoldProducts> {
               Consumer<GetProducts>(
                 builder: (context, value, child) {
                   return ElevatedButton(
-                      onPressed: () {},
-                      child: Text("Print Sold Products"));
+                      onPressed: () {}, child: Text("Print Sold Products"));
                 },
               )
             ],

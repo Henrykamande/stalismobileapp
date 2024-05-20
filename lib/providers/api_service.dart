@@ -4,6 +4,9 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:testproject/databasesql/database_helper.dart';
+import 'package:testproject/databasesql/sqldatabaseconnection.dart';
+import 'package:testproject/databasesql/tablesSchema.dart';
 
 import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/customermode.dart';
@@ -14,6 +17,10 @@ import 'package:testproject/models/postSale.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/utils/http.dart';
+
+import 'package:flutter/widgets.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 import '../constants/constants.dart';
 
@@ -42,6 +49,7 @@ class GetProducts with ChangeNotifier {
   get dailytotalsales => _totalsale;
   get allStores => _allStores;
   // Map<String, dynamic> get generalSettingDetails => _generalSettingDetails;
+  var database;
 
   setislodaing() {
     _isloading = true;
@@ -78,7 +86,6 @@ class GetProducts with ChangeNotifier {
     var headers = await sethenders();
 
     var url = Uri.parse('$backendUrl/search-products-mobile-api');
-
     try {
       if (query != null) {
         response =
@@ -86,7 +93,7 @@ class GetProducts with ChangeNotifier {
         if (response.statusCode == 200) {
           print('Sucessful POst');
           data = jsonDecode(response.body)['ResponseData'];
-
+          print("Wwrknknfkwnkfnwkenfkwenkgfnekmgfekmgf");
           return data;
         }
       } else {
@@ -119,30 +126,22 @@ class GetProducts with ChangeNotifier {
       } else {
         print('Request failed with status: ${response.statusCode}.');
       }
-    } on Exception catch (e) {}
+    } on Exception catch (e) {
+      print(e);
+    }
 
     return data = [];
   }
 
-  Future<List<dynamic>> getaccounts(searchquery) async {
+  Future<List<dynamic>> getaccounts(String? searchquery) async {
     var headers = await sethenders();
-    List<dynamic> accountsdata;
+    var accountsdata;
     final queryparamaeters = jsonEncode({
       "searchText": "$searchquery",
     });
 
     var url = Uri.https(baseUrl, '/api/v1/bank-accounts');
 
-    /* if (searchquery != null) {
-      response = await http.post(url, headers: headers, body: queryparamaeters);
-      if (response.statusCode == 200) {
-        print('Sucessful POst');
-        accountsdata = jsonDecode(response.body)['ResponseData'];
-        return accountsdata;
-      } else {
-        print('Request failed with status: ${response.statusCode}.');
-      }
-    } */
     response = await http.get(url, headers: headers);
     accountsdata = jsonDecode(response.body)['ResponseData'];
     notifyListeners();
@@ -150,15 +149,14 @@ class GetProducts with ChangeNotifier {
     return accountsdata;
   }
 
-  Future<List<CustomersResponseDatum>> getcustomers(
-      String? querycustomerName) async {
+  Future<List<dynamic>> getcustomers(String? querycustomerName) async {
     var headers = await sethenders();
     final queryparamaeters = jsonEncode({
       "searchText": "$querycustomerName",
     });
-    List<CustomersResponseDatum> customersdata;
+    var customersdata;
 
-    var url = Uri.https(baseUrl, '/customers');
+    var url = Uri.https(baseUrl, 'api/v1/customers');
     response = await http.get(
       url,
       headers: headers,
@@ -171,14 +169,6 @@ class GetProducts with ChangeNotifier {
 
     notifyListeners();
     return customersdata;
-    /* customersdata
-        .map((json) => CustomersResponseDatum.fromJson(json))
-        .where((customerdata) {_linenum
-                            prodproducts_linenum
-      final customerName = customerdata.name.toLowerCase();
-      final querycustomerLower = querycustomerName!.toLowerCase();
-      return customerName.contains(querycustomerLower);
-    }).toList();*/
   }
 
   postsale(salecard) async {
@@ -188,6 +178,7 @@ class GetProducts with ChangeNotifier {
     print(jsonDecode(queryparamaeters));
 
     try {
+      // post salecard to sqlite
       response = await httpPost('create-document', queryparamaeters);
       data = await jsonDecode(response.body);
 

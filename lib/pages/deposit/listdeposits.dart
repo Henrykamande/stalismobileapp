@@ -263,12 +263,12 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
                                           trailing: Column(
                                             children: [
                                               ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  primary:
-                                                      Colors.blue, // background
-                                                  onPrimary: Colors
-                                                      .white, // foreground
-                                                ),
+                                                // style: ElevatedButton.styleFrom(
+                                                //   primary:
+                                                //       Colors.blue, // background
+                                                //   onPrimary: Colors
+                                                //       .white, // foreground
+                                                // ),
                                                 onPressed: () {
                                                   context
                                                       .read<

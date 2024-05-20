@@ -44,6 +44,8 @@ dependencies:
   flutter_switch: ^0.3.2
   dropdown_search: ^5.0.3
   esc_pos_bluetooth: ^0.4.1
+  sqflite: ^2.3.0
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

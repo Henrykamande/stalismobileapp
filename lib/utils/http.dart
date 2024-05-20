@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import './shared_data.dart';
 
-var backendUrl = 'https://phplaravel-1005299-3647050.cloudwaysapps.com/api/v1';
+var backendUrl = 'https://prestige-nhg7.onrender.com';
 // var backendUrl = 'http://127.0.0.1:8000/api/v1';
 
 Future<dynamic> getSharedData() async {
@@ -14,11 +14,13 @@ Future<dynamic> getSharedData() async {
   }
 
   if (prefsData['token'] != null) {
-    token = prefsData['token'];
+    teken = prefsData['token']
+  } else {
+
   }
 
   final headers = <String, String>{
-    'Content-Type': 'application/json; charset=UTF-8',
+    'Content-Type': 'application/json',
     'accept': 'application/json',
     'Authorization': 'Bearer $token',
     'storeid': '$storeId',
@@ -28,6 +30,22 @@ Future<dynamic> getSharedData() async {
   return data;
 }
 
+Future<dynamic> httpPostLogin(String apiUrl, dynamic data) async {
+  try {
+    final url = Uri.parse('$backendUrl/$apiUrl');
+    final prefsData = await getSharedData();
+    final response = await http.post(
+      url,
+      headers: prefsData['headers'],
+      body: data,
+    );
+
+    return response;
+  } catch (error) {
+    print(error.toString());
+    return error;
+  }
+}
 Future<dynamic> httpPost(String apiUrl, dynamic data) async {
   try {
     final url = Uri.parse('$backendUrl/$apiUrl');
@@ -40,6 +58,7 @@ Future<dynamic> httpPost(String apiUrl, dynamic data) async {
 
     return response;
   } catch (error) {
+    print(error.toString());
     return error;
   }
 }

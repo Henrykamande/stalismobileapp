@@ -40,7 +40,7 @@ class Product {
 class ResponseDatum {
   ResponseDatum({
     required this.id,
-    required this.name,
+    this.name,
     required this.availableQty,
     required this.sellingPrice,
     required this.o_p_l_n_s_id,
@@ -50,7 +50,7 @@ class ResponseDatum {
   });
 
   dynamic id;
-  String name;
+  String? name;
   dynamic availableQty;
   double sellingPrice;
   dynamic o_p_l_n_s_id;
