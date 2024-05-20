@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:provider/provider.dart';
 import 'package:testproject/providers/login_service.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 
@@ -18,6 +19,39 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   String _errorMessage = '';
   bool _passwordVisible = true;
+  bool isLoading = false;
+
+  Future<void> _loginUser() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    Provider.of<UserLogin>(context, listen: false).loginApi(passwordController.text.toString(),
+        emailController.text.toString())
+        .then((response) {
+          print('result code ${response['ResultCode'] }');
+      if (response['ResultCode'] == 1500) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(response['message']),
+              duration: const Duration(seconds: 3),
+              backgroundColor: Colors.red),
+        );
+      }
+      if (response['ResultCode'] == 1200) {
+        Navigator.pushNamedAndRemoveUntil(
+            context, '/start', (route) => false);
+      }
+
+      setState(() {
+        isLoading = false;
+      });
+
+    });
+
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -79,52 +113,16 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(50), // NEW
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            side: BorderSide(color: Colors.green),
+                      child: Hero(
+                        tag: "login_btn",
+                        child: isLoading
+                            ? const CircularProgressIndicator()
+                            : ElevatedButton(
+                          onPressed: _loginUser,
+                          child: Text(
+                            "Login".toUpperCase(),
                           ),
                         ),
-                        onPressed: () {
-                          _userLogin
-                              .loginApi(passwordController.text.toString(),
-                                  emailController.text.toString())
-                              .then((response) {
-                            if (response) {
-                              Navigator.pushNamedAndRemoveUntil(
-                                  context, '/start', (route) => false);
-                            }
-                            if (response == false) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(20),
-                                        )),
-                                    height: 90.0,
-                                    child: Center(
-                                      child: Text(
-                                        'Check your Email and Password',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: Colors.transparent,
-                                ),
-                              );
-                            }
-                          });
-                          /* Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const HomePage()),
-                      ); */
-                        },
-                        child: Text('Sign in'),
                       ),
                     ),
                     Padding(
