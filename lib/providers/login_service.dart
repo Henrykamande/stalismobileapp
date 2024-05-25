@@ -9,48 +9,51 @@ import 'package:testproject/utils/http.dart';
 
 class UserLogin with ChangeNotifier {
   bool isLoggedIn = false;
+  bool _isAuthenticated = false;
 
   Future<dynamic> loginApi(String password, String email) async {
-    final PrefService _prefs = PrefService();
-    var response = await http.post(
-      Uri.parse('$backendUrl/login'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{'email': email, 'password': password}),
-    );
+    try {
+      // final dio = Dio();
+      // var url = onlineBackendUrl;
+      // var response = await dio
+      //     .post('$url/login', data: {'userName': email, 'pin': password});
+      var details = {'email': email, 'password': password};
+      final loginData = jsonEncode(details);
 
+      final response = await httpPost('login', loginData);
 
-      /*  Map<Todo, dynamic> data =
-            new Map<Todo, dynamic>.from(json.decode(response.body));
-        print(data.length); */
-      Map<String, dynamic> datamap = await json.decode(response.body);
-      if (datamap['ResultCode'] == 1200) {
-        String token = datamap['ResponseData']['authToken'];
-        int storeid = datamap['ResponseData']['store_id'];
-        String storename = datamap['ResponseData']['storename'];
-        // String companyPhone = datamap['ResponseData']['CompanyPhone'].toString();
-        print("$token $storeid  ");
-        String logineduserName = datamap['ResponseData']['name'];
-        _prefs.createCache(token, storeid.toString(), logineduserName, storename);
+      var authData = jsonDecode(response.body);
 
-        // save user data to shared preferences
+      if (authData['ResultCode'] == 1200) {
+
+        var token = authData['ResponseData']['authToken'];
         SharedPreferences prefs = await SharedPreferences.getInstance();
+
         final userData = jsonEncode({
           'token': token,
-          'name': datamap['ResponseData']['name'],
-          'storeId': datamap['ResponseData']['store_id'],
-          'storeName': datamap['ResponseData']['storename']
+          'userId': authData['ResponseData']['user_id'],
+          'name': authData['ResponseData']['name'],
+          'userName': authData['ResponseData']['name'],
+          'storeId': authData['ResponseData']['store_id'],
+          'storeName': authData['ResponseData']['shopName'],
+          'role': 1,
         });
 
-        prefs.setString('userData', userData);
-        // end
+        _isAuthenticated = true;
         isLoggedIn = true;
+
+        prefs.setBool('isAuthenticated', true);
+        prefs.setBool('isLoggedIn ', true);
+        prefs.setString('userData', userData);
+        prefs.setString('name', authData['ResponseData']['userName']);
+
         notifyListeners();
         return {'ResultCode': 1200, 'message': 'Login Successful'};
       } else {
-        return {'ResultCode': 1500, 'message': datamap['ResultDesc']};
+        return {'ResultCode': 1500, 'message': authData['ResultDesc']};
       }
-
+    } catch (error) {
+      return {'ResultCode': 1500, 'message': error.toString()};
+    }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:testproject/databasesql/database_helper.dart';
-import 'package:testproject/databasesql/sqldatabaseconnection.dart';
+import 'package:testproject/databasesql/sql_database_connection.dart';
 import 'package:testproject/pages/payment/addPayment.dart';
 import 'package:testproject/pages/productsPages/addGasProductForm.dart';
 import 'package:testproject/pages/productsPages/addProductForm.dart';

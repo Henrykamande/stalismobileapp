@@ -4,9 +4,8 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:testproject/databasesql/database_helper.dart';
-import 'package:testproject/databasesql/sqldatabaseconnection.dart';
-import 'package:testproject/databasesql/tablesSchema.dart';
+import 'package:testproject/databasesql/sql_database_connection.dart';
+import 'package:testproject/databasesql/tables_schema.dart';
 
 import 'package:testproject/models/creditmemo.dart';
 import 'package:testproject/models/customermode.dart';

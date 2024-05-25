@@ -2,26 +2,11 @@ var accountsTableSql =
     ''' CREATE TABLE `accounts` (`id` integer PRIMARY KEY AUTOINCREMENT,`CardCode` integer, `Name` text, `Type` text, `Balance` Real, `user_id` integer, 
     `deleted_at` datetime, `created_at` datetime, `updated_at` datetime, `Category` integer, `code` integer, `BankingAcc` text, `owner` integer) ''';
 
-var customerSql = '''CREATE TABLE `customers` ( `id` integer , `CardCode` INT,
+var customerSql = '''CREATE TABLE `customers` ( `id` integer PRIMARY KEY,
+    `subscriber_id` integer,
     `Name` VARCHAR(255),
     `PhoneNumber` VARCHAR(20),
-    `Email` VARCHAR(255),
-    `Balance` DECIMAL(10, 2),
-    `OpeningBalance` DECIMAL(10, 2),
-    `CreditLimit` DECIMAL(10, 2),
-    `AdvancePayment` DECIMAL(10, 2),
-    `user_id` INT,
-    `Status` CHAR(1),
-    `CardType` CHAR(1),
-    `deleted_at` TIMESTAMP,
-    `created_at` TIMESTAMP,
-    `updated_at` TIMESTAMP,
-    `store_id` INT,
-    `Address` VARCHAR(255),
-    `paymentTerm` VARCHAR(50),
-    `PinNo` VARCHAR(20),
-    `syncStatus` INT,
-    `localId` VARCHAR(255)) ''';
+    `Email` VARCHAR(255)) ''';
 
 var inventoryTableSql =
     ''' CREATE TABLE `inventories` (`id` integer PRIMARY KEY AUTOINCREMENT,`oitms_id` integer,

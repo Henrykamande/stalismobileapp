@@ -7,81 +7,108 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:testproject/models/SyncPayment.dart';
+import 'package:testproject/models/customer.dart';
 import 'package:testproject/models/invoice.dart';
 import 'package:testproject/models/sycsalerows.dart';
 import 'package:testproject/models/syncInvoice.dart';
 
 import 'package:testproject/providers/api_service.dart';
-import 'package:testproject/providers/shared_preferences_services.dart';
+import 'package:testproject/providers/customer.dart';
 import 'package:testproject/utils/http.dart';
-import './tablesSchema.dart';
+import '../utils/shared_data.dart';
+import './tables_schema.dart';
 import '../models/postSale.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
   Database? database;
-  PrefService _prefs = PrefService();
-
   DatabaseHelper._privateConstructor();
 
   Future<Database?> databaseConnection() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    //deleteDatabase(join(documentsDirectory.toString(), 'databasepath13.db'));
 
     WidgetsFlutterBinding.ensureInitialized();
     // Open the database and store the reference.
     print(await getApplicationDocumentsDirectory());
     database = await openDatabase(
-      join(documentsDirectory.toString(), 'databasepath14.db'),
+      join(documentsDirectory.toString(), 'stalispos11.db'),
       onCreate: ((db, version) {
         return {
-          db.execute(invoiceTableSql),
-          db.execute(paymentTableSql),
-          db.execute(saleRowTableSql),
+          // db.execute(invoiceTableSql),
+          // db.execute(paymentTableSql),
+          // db.execute(saleRowTableSql),
           db.execute(customerSql),
-          db.execute(accountsTableSql),
-          db.execute(productsTableSql),
-          db.execute(usersTableSql),
-          db.execute(printerSetup),
-          db.execute(inventoryTableSql),
-          db.execute(uomsTableSql),
-          db.execute(uomGroups),
-          db.execute(ugp1TableSql),
-          db.execute(versionTableSql),
-          db.execute(outsourcedsTableSql)
+          // db.execute(accountsTableSql),
+          // db.execute(productsTableSql),
+          // db.execute(usersTableSql),
+          // db.execute(printerSetup),
+          // db.execute(inventoryTableSql),
+          // db.execute(uomsTableSql),
+          // db.execute(uomGroups),
+          // db.execute(ugp1TableSql),
+          // db.execute(versionTableSql),
+          // db.execute(outsourcedsTableSql)
         };
       }),
       version: 1,
     );
-    //setheaders to fet id and store id
 
-    //insertPayment();
+    // final firstInsert = await database!.query('version', where: 'id = 1');
+    //
+    // if (firstInsert.isEmpty || firstInsert[0]['products_inserted'] == 0) {
+    syncCustomers(database);
+    // syncProducts(database);
+    // syncAccountsModes(database);
 
-    final firstInsert = await database!.query('version', where: 'id = 1');
-
-    if (firstInsert.isEmpty || firstInsert[0]['products_inserted'] == 0) {
-      syncProducts(database);
-      syncAccountsModes(database);
-      syncCustomers(database);
-    }
+    // }
 
     return database;
   }
 
-  sethenders() async {
-    var cache = await _prefs.readCache(
-        'Token', 'StoreId', 'loggedinUserName', 'storename');
+  setHeaders() async {
+    final prefsData = await sharedData();
 
-    String token = cache['Token'];
-    String storeId = cache['StoreId'];
+    String token = prefsData['token'];
+    String storeId = prefsData['storeId'];
 
     Map<String, String> headers = {
       'Content-Type': 'application/json',
       "Authorization": "Bearer $token",
       "storeid": "$storeId"
     };
+
     return headers;
+  }
+
+  Future<void> syncCustomers(database) async {
+    // Get a reference to the database.
+    final db = await database;
+    var customers = await CustomerProvider().fetchCustomers();
+    //print(customers);
+
+    await db.transaction((txn) async {
+      for (var customer in customers) {
+        var newCustomer = new Customer(
+            id: customer['id'],
+            name: customer['Name'],
+            phoneNumber: customer['PhoneNumber'],
+            email: customer['Email'],
+            subscriberId: customer['SubscriberId']);
+
+        final existingRecord = await txn
+            .query('customers', where: 'id = ?', whereArgs: [customer["id"]]);
+
+        print(existingRecord);
+        if (existingRecord.isEmpty) {
+          await txn.insert(
+            'customers',
+            newCustomer.toJson(),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+      }
+    });
   }
 
 // Sync products from the online api
@@ -146,28 +173,6 @@ class DatabaseHelper {
   }
 //sync customers
 
-  Future<void> syncCustomers(database) async {
-    // Get a reference to the database.
-    final db = await database;
-    var customers = await GetProducts().getcustomers('');
-    //print(customers);
-
-    await db.transaction((txn) async {
-      for (var customer in customers) {
-        // print(customer);
-        final exisitingRecord = await txn
-            .query('customers', where: 'id =?', whereArgs: [customer["id"]]);
-        if (exisitingRecord.isEmpty) {
-          await txn.insert(
-            'customers',
-            customer,
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          );
-        }
-      }
-    });
-  }
-
   Future<List<Map<String, dynamic>>>? getAllProducts(searchTerm) async {
     // Get a reference to the database.
     print('getting products');
@@ -206,7 +211,7 @@ class DatabaseHelper {
   }
 
   Future<void> postSale(PosSale salesCard) async {
-    var headers = await sethenders();
+    var headers = await setHeaders();
 
     // Get a reference to the database.
     Database? database = await databaseConnection();

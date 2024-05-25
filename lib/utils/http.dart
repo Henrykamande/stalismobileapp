@@ -1,8 +1,8 @@
 import 'package:http/http.dart' as http;
 import './shared_data.dart';
 
-var backendUrl = 'https://prestige-nhg7.onrender.com';
-// var backendUrl = 'http://127.0.0.1:8000/api/v1';
+// var backendUrl = 'https://prestige-nhg7.onrender.com';
+var backendUrl = 'http://10.0.2.2:8300';
 
 Future<dynamic> getSharedData() async {
   final prefsData = await sharedData();
@@ -14,7 +14,7 @@ Future<dynamic> getSharedData() async {
   }
 
   if (prefsData['token'] != null) {
-    teken = prefsData['token']
+    token = prefsData['token'];
   } else {
 
   }
@@ -46,6 +46,7 @@ Future<dynamic> httpPostLogin(String apiUrl, dynamic data) async {
     return error;
   }
 }
+
 Future<dynamic> httpPost(String apiUrl, dynamic data) async {
   try {
     final url = Uri.parse('$backendUrl/$apiUrl');

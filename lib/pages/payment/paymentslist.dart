@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:testproject/databasesql/sqldatabaseconnection.dart';
+import 'package:testproject/databasesql/sql_database_connection.dart';
 import 'package:testproject/pages/productsPages/addProductForm.dart';
 import 'package:testproject/models/paidamount.dart';
 import 'package:testproject/models/product.dart';

@@ -11,7 +11,7 @@ import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:intl/intl.dart';
-import 'package:testproject/shared/drawerscreen.dart';
+import 'package:testproject/widgets/drawer_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:http/http.dart' as http;
@@ -276,9 +276,7 @@ class _CustomerDepositState extends State<CustomerDeposit> {
           ],
         ),
       ),
-      drawer: DrawerScreen(
-        storename: storename,
-      ),
+      drawer: DrawerScreen(),
       body: SafeArea(
           child: Column(
         children: [

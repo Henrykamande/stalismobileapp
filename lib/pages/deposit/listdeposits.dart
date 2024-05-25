@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
-import 'package:testproject/shared/drawerscreen.dart';
+import 'package:testproject/widgets/drawer_screen.dart';
 
 class CustomerDepositsList extends StatefulWidget {
   const CustomerDepositsList({Key? key}) : super(key: key);
@@ -71,9 +71,7 @@ class _CustomerDepositsListState extends State<CustomerDepositsList> {
         ),
         elevation: 0.0,
       ),
-      drawer: DrawerScreen(
-        storename: storename,
-      ),
+      drawer: DrawerScreen(),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Container(

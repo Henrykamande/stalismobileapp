@@ -19,7 +19,7 @@ import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:testproject/pages/productsPages/searchproduct.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-import 'package:testproject/shared/drawerscreen.dart';
+import 'package:testproject/widgets/drawer_screen.dart';
 
 class CustomerCreditNote extends StatefulWidget {
   @override
@@ -288,9 +288,7 @@ class _CustomerCreditNoteState extends State<CustomerCreditNote> {
           ],
         ),
       ),
-      drawer: DrawerScreen(
-        storename: storename,
-      ),
+      drawer: DrawerScreen(),
       body: SafeArea(
         child: Column(
           children: [

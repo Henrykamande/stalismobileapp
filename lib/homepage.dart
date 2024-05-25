@@ -5,20 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:testproject/constants/constants.dart';
-import 'package:testproject/databasesql/sqldatabaseconnection.dart';
+import 'package:testproject/databasesql/sql_database_connection.dart';
 import 'package:testproject/models/postSale.dart';
-import 'package:testproject/pages/printerPages/printerPage.dart';
 import 'package:testproject/providers/api_service.dart';
-import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:intl/intl.dart';
-import 'package:testproject/shared/drawerscreen.dart';
+import 'package:testproject/utils/shared_data.dart';
+import 'package:testproject/widgets/custom_appbar.dart';
+import 'package:testproject/widgets/drawer_screen.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:testproject/utils/custom_select_box.dart';
 import 'package:testproject/utils/http.dart';
-import 'package:testproject/utils/saleValidation.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -75,7 +74,7 @@ class _HomePageState extends State<HomePage> {
     fetchDrivers();
     fetchallSaleTypes();
     fetchCustomers();
-    sethenders();
+    setHeaders();
     setdate = true;
     //_getPrinterAddress();
     _scanPrinters();
@@ -105,7 +104,7 @@ class _HomePageState extends State<HomePage> {
         'searchText': searchQuery,
       };
 
-      var headers = await sethenders();
+      var headers = await setHeaders();
       var url =
       Uri.https(baseUrl, '/api/v1/search-customer');
       var response = await http.post(
@@ -171,8 +170,8 @@ class _HomePageState extends State<HomePage> {
     printerManager.stopScan();
   }
 
-  void fetchshopDetails() async {
-    var headers = await sethenders();
+  void fetchShopDetails() async {
+    var headers = await setHeaders();
 
     var url = Uri.https(baseUrl, '/api/v1/general-settings');
     var response = await http.get(
@@ -214,12 +213,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  sethenders() async {
-    cache = await _prefs.readCache(
-        'Token', 'StoreId', 'loggedinUserName', 'storename');
+  setHeaders() async {
 
-    String token = cache['Token'];
-    String storeId = cache['StoreId'];
+    var prefsData = await sharedData();
+
+    var token = prefsData['token'];
+    var storeId = prefsData['storeId'];
+    var storeName = prefsData['storeName'];
 
     Map<String, String> headers = {
       'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ class _HomePageState extends State<HomePage> {
       "storeid": "$storeId"
     };
     setState(() {
-      storename = cache['storename'];
+      storename = storeName;
     });
     return headers;
   }
@@ -343,48 +343,48 @@ class _HomePageState extends State<HomePage> {
     // hit the provider method
     // Provider.of<GetProducts>(context, listen: false)
     //     .postsale(saleData)
-    DatabaseHelper.instance.postSale(saleData).then((value) {
-      // check if request was successful
-      //if (value['ResultCode'] == 1200) {
-      Provider.of<ProductListProvider>(context, listen: false)
-          .setprodLIstempty();
-      Provider.of<ProductListProvider>(context, listen: false)
-          .resetCustmerPhone();
-      Provider.of<ProductListProvider>(context, listen: false)
-          .resetsetdiscount();
-
-        setState(() {
-          selectedSaleType = '';
-          selectedCustomerId = "";
-          _selectedCustomer = {};
-          _isLoading = false;
-        });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sale successful!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      //   printingSaleReciept(defaultPrinter!, saleData, printerManager);
-    }
+    // DatabaseHelper.instance.postSale(saleData).then((value) {
+    //   // check if request was successful
+    //   //if (value['ResultCode'] == 1200) {
+    //   Provider.of<ProductListProvider>(context, listen: false)
+    //       .setprodLIstempty();
+    //   Provider.of<ProductListProvider>(context, listen: false)
+    //       .resetCustmerPhone();
+    //   Provider.of<ProductListProvider>(context, listen: false)
+    //       .resetsetdiscount();
+    //
+    //     setState(() {
+    //       selectedSaleType = '';
+    //       selectedCustomerId = "";
+    //       _selectedCustomer = {};
+    //       _isLoading = false;
+    //     });
+    //
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('Sale successful!'),
+    //       backgroundColor: Colors.green,
+    //     ),
+    //   );
+    //   //   printingSaleReciept(defaultPrinter!, saleData, printerManager);
+    // }
         // end of the  success check
 
       // check if an error surfaced
-      if (value['ResultCode'] == 1500) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(value['ResultDesc']),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      // if (value['ResultCode'] == 1500) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //       content: Text(value['ResultDesc']),
+      //       backgroundColor: Colors.red,
+      //     ),
+      //   );
+      // }
       // end of error check
 
-      setState(() {
-        _isLoading = false;
-      });
-    });
+    //   setState(() {
+    //     _isLoading = false;
+    //   });
+    // });
 
     // of of provider request method
   }
@@ -402,47 +402,8 @@ class _HomePageState extends State<HomePage> {
     // final resultDesc = Provider.of<GetProducts>(context).resultDesc;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.grey.shade700,
-        title: Center(
-          child: Text(
-            'Stalis Pos',
-            style: TextStyle(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              cache = await _prefs.readCache(
-                  'Token', 'StoreId', 'loggedInUserName', 'storename');
-              await _prefs.removeCache(
-                  'Token', 'StoreId', 'loggedInUserName', 'storename');
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-            },
-            child: Icon(
-              Icons.logout,
-              color: Colors.white,
-            ),
-          ),
-          TextButton(
-            onPressed: DatabaseHelper.instance.databaseConnection,
-            child: Icon(
-              Icons.sync,
-              color: Colors.white,
-            ),
-          ),
-          TextButton(
-            onPressed: DatabaseHelper.instance.fetchAllInvoiceDetails,
-            child: Icon(
-              Icons.sync,
-              color: Colors.red,
-            ),
-          )
-        ],
-      ),
-      drawer: DrawerScreen(
-        storename: storename,
-      ),
+      appBar: CustomAppBar(),
+      drawer: DrawerScreen(),
       body: SingleChildScrollView(
           child: Stack(
             children:  [
