@@ -15,9 +15,11 @@ class CustomerProvider with ChangeNotifier {
     try {
       final response = await httpGet('customers');
       final customers = jsonDecode(response.body);
-      _customers = customers['ResponseData'];
-      notifyListeners();
+      if(customers['ResponseData'] != null) {
+        _customers = customers['ResponseData'];
+      }
 
+      notifyListeners();
       return _customers;
     } catch (error) {
       print('customer error $error');

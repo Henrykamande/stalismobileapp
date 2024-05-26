@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
   var _selectedCustomer = {};
   final FocusNode _customerNameFocusNode = FocusNode();
   var customerSearchController = TextEditingController();
-  List<dynamic> _customers = [];
+  List<Map<String, dynamic>> _customers = [];
   var _customerFocusNodes = <FocusNode>[];
   final FocusNode _customerSearchFocusNode = FocusNode();
   int _currentIndex = -1;
@@ -71,10 +71,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    fetchDrivers();
-    fetchallSaleTypes();
-    fetchCustomers();
-    setHeaders();
+    // fetchDrivers();
+    // fetchallSaleTypes();
+    // fetchCustomers();
+    // setHeaders();
     setdate = true;
     //_getPrinterAddress();
     _scanPrinters();
@@ -95,58 +95,17 @@ class _HomePageState extends State<HomePage> {
   // end
 
   // search customers method
-  void _searchCustomers() async {
+  Future<List<Map<String, dynamic>>> _searchCustomers() async {
     final searchQuery = customerSearchController.text;
-    _customerFocusNodes = [];
+    var customers = await DatabaseHelper.instance.searchCustomers(searchQuery);
 
-    if (searchQuery != '') {
-      var params = {
-        'searchText': searchQuery,
-      };
+    setState(() {
+      _customers = customers!;
+    });
 
-      var headers = await setHeaders();
-      var url =
-      Uri.https(baseUrl, '/api/v1/search-customer');
-      var response = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(params),
-      );
-
-      var customerResults = jsonDecode(response.body);
-
-
-      print(customerResults);
-      List<dynamic> items = customerResults['ResponseData'];
-
-      if (searchQuery != '') {
-        setState(() {
-          _customers = items;
-
-          for (var node in _customerFocusNodes) {
-            node.unfocus();
-          }
-          // end
-          _customerFocusNodes
-              .addAll(List.generate(items.length, (index) => FocusNode()));
-        });
-      }
-
-      if (searchQuery == '') {
-        setState(() {
-          _customers = [];
-        });
-      }
-    } else {
-      setState(() {
-        customerSearchController.text = '';
-        _customers = [];
-        // _currentIndex = -1;
-      });
-    }
+    return customers!;
   }
   // end
-
 
   void _scanPrinters() {
     printerManager.scanResults.listen((devices) async {
@@ -214,7 +173,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   setHeaders() async {
-
     var prefsData = await sharedData();
 
     var token = prefsData['token'];
@@ -263,18 +221,19 @@ class _HomePageState extends State<HomePage> {
   }
   // save sale
 
-  void saveSale() {
-    // validation checks
+  void saveSale() async {
+    var cartData =
+        Provider.of<ProductListProvider>(context, listen: false).productlist;
 
-    // if (selectedSaleType == '') {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(
-    //       content: Text('Please select sale type!'),
-    //       backgroundColor: Colors.red,
-    //     ),
-    //   );
-    //   return;
-    // }
+    if (cartData.length <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must add at least one item to cart !'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     // end of validation checks
 
     // check overpayment
@@ -287,9 +246,6 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     }
-    // end of overpayment check
-
-    // end
 
     if (selectedCustomerId == "" &&
         Provider.of<ProductListProvider>(context, listen: false)
@@ -316,14 +272,32 @@ class _HomePageState extends State<HomePage> {
     final customerNo =
         Provider.of<ProductListProvider>(context, listen: false).customerPhone;
 
+    var prefsData = await sharedData();
+
+    var userName = prefsData['userName'];
+
+    var allCustomers = await DatabaseHelper.instance.getAllCustomers();
+    int cardCode = 0;
+
+    if (allCustomers.isNotEmpty) {
+      final firstCustomer = allCustomers.first;
+      cardCode = firstCustomer['id'] as int;
+    }
+
+
+    if(selectedCustomerId != '') {
+      cardCode = int.parse(selectedCustomerId);
+    }
+
+    print('customer id $cardCode');
+
     // post sale data
     PosSale saleData = new PosSale(
         ref2: customerNo.toString(),
         objType: 14,
         docNum: 2,
         pickedBy: pickedBy,
-        cardCode:
-            selectedCustomerId != '' ? int.parse(selectedCustomerId) : null,
+        cardCode: cardCode,
         saleType: selectedSaleType != '' ? int.parse(selectedSaleType) : 0,
         discSum: discountGiven,
         payments: paymentlist,
@@ -333,58 +307,61 @@ class _HomePageState extends State<HomePage> {
         docDate: DateFormat('yyyy-MM-dd').parse(todayDate),
         rows: products,
         totalPaid: totalpayment,
-        userName: cache['loggedInUserName']);
+        userName: userName);
+
+    print('sale data $saleData');
+
     // end of sale data post request
     print("Print sale data");
     setState(() {
-      _isLoading = true;
+      // _isLoading = true;
     });
 
     // hit the provider method
-    // Provider.of<GetProducts>(context, listen: false)
-    //     .postsale(saleData)
-    // DatabaseHelper.instance.postSale(saleData).then((value) {
-    //   // check if request was successful
-    //   //if (value['ResultCode'] == 1200) {
-    //   Provider.of<ProductListProvider>(context, listen: false)
-    //       .setprodLIstempty();
-    //   Provider.of<ProductListProvider>(context, listen: false)
-    //       .resetCustmerPhone();
-    //   Provider.of<ProductListProvider>(context, listen: false)
-    //       .resetsetdiscount();
-    //
-    //     setState(() {
-    //       selectedSaleType = '';
-    //       selectedCustomerId = "";
-    //       _selectedCustomer = {};
-    //       _isLoading = false;
-    //     });
-    //
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(
-    //       content: Text('Sale successful!'),
-    //       backgroundColor: Colors.green,
-    //     ),
-    //   );
-    //   //   printingSaleReciept(defaultPrinter!, saleData, printerManager);
-    // }
-        // end of the  success check
+    // Provider.of<GetProducts>(context, listen: false).postsale(saleData);
 
-      // check if an error surfaced
-      // if (value['ResultCode'] == 1500) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(
-      //       content: Text(value['ResultDesc']),
-      //       backgroundColor: Colors.red,
-      //     ),
-      //   );
-      // }
-      // end of error check
+    DatabaseHelper.instance.postSale(saleData).then((value) {
+      // check if request was successful
+      //if (value['ResultCode'] == 1200) {
+      Provider.of<ProductListProvider>(context, listen: false)
+          .setprodLIstempty();
+      Provider.of<ProductListProvider>(context, listen: false)
+          .resetCustmerPhone();
+      Provider.of<ProductListProvider>(context, listen: false)
+          .resetsetdiscount();
 
-    //   setState(() {
-    //     _isLoading = false;
-    //   });
-    // });
+      setState(() {
+        selectedSaleType = '';
+        selectedCustomerId = "";
+        _selectedCustomer = {};
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sale successful!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      //   printingSaleReciept(defaultPrinter!, saleData, printerManager);
+
+      // end of the  success check
+
+      // // check if an error surfaced
+      //  if (value['ResultCode'] == 1500) {
+      //    ScaffoldMessenger.of(context).showSnackBar(
+      //      SnackBar(
+      //        content: Text(value['ResultDesc']),
+      //        backgroundColor: Colors.red,
+      //      ),
+      //    );
+      //  }
+      //  end of error check
+      //
+      //    setState(() {
+      //      _isLoading = false;
+      //    });
+    });
 
     // of of provider request method
   }
@@ -405,145 +382,144 @@ class _HomePageState extends State<HomePage> {
       appBar: CustomAppBar(),
       drawer: DrawerScreen(),
       body: SingleChildScrollView(
-          child: Stack(
-            children:  [
-              Column(
+          child: Stack(children: [
+        Column(
+          children: [
+            SizedBox(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                child: _buildTodayDate(),
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 18.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                      child: _buildTodayDate(),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 18.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton.icon(
-                            onPressed: () {
-                              context
-                                  .read<ProductListProvider>()
-                                  .setPreviousRoute('/start');
+                  TextButton.icon(
+                      onPressed: () {
+                        context
+                            .read<ProductListProvider>()
+                            .setPreviousRoute('/start');
 
-                              Navigator.pushNamed(context, '/searchproduct');
-                            },
-                            icon: Icon(Icons.add),
-                            label: Text('Add Sale Item')),
-                        TextButton.icon(
-                          onPressed: () {
-                            context
-                                .read<ProductListProvider>()
-                                .setPreviousRoute('/start');
-
-                            Navigator.pushNamed(context, '/paymentsearch');
-                          },
-                          icon: Icon(Icons.add),
-                          label: Text('Add Payment'),
-                          style: ButtonStyle(
-                              foregroundColor: MaterialStateColor.resolveWith(
-                                      (states) => Colors.pink)),
-                        )
-                      ],
-                    ),
-                  ),
-                  Container(
-                    color: Colors.white,
-                    child: Consumer<ProductListProvider>(
-                      builder: (context, value, child) {
-                        return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: value.productlist.length,
-                            itemBuilder: (context, index) => index <
-                                value.productlist.length
-                                ? Container(
-                              color: Colors.white,
-                              child: ListTile(
-                                title: Text(
-                                  value.productlist[index].name.toString(),
-                                  style: TextStyle(
-                                      fontSize: 13.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Row(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        "Qty: ${(value.productlist[index].quantity).toString()}",
-                                        style: TextStyle(
-                                            fontSize: 11.0,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        "Price: ${value.productlist[index].price.toString()}",
-                                        style: TextStyle(
-                                            fontSize: 11.0,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                trailing: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Column(
-                                    children: [
-                                      Text(formatnum
-                                          .format(
-                                          value.productlist[index].lineTotal)
-                                          .toString()),
-                                      Expanded(
-                                        child: IconButton(
-                                            icon: Icon(
-                                              Icons.cancel,
-                                              color: Colors.red,
-                                            ),
-                                            onPressed: () {
-                                              value.removeProduct(index);
-                                            }),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            )
-                                : Card(
-                              child: Text("No product added"),
-                            ));
+                        Navigator.pushNamed(context, '/searchproduct');
                       },
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Container(
-                    color: Colors.black54,
-                    padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 18.0),
-                    child: Text(
-                      'Payments',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    height: 40,
-                    width: MediaQuery.of(context).size.width,
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Container(
-                    child: Consumer<ProductListProvider>(
-                      builder: (context, value, child) {
-                        return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: value.paymentlist.length,
-                            itemBuilder: (context, index) => index <
-                                value.paymentlist.length
-                                ? Container(
+                      icon: Icon(Icons.add),
+                      label: Text('Add Sale Item')),
+                  TextButton.icon(
+                    onPressed: () {
+                      context
+                          .read<ProductListProvider>()
+                          .setPreviousRoute('/start');
+
+                      Navigator.pushNamed(context, '/paymentsearch');
+                    },
+                    icon: Icon(Icons.add),
+                    label: Text('Add Payment'),
+                    style: ButtonStyle(
+                        foregroundColor: MaterialStateColor.resolveWith(
+                            (states) => Colors.pink)),
+                  )
+                ],
+              ),
+            ),
+            Container(
+              color: Colors.white,
+              child: Consumer<ProductListProvider>(
+                builder: (context, value, child) {
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: value.productlist.length,
+                      itemBuilder: (context, index) =>
+                          index < value.productlist.length
+                              ? Container(
+                                  color: Colors.white,
+                                  child: ListTile(
+                                    title: Text(
+                                      value.productlist[index].name.toString(),
+                                      style: TextStyle(
+                                          fontSize: 13.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Row(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "Qty: ${(value.productlist[index].quantity).toString()}",
+                                            style: TextStyle(
+                                                fontSize: 11.0,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "Price: ${value.productlist[index].price.toString()}",
+                                            style: TextStyle(
+                                                fontSize: 11.0,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Column(
+                                        children: [
+                                          Text(formatnum
+                                              .format(value
+                                                  .productlist[index].lineTotal)
+                                              .toString()),
+                                          Expanded(
+                                            child: IconButton(
+                                                icon: Icon(
+                                                  Icons.cancel,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  value.removeProduct(index);
+                                                }),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Card(
+                                  child: Text("No product added"),
+                                ));
+                },
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Container(
+              color: Colors.black54,
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 18.0),
+              child: Text(
+                'Payments',
+                style: TextStyle(color: Colors.white),
+              ),
+              height: 40,
+              width: MediaQuery.of(context).size.width,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Container(
+              child: Consumer<ProductListProvider>(
+                builder: (context, value, child) {
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: value.paymentlist.length,
+                      itemBuilder: (context, index) => index <
+                              value.paymentlist.length
+                          ? Container(
                               color: Colors.white,
                               child: ListTile(
                                 title: Text('${value.paymentlist[index].name}'),
@@ -570,154 +546,155 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             )
-                                : Card(
+                          : Card(
                               child: Text("Hello"),
                             ));
-                      },
+                },
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total Bill:',
+                    style: TextStyle(
+                      fontSize: 13.0,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(
-                    height: 10,
+                  Consumer<ProductListProvider>(
+                    builder: (context, value, child) {
+                      return Text(
+                        '${formatnum.format(value.totalPrice())}',
+                        style: TextStyle(
+                          fontSize: 13.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Bill:',
+                ],
+              ),
+            ),
+            Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Paid:',
+                      style: TextStyle(
+                        fontSize: 13.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Consumer<ProductListProvider>(
+                      builder: (context, value, child) {
+                        return Text(
+                          '${formatnum.format(value.totalPaymentcalc())}',
                           style: TextStyle(
-                            fontSize: 13.0,
+                            fontSize: 12.0,
                             fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        Consumer<ProductListProvider>(
-                          builder: (context, value, child) {
-                            return Text(
-                              '${formatnum.format(value.totalPrice())}',
-                              style: TextStyle(
-                                fontSize: 13.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total Paid:',
-                            style: TextStyle(
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Consumer<ProductListProvider>(
-                            builder: (context, value, child) {
-                              return Text(
-                                '${formatnum.format(value.totalPaymentcalc())}',
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      )),
-                  Consumer<ProductListProvider>(builder: (context, value, child) {
-                    return Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Balance:',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '${formatnum.format(value.balancepayment())}',
-                            style: TextStyle(
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                  Divider(),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Consumer<ProductListProvider>(builder: (context, value, child) {
-                        return Container(
-                          child: Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: TextFormField(
-                              initialValue: "",
-                              decoration: InputDecoration(
-                                labelText: 'Picked By',
-                                fillColor: Colors.white,
-                                filled: false,
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.red, width: 1.0),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide:
-                                  BorderSide(color: Colors.blue, width: 1.0),
-                                ),
-                              ),
-                              onChanged: (val) => {
-                                setPickedBy(val),
-                              },
-                            ),
-                          ),
                         );
-                      }),
-                      CustomSelectBox(
-                          selectedVal: selectedSaleType,
-                          label: 'Sale Type',
-                          items: allSaleTypes,
-                          onChanged: (val) {
-                            setState(() {
-                              selectedSaleType = val as String;
-                            });
-                          })
-                    ],
-                  ),
-                  Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        child: _isLoading ? CircularProgressIndicator() : ElevatedButton(
+                      },
+                    ),
+                  ],
+                )),
+            Consumer<ProductListProvider>(builder: (context, value, child) {
+              return Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Balance:',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 13.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${formatnum.format(value.balancepayment())}',
+                      style: TextStyle(
+                        fontSize: 13.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            Divider(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Consumer<ProductListProvider>(builder: (context, value, child) {
+                  return Container(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: TextFormField(
+                        initialValue: "",
+                        decoration: InputDecoration(
+                          labelText: 'Picked By',
+                          fillColor: Colors.white,
+                          filled: false,
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.red, width: 1.0),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.blue, width: 1.0),
+                          ),
+                        ),
+                        onChanged: (val) => {
+                          setPickedBy(val),
+                        },
+                      ),
+                    ),
+                  );
+                }),
+                // CustomSelectBox(
+                //     selectedVal: selectedSaleType,
+                //     label: 'Sale Type',
+                //     items: allSaleTypes,
+                //     onChanged: (val) {
+                //       setState(() {
+                //         selectedSaleType = val as String;
+                //       });
+                //     })
+              ],
+            ),
+            Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  child: _isLoading
+                      ? CircularProgressIndicator()
+                      : ElevatedButton(
                           child: Text(
                             'Create Sale',
                             style: TextStyle(color: Colors.white),
                           ),
                           onPressed: saveSale,
                         ),
-                      )
-                    ],
-                  )
-                ],
-              ),
-              Positioned(child: _buildCustomerSection())
-            ]
-          )),
+                )
+              ],
+            )
+          ],
+        ),
+        Positioned(child: _buildCustomerSection())
+      ])),
     );
   }
-
 
   Widget _buildCustomerSection() {
     return Stack(
@@ -740,7 +717,7 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(
                               width: 250,
                               child: Text(
-                                _selectedCustomer['Name'] ?? '',
+                                'Client : ${_selectedCustomer['Name']}',
                                 style: const TextStyle(
                                     fontSize: 18.0,
                                     fontWeight: FontWeight.bold),
@@ -772,9 +749,7 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildCustomerSearchBox()
-                          ],
+                          children: [_buildCustomerSearchBox()],
                         ),
                       ],
                     ),
@@ -819,51 +794,24 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          if (_customerFocusNodes.isNotEmpty)
+          if (_customers.length > 0)
             ListView.builder(
               shrinkWrap: true,
               itemCount: _customers.length,
               itemBuilder: (ctx, i) {
                 final isSelected = _currentIndex == i;
-                final myFocusNode = _customerFocusNodes[i];
-                myFocusNode.addListener(() {
-                  if (myFocusNode.hasFocus) {
-                    setState(() {
-                      _currentIndex = i;
-                      myFocusNode.requestFocus();
-                    });
-                  }
-                });
-                return RawKeyboardListener(
-                  focusNode: myFocusNode,
-                  onKey: (event) {
-                    if (event is RawKeyDownEvent &&
-                        event.logicalKey == LogicalKeyboardKey.enter) {
-                      //  _addRow(_customers[i], i);
-                    }
-                  },
-                  child: Container(
-                    color: isSelected ? Colors.blue : Colors.grey[600],
-                    child: ListTile(
-                      selectedTileColor: Colors.black,
-                      title: Text(
-                        _customers[i]['Name'],
-                        style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.white),
-                      ),
-                      // subtitle: Text(
-                      //     'Credit Limit: ${_customers[i]['creditLimit']}',
-                      //     style: TextStyle(
-                      //         color: isSelected ? Colors.white : Colors.white)),
-                      // trailing: Column(
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   children: [Text('In Stock: ${_products[i]['AvailableQty']}', style: TextStyle(color: isSelected ? Colors.white : Colors.black))],
-                      // ),
-                      onTap: () {
-                        print('selecting customer');
-                        _selectCustomer(_customers[i]);
-                      },
+                return Container(
+                  color: isSelected ? Colors.blue : Colors.grey[600],
+                  child: ListTile(
+                    selectedTileColor: Colors.black,
+                    title: Text(
+                      _customers[i]['Name'],
+                      style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.white),
                     ),
+                    onTap: () {
+                      _selectCustomer(_customers[i]);
+                    },
                   ),
                 );
               },
@@ -872,7 +820,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 
   Widget _buildTodayDate() {
     return Row(

@@ -1,6 +1,5 @@
 var accountsTableSql =
-    ''' CREATE TABLE `accounts` (`id` integer PRIMARY KEY AUTOINCREMENT,`CardCode` integer, `Name` text, `Type` text, `Balance` Real, `user_id` integer, 
-    `deleted_at` datetime, `created_at` datetime, `updated_at` datetime, `Category` integer, `code` integer, `BankingAcc` text, `owner` integer) ''';
+    ''' CREATE TABLE `accounts` (`id` integer PRIMARY KEY,`Name` text, `subscriber_id` integer) ''';
 
 var customerSql = '''CREATE TABLE `customers` ( `id` integer PRIMARY KEY,
     `subscriber_id` integer,
@@ -44,16 +43,14 @@ var printerSetup =
 var productsTableSql = ''' CREATE TABLE products (
     id INTEGER PRIMARY KEY,
     Name TEXT,
-    SUoMEntry INTEGER, -- Change the data type as needed
-    AvailableQty INTEGER,
+    BarCode TEXT,
+    ItemType TEXT,
+    BuyingPrice REAL,
     SellingPrice REAL,
-    o_p_l_n_s_id INTEGER,
-    full_name TEXT,
-    itm1 TEXT,
-    industry TEXT,
-    brand TEXT,
-    itm4 TEXT -- Assuming itm4 is a JSON string, adjust accordingly
-)''';
+    LeastPrice REAL,
+    AvailableQty REAL,
+    HasUom INTEGER,
+    subscriber_id INTEGER)''';
 
 var saleRowTableSql =
     '''CREATE TABLE `sale_rows` (`id` integer PRIMARY KEY AUTOINCREMENT,`created_at` datetime,`updated_at` datetime,`deleted_at` 

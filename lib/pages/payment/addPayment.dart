@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:testproject/models/creditmemo.dart';
-import 'package:testproject/models/depositPayment.dart';
 import 'package:testproject/models/postSale.dart';
-import 'package:testproject/models/previousRoute.dart';
-import 'package:testproject/models/product.dart';
-
-import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 
 class AddPaymentForm extends StatefulWidget {
@@ -21,17 +15,10 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
   String ref1 = "";
   String remarks = '';
 
-  /* double _totalPrice() {Products
-    setState(() {
-      _total = _qtyToSell * _sellingPrice;
-    });
-    return _total;
-  } */
-
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductListProvider>(context);
 
-    final previousrouteString = productsData.previousRoute;
+    // final previousrouteString = productsData.previousRoute;
     final accountSelected = productsData.accountSelected ?? "";
 
     return Form(
@@ -44,20 +31,10 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                (previousrouteString == '/customercreditnotereplacement')
-                    ? Text(
-                        'Add Replacement',
-                        style: TextStyle(fontSize: 20.0),
-                      )
-                    : (previousrouteString == '/customercreditnote')
-                        ? Text(
-                            'Add Top Up Payment',
-                            style: TextStyle(fontSize: 20.0),
-                          )
-                        : Text(
-                            'Add Payment',
-                            style: TextStyle(fontSize: 20.0),
-                          ),
+                Text(
+                  'Add Payment',
+                  style: TextStyle(fontSize: 20.0),
+                ),
 
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -145,87 +122,25 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                   height: 20.0,
                 ),
                 //Dropdown
-
                 Container(
                   width: double.infinity,
                   child: ElevatedButton(
-                    child: (previousrouteString == '/customercreditnote')
-                        ? Text(
-                            'Add Top Up Payment',
-                            style: TextStyle(color: Colors.white),
-                          )
-                        : (previousrouteString == '/customerDeposit')
-                            ? Text(
-                                'Add Deposit Payment',
-                                style: TextStyle(color: Colors.white),
-                              )
-                            : Text(
-                                'Add Payment',
-                                style: TextStyle(color: Colors.white),
-                              ),
+                    child: Text(
+                      'Add Payment',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        Payment newpayment = Payment(
+                        Payment newPayment = Payment(
                           sumApplied: _amountPaid,
                           accountId: accountSelected.accountId,
                           name: accountSelected.name,
                           paymentRemarks: remarks,
                         );
 
-                        if (previousrouteString == '/customercreditnote') {
-                          TopupPayment topnewpayment = new TopupPayment(
-                            paymentMode: accountSelected.name,
-                            SumApplied: _amountPaid,
-                            o_a_c_t_s_id: accountSelected.oACTSId,
-                            paymentRemarks: remarks,
-                          );
-                          productsData.addTopUpPayment(topnewpayment);
-                          Navigator.pushNamed(context, '/customercreditnote');
-                        }
+                        productsData.addPayment(newPayment);
+                        Navigator.pushNamed(context, '/start');
 
-                        if (previousrouteString == '/customerDeposit') {
-                          productsData.addDepositPayment(newpayment);
-                          Navigator.pushNamed(context, '/customerDeposit');
-                        }
-                        if (previousrouteString == '/customerdepositlist') {
-                          if (_amountPaid >
-                              productsData.selecteddepositItem['Balance']) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                backgroundColor: Colors.red,
-                                content: Text(
-                                    'Payment Should not be more than Balance')));
-                            Navigator.pushNamedAndRemoveUntil(context,
-                                '/customerdepositlist', (route) => false);
-                          } else {
-                            PaymentList newpayment = new PaymentList(
-                                oACTSId: accountSelected.oACTSId,
-                                sumApplied: _amountPaid,
-                                paymentRemarks: remarks);
-                            // ScaffoldMessenger.of(context).showSnackBar();
-                            final depositPayment = DepositPayment(
-                                odlnId: productsData.selecteddepositItem['id'],
-                                docDate: DateTime.now(),
-                                totalPaid:
-                                    productsData.selecteddepositItem['PaidSum'],
-                                payments: [newpayment]);
-                            context
-                                .read<GetProducts>()
-                                .postDepositPayment(depositPayment);
-                            Navigator.pushNamed(
-                              context,
-                              '/customerdepositlist',
-                            );
-                          }
-                        }
-                        if (previousrouteString == '/start') {
-                          productsData.addPayment(newpayment);
-                          Navigator.pushNamed(context, '/start');
-                        }
-
-                        if (previousrouteString == '/gassale') {
-                          productsData.addGasPayment(newpayment);
-                          Navigator.pushNamed(context, '/gassale');
-                        }
                       }
                     },
                   ),

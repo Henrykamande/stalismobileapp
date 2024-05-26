@@ -23,6 +23,8 @@ class PaymentSearch extends StatefulWidget {
 }
 
 class _PaymentSearchState extends State<PaymentSearch> {
+  late Future<List<dynamic>> accountsList;
+
   final _formKey = GlobalKey<FormState>();
   String _paymentAmount = '';
   String _paymentMode = '';
@@ -31,33 +33,8 @@ class _PaymentSearchState extends State<PaymentSearch> {
   late TextEditingController selectedAccountName;
   var _isLoading = false;
 
-  var accounts = [];
-  var numberOfAccounts;
-  // GetProducts _accountslistbulder = GetProducts();
-
-  // void fetchAccounts() async {
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
-  //   final response = await httpGet('bank-accounts');
-  //   final accountsResponse = jsonDecode(response.body);
-
-  //   if (accountsResponse['ResultCode'] == 1200) {
-  //     setState(() {
-  //       accounts = accountsResponse['ResponseData'];
-  //     });
-  //   }
-
-  //   setState(() {
-  //     _isLoading = false;
-  //   });
-  // }
-
   void initState() {
     super.initState();
-    //fetchAccounts();
-    getListOfAccounts();
-    //amountPaid = TextEditingController();
   }
 
   void _showaddPaymentPane() {
@@ -72,28 +49,16 @@ class _PaymentSearchState extends State<PaymentSearch> {
         });
   }
 
-  void getListOfAccounts() async {
-    var accountsLocal = await DatabaseHelper.instance.getAllAccounts();
-    print(
-        "************************************************************ $accountsLocal");
-    setState(() {
-      numberOfAccounts = accountsLocal!.length;
-      accounts = accountsLocal;
-    });
-  }
 
   @override
   void dispose() {
-    // Close the database connection when the widget is disposed
-    DatabaseHelper.instance.database?.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    accountsList = DatabaseHelper.instance.getAllAccounts();
     final paymentsData = Provider.of<ProductListProvider>(context);
-
-    final previousrouteString = paymentsData.previousRoute;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,27 +81,38 @@ class _PaymentSearchState extends State<PaymentSearch> {
                     Expanded(
                       child: Container(
                         height: 300,
-                        child: ListView.builder(
-                          itemCount: numberOfAccounts,
-                          itemBuilder: (context, index) => InkWell(
-                            onTap: () async {
-                              Payment selectedAccount = new Payment(
-                                accountId: accounts[index]['id'],
-                                name: accounts[index]['Name'],
+                        child: FutureBuilder<List<dynamic>>(
+                            future: accountsList,
+                            builder: (context, snapshot) {
+                              if (snapshot.data == null) {}
+                              if (snapshot.hasData) {
+                                List<dynamic> result = snapshot.data!;
+
+                                return ListView.builder(
+                                  itemCount: result.length,
+                                  itemBuilder: (context, index) => InkWell(
+                                    onTap: () async {
+                                      Payment selectedAccount = new Payment(
+                                        accountId: result[index]['id'],
+                                        name: result[index]['Name'],
+                                      );
+
+                                      await paymentsData.accountchoice(selectedAccount);
+                                      _showaddPaymentPane();
+                                    },
+                                    child: ListTile(
+                                      title: Text(result[index]['Name']),
+                                    ),
+                                  ),
+                                );
+                              } else if (snapshot.hasError) {
+                                return Text('${snapshot.error}');
+                              }
+
+                              return Center(
+                                child: CircularProgressIndicator(),
                               );
-
-                              /*  openAddPaymentDialog(paymentsData,
-                                    selectedAccount, previousrouteString);
- */
-
-                              await paymentsData.accountchoice(selectedAccount);
-                              _showaddPaymentPane();
-                            },
-                            child: ListTile(
-                              title: Text(accounts[index]['Name']!),
-                            ),
-                          ),
-                        ),
+                            }),
                       ),
                     ),
                   ],

@@ -70,13 +70,10 @@ class _SalePaymentState extends State<SalePayment> {
     );
     if (response.statusCode == 200) {
       data = await jsonDecode(response.body)['ResponseData']['TotalAmount'];
-      /* TotalAmountData totalpaymentdata =
-          data.map((dynamic item) => TotalAmountData.fromJson(item)).toList(); */
       setState(() {
         datapayment = data;
       });
-      print(
-          '888888888888888888888888888888888888888888888888888888888888888888888888888888888888888 $data');
+
       return datapayment;
     } else {
       throw 'Cant get total payment';

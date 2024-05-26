@@ -34,6 +34,7 @@ class UserLogin with ChangeNotifier {
           'userId': authData['ResponseData']['user_id'],
           'name': authData['ResponseData']['name'],
           'userName': authData['ResponseData']['name'],
+          'subscriberId': authData['ResponseData']['subscriber_id'],
           'storeId': authData['ResponseData']['store_id'],
           'storeName': authData['ResponseData']['shopName'],
           'role': 1,

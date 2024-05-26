@@ -38,7 +38,6 @@ class GetProducts with ChangeNotifier {
   Map<String, dynamic> _generalSettingDetails = {};
   PrefService _prefs = PrefService();
 
-  List<ResponseDatum> result = [];
   bool get isloading => _isloading;
   Map<String, dynamic> get generalSettingsDetails => _generalSettingDetails;
 
@@ -132,43 +131,23 @@ class GetProducts with ChangeNotifier {
     return data = [];
   }
 
-  Future<List<dynamic>> getaccounts(String? searchquery) async {
-    var headers = await sethenders();
-    var accountsdata;
-    final queryparamaeters = jsonEncode({
-      "searchText": "$searchquery",
-    });
+  // Future<List<dynamic>> getaccounts(String? searchquery) async {
+  //   var headers = await sethenders();
+  //   var accountsdata;
+  //   final queryparamaeters = jsonEncode({
+  //     "searchText": "$searchquery",
+  //   });
+  //
+  //   var url = Uri.https(baseUrl, '/api/v1/bank-accounts');
+  //
+  //   response = await http.get(url, headers: headers);
+  //   accountsdata = jsonDecode(response.body)['ResponseData'];
+  //   notifyListeners();
+  //
+  //   return accountsdata;
+  // }
 
-    var url = Uri.https(baseUrl, '/api/v1/bank-accounts');
 
-    response = await http.get(url, headers: headers);
-    accountsdata = jsonDecode(response.body)['ResponseData'];
-    notifyListeners();
-
-    return accountsdata;
-  }
-
-  Future<List<dynamic>> getcustomers(String? querycustomerName) async {
-    var headers = await sethenders();
-    final queryparamaeters = jsonEncode({
-      "searchText": "$querycustomerName",
-    });
-    var customersdata;
-
-    var url = Uri.https(baseUrl, 'api/v1/customers');
-    response = await http.get(
-      url,
-      headers: headers,
-    );
-
-    if (response.statusCode == 200) {
-      print('Customer Fetch ');
-    }
-    customersdata = await jsonDecode(response.body)['ResponseData'];
-
-    notifyListeners();
-    return customersdata;
-  }
 
   postsale(salecard) async {
     var headers = await sethenders();
@@ -227,25 +206,7 @@ class GetProducts with ChangeNotifier {
     return data;
   }
 
-// Accounts List
-  Future<PaymentAccountsResponseData> getanaccount(accountId) async {
-    var headers = await sethenders();
-    PaymentAccountsResponseData accountsdata;
 
-    var url = Uri.https(baseUrl, '/api/v1/bank-accounts');
-    response = await http.get(
-      url,
-      headers: headers,
-    );
-
-    if (response.statusCode == 200) {
-      print('Sucessful POst');
-    }
-    accountsdata = jsonDecode(response.body)['ResponseData'];
-
-    notifyListeners();
-    return accountsdata;
-  }
 
 //Fetching payment data
   Future<List<dynamic>> fetchSalePayments(startDate) async {

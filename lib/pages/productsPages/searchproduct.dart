@@ -60,28 +60,13 @@ class _SearchProductState extends State<SearchProduct> {
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductListProvider>(context);
 
-    //final previousrouteString = productsData.previousRoute;
-
-    //print(_prefs.readCache('token','storeid'));
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade700,
-        title: (context.read<ProductListProvider>().previousRoute ==
-                '/customercreditnotereplacement')
-            ? Text(
-                'Search Replacement Product',
-                style: TextStyle(fontSize: 20.0),
-              )
-            : (context.read<ProductListProvider>().previousRoute ==
-                    '/customercreditnote')
-                ? Text(
-                    'Search Return Product',
-                    style: TextStyle(fontSize: 20.0),
-                  )
-                : Text(
-                    'Search Product',
-                    style: TextStyle(fontSize: 20.0),
-                  ),
+        title: Text(
+          'Search Product',
+          style: TextStyle(fontSize: 20.0),
+        ),
         elevation: 0.0,
       ),
       resizeToAvoidBottomInset: true,
@@ -127,7 +112,7 @@ class _SearchProductState extends State<SearchProduct> {
                     builder: (context, value, child) {
                       return FutureBuilder<List<Map<String, dynamic>>>(
                         future: DatabaseHelper.instance
-                            .getAllProducts(_searchProductTerm),
+                            .searchProducts(_searchProductTerm),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -144,9 +129,6 @@ class _SearchProductState extends State<SearchProduct> {
                           }
 
                           List<Map<String, dynamic>> result = snapshot.data!;
-                          print(
-                              '...............................................................result earch...$result');
-
                           return ListView.builder(
                             shrinkWrap: true,
                             itemCount: result.length,
@@ -154,11 +136,6 @@ class _SearchProductState extends State<SearchProduct> {
                               onTap: () {
                                 print(result);
                                 value.selectedProduct(result[index]);
-                                // if (previousrouteString == '/gassale') {
-                                //   _gasaddProductPane();
-                                // } else {
-                                //   _showaddProductPane();
-                                // }
                                 _showaddProductPane();
                               },
                               child: ListTile(

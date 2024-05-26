@@ -50,7 +50,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
     return AppBar(
       backgroundColor: Colors.grey.shade700,
-      title: Text(storeName, style: TextStyle(fontSize: 16),),
+      title: Text('Stalis Pos', style: TextStyle(fontSize: 16),),
       // backgroundColor: internetStatus == ConnectivityResult.none ? Colors.deepOrange : Colors.indigo,
       actions: [
         Row(
