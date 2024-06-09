@@ -94,6 +94,7 @@ class _HomePageState extends State<HomePage> {
   }
   // end
 
+
   // search customers method
   Future<List<Map<String, dynamic>>> _searchCustomers() async {
     final searchQuery = customerSearchController.text;
@@ -284,8 +285,7 @@ class _HomePageState extends State<HomePage> {
       cardCode = firstCustomer['id'] as int;
     }
 
-
-    if(selectedCustomerId != '') {
+    if (selectedCustomerId != '') {
       cardCode = int.parse(selectedCustomerId);
     }
 
@@ -369,7 +369,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     // Close the database connection when the widget is disposed
-    DatabaseHelper.instance.database?.close();
+    // DatabaseHelper.instance.database?.close();
     super.dispose();
   }
 

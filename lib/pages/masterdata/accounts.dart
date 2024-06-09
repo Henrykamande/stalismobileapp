@@ -1,45 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:testproject/pages/productsPages/addProductForm.dart';
+import 'package:testproject/databasesql/sql_database_connection.dart';
+import 'package:testproject/pages/products-pages/addProductForm.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:testproject/providers/shared_preferences_services.dart';
+import 'package:testproject/widgets/custom_appbar.dart';
+import 'package:testproject/widgets/drawer_screen.dart';
 
-class InventoryList extends StatefulWidget {
-  const InventoryList({Key? key}) : super(key: key);
+class AccountsListScreen extends StatefulWidget {
+  static const routeName = '/accounts-list';
+  const AccountsListScreen({Key? key}) : super(key: key);
 
   @override
-  State<InventoryList> createState() => _InventoryListState();
+  State<AccountsListScreen> createState() => _AccountsListScreenState();
 }
 
-class _InventoryListState extends State<InventoryList> {
-  late Future<List<dynamic>> productlistdata;
-
-  String _searchquery = "";
-  GetProducts _todolistbulder = GetProducts();
+class _AccountsListScreenState extends State<AccountsListScreen> {
+  late Future<List<dynamic>> accountsList;
 
   @override
   void initState() {
-    _todolistbulder.getProductsList(_searchquery);
     super.initState();
   }
 
   @override
   @override
   Widget build(BuildContext context) {
-    final selectedProduct = Provider.of<GetProducts>(context);
-    productlistdata = _todolistbulder.getProductsList(_searchquery);
-    //print(_prefs.readCache('token','storeid'));
+    accountsList = DatabaseHelper.instance.getAllAccounts();
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.grey.shade700,
-        title: Container(
-          child: Text('Search Prodcut'),
-        ),
-        elevation: 0.0,
-      ),
+      appBar: CustomAppBar(),
+      drawer: DrawerScreen(),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Container(
@@ -53,29 +46,10 @@ class _InventoryListState extends State<InventoryList> {
               SizedBox(
                 height: 20.0,
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  onChanged: (val) => setState(() => _searchquery = val),
-                  decoration: InputDecoration(
-                    fillColor: Colors.grey[400],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Colors.purple.shade900,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 20.0,
-              ),
               Expanded(
                 child: Container(
                   child: FutureBuilder<List<dynamic>>(
-                      future: productlistdata,
+                      future: accountsList,
                       builder: (context, snapshot) {
                         if (snapshot.data == null) {}
                         if (snapshot.hasData) {
@@ -87,8 +61,9 @@ class _InventoryListState extends State<InventoryList> {
                               onTap: () {},
                               child: ListTile(
                                 title: Text(result[index]['Name']),
-                                trailing: Text(
-                                    '${result[index]['AvailableQty'].toString()}'),
+                                // subtitle: Text(result[index]['PhoneNumber']),
+                                // trailing: Text(
+                                //     '${result[index]['PhoneNumber'].toString()}'),
                               ),
                             ),
                           );

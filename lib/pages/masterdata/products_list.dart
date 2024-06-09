@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:testproject/databasesql/sql_database_connection.dart';
-import 'package:testproject/pages/productsPages/addProductForm.dart';
+import 'package:testproject/pages/products-pages/addProductForm.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:testproject/databasesql/sql_database_connection.dart';
-import 'package:testproject/pages/productsPages/addProductForm.dart';
+import 'package:testproject/pages/products-pages/addProductForm.dart';
 import 'package:testproject/models/paidamount.dart';
 import 'package:testproject/models/product.dart';
 import 'package:testproject/providers/api_service.dart';
@@ -11,6 +11,9 @@ import 'package:intl/intl.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:testproject/providers/shared_preferences_services.dart';
+
+import '../../widgets/custom_appbar.dart';
+import '../../widgets/drawer_screen.dart';
 
 class SalePayment extends StatefulWidget {
   const SalePayment({Key? key}) : super(key: key);
@@ -89,13 +92,8 @@ class _SalePaymentState extends State<SalePayment> {
     print(salepayment);
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.grey.shade700,
-        title: Container(
-          child: Text('Sale Payments'),
-        ),
-        elevation: 0.0,
-      ),
+      appBar: CustomAppBar(),
+      drawer: DrawerScreen(),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Container(

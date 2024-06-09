@@ -46,6 +46,8 @@ dependencies:
   esc_pos_bluetooth: ^0.4.1
   sqflite: ^2.3.0
   path: ^1.8.3
+  connectivity_plus: ^5.0.2
+  uuid: ^4.2.2
 
 dev_dependencies:
   flutter_test:

@@ -114,8 +114,8 @@ class _TransferScreenState extends State<TransferScreen> {
                 await _prefs.removeCache(
                     'Token', 'StoreId', 'loggedInUserName', 'storename');
                 print(cache);
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => Stalisapp()));
+                // Navigator.pushReplacement(context,
+                //     MaterialPageRoute(builder: (context) => Stalisapp()));
               },
               child: Icon(
                 Icons.logout,

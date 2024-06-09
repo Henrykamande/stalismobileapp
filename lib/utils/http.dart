@@ -1,8 +1,8 @@
 import 'package:http/http.dart' as http;
 import './shared_data.dart';
 
-// var backendUrl = 'https://prestige-nhg7.onrender.com';
-var backendUrl = 'http://10.0.2.2:8300';
+var backendUrl = 'https://prestige-nhg7.onrender.com';
+// var backendUrl = 'http://10.0.2.2:8300';
 
 Future<dynamic> getSharedData() async {
   final prefsData = await sharedData();
@@ -68,6 +68,9 @@ Future<dynamic> httpGet(String apiUrl) async {
   try {
     final url = Uri.parse('$backendUrl/$apiUrl');
     final prefsData = await getSharedData();
+    final headers = prefsData['headers'];
+
+    print('headers ${headers['storeId']}');
 
     final response = await http.get(url, headers: prefsData['headers']);
     return response;
@@ -75,3 +78,4 @@ Future<dynamic> httpGet(String apiUrl) async {
     print(error.toString());
   }
 }
+

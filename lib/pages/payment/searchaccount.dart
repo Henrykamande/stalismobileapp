@@ -15,7 +15,7 @@ import 'package:snippet_coder_utils/FormHelper.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import '../../utils/http.dart';
-import '../productsPages/addProductForm.dart';
+import '../products-pages/addProductForm.dart';
 
 class PaymentSearch extends StatefulWidget {
   @override

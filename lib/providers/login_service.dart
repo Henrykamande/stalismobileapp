@@ -29,6 +29,8 @@ class UserLogin with ChangeNotifier {
         var token = authData['ResponseData']['authToken'];
         SharedPreferences prefs = await SharedPreferences.getInstance();
 
+        print(' auth data store id ${authData['ResponseData']['store_id']}');
+
         final userData = jsonEncode({
           'token': token,
           'userId': authData['ResponseData']['user_id'],

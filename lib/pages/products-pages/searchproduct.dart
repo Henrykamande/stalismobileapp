@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:testproject/databasesql/sql_database_connection.dart';
 import 'package:testproject/pages/payment/addPayment.dart';
-import 'package:testproject/pages/productsPages/addGasProductForm.dart';
-import 'package:testproject/pages/productsPages/addProductForm.dart';
+import 'package:testproject/pages/products-pages/addGasProductForm.dart';
+import 'package:testproject/pages/products-pages/addProductForm.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +52,7 @@ class _SearchProductState extends State<SearchProduct> {
   @override
   void dispose() {
     // Close the database connection when the widget is disposed
-    DatabaseHelper.instance.database?.close();
+    // DatabaseHelper.instance.database?.close();
     super.dispose();
   }
 

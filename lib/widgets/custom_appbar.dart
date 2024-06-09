@@ -1,11 +1,13 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 // import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
 // import '../providers/auth.dart';
+import '../databasesql/sql_database_connection.dart';
 import '../utils/shared_data.dart';
-// import '../utils/sync_service.dart';
+import '../utils/sync_service.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   const CustomAppBar({Key? key}) : super(key: key);
@@ -21,6 +23,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _CustomAppBarState extends State<CustomAppBar> {
   var userName = '';
   var storeName = '';
+  bool _isLoading = false;
 
   dynamic getUser() async {
     final prefsData = await sharedData();
@@ -36,6 +39,17 @@ class _CustomAppBarState extends State<CustomAppBar> {
     });
   }
 
+  Future<dynamic> _syncData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    await DatabaseHelper.instance.databaseConnection().then((value) {
+      setState(() {
+        _isLoading = false;
+      });
+    });
+  }
+
   @override
   void initState() {
     getUser();
@@ -46,31 +60,31 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
   @override
   Widget build(BuildContext context) {
-   // final internetStatus = Provider.of<SyncService>(context).internetConnectivity;
+   final internetStatus = Provider.of<SyncService>(context).internetConnectivity;
 
     return AppBar(
-      backgroundColor: Colors.grey.shade700,
+      // backgroundColor: Colors.grey.shade700,
       title: Text('Stalis Pos', style: TextStyle(fontSize: 16),),
-      // backgroundColor: internetStatus == ConnectivityResult.none ? Colors.deepOrange : Colors.indigo,
+      backgroundColor: internetStatus == ConnectivityResult.none ? Colors.deepOrange : Colors.indigo,
       actions: [
         Row(
           children: [
-            // Row(
-            //   children: [
-            //     internetStatus == ConnectivityResult.none ? const Text('No Internet !') : const Text('Internet Connected'),
-            //     const SizedBox(
-            //       width: 20,
-            //     ),
-            //     internetStatus == ConnectivityResult.none
-            //         ? const Icon(
-            //       Icons.signal_wifi_connected_no_internet_4_sharp,
-            //     )
-            //         : const Icon(
-            //       Icons.wifi,
-            //       color: Colors.greenAccent,
-            //     )
-            //   ],
-            // ),
+            Row(
+              children: [
+               _isLoading ? CircularProgressIndicator() : IconButton(onPressed: _syncData, icon: Icon(Icons.sync)),
+                const SizedBox(
+                  width: 20,
+                ),
+                internetStatus == ConnectivityResult.none
+                    ? const Icon(
+                  Icons.signal_wifi_connected_no_internet_4_sharp,
+                )
+                    : const Icon(
+                  Icons.wifi,
+                  color: Colors.greenAccent,
+                )
+              ],
+            ),
             const SizedBox(
               width: 20,
             ),

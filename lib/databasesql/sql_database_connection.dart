@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
@@ -17,6 +18,7 @@ import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/customer.dart';
 import 'package:testproject/providers/products.dart';
 import 'package:testproject/utils/http.dart';
+import 'package:uuid/uuid.dart';
 import '../models/accountmodel.dart';
 import '../models/product.dart';
 import '../utils/shared_data.dart';
@@ -36,7 +38,7 @@ class DatabaseHelper {
     // Open the database and store the reference.
     print(await getApplicationDocumentsDirectory());
     database = await openDatabase(
-      join(documentsDirectory.toString(), 'stalispos17.db'),
+      join(documentsDirectory.toString(), 'stalispos22.db'),
       onCreate: ((db, version) {
         return {
           db.execute(invoiceTableSql),
@@ -188,11 +190,10 @@ class DatabaseHelper {
   Future<List<dynamic>> getAllProducts() async {
     Database? database = await databaseConnection();
     final List<Map<String, dynamic>> mapProducts =
-    await database!.query('products');
+        await database!.query('products');
 
     return mapProducts;
   }
-
 
   Future<List<Map<String, dynamic>>>? searchProducts(searchTerm) async {
     Database? database = await databaseConnection();
@@ -215,27 +216,30 @@ class DatabaseHelper {
     Database? database = await databaseConnection();
     //insert array of payments to  to payment table
 
+    var uuid = Uuid();
+    var localId = uuid.v1();
+
+    var now = DateTime.now();
+
     await database!.transaction((txn) async {
       var invoice = new Invoice(
-        saleStatus: 0,
-        soldBy: salesCard.soldBy,
-        storeId: prefsData['storeId'],
-        balance: salesCard.balance,
-        cardCode: salesCard.cardCode!,
-        docTotal: salesCard.docTotal,
-        objType: salesCard.objType,
-        totalPaid: salesCard.totalPaid,
-      );
-      print(
-          'invoice to be inserted .............................................. $invoice');
+          localId: localId,
+          saleStatus: 0,
+          soldBy: prefsData['userId'],
+          storeId: prefsData['storeId'],
+          balance: salesCard.balance,
+          cardCode: salesCard.cardCode!,
+          docTotal: salesCard.docTotal,
+          objType: salesCard.objType,
+          totalPaid: salesCard.totalPaid,
+          createdAt: now.toLocal());
+
       var lastInsertedInvoice = await txn.insert(
         'invoices',
         invoice.toJson(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-      print(
-          'last inserted invoice .............................................. $lastInsertedInvoice');
       for (var payment in salesCard.payments) {
         var newPayment = new Payment(
             accountId: payment.accountId,
@@ -249,13 +253,11 @@ class DatabaseHelper {
 
         // check if the record exisirt in the accounts table
 
-        var lastpaymentInserted = await txn.insert(
+        await txn.insert(
           'payments',
           newPayment.toJson(),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-        print(
-            'last inserted payment .............................................. $lastpaymentInserted');
       }
 
       for (var salesRow in salesCard.rows) {
@@ -263,8 +265,8 @@ class DatabaseHelper {
             invoiceId: lastInsertedInvoice,
             cardCode: salesCard.cardCode!,
             storeId: prefsData['storeId'],
-            oITMSId: salesRow .oITMSId,
-            name: salesRow .name,
+            oITMSId: salesRow.oITMSId,
+            name: salesRow.name,
             uomEntry: salesRow.uomEntry,
             quantity: salesRow.quantity,
             price: salesRow.price,
@@ -274,132 +276,123 @@ class DatabaseHelper {
             receiptNo: lastInsertedInvoice,
             cancelled: 0);
 
-        var lastInsertedSaleRow = await txn.insert(
+        await txn.insert(
           'sale_rows',
           newSaleRow.toJson(),
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
-        print(
-            'last inserted salesrow .............................................. $lastInsertedSaleRow');
       }
     });
   }
 
   Future<List<Map<String, dynamic>>>? getAllSoldProducts() async {
-    // Get a reference to the database.
-    print('getting sold products');
     Database? database = await databaseConnection();
     final List<Map<String, dynamic>> maps = await database!.rawQuery(
         "SELECT * FROM sale_rows WHERE cancelled = 0 ORDER BY id DESC");
-    print(maps);
     return maps;
   }
 
-  Future<List<SyncInvoice>> fetchAllInvoiceDetails() async {
+  Future<List<Map<String, dynamic>>>? getAllSaleInvoices() async {
     // Get a reference to the database.
     Database? database = await databaseConnection();
 
-    // Query the 'invoices' table for all invoices.
-    List<Map<String, dynamic>> allInvoiceMaps =
+    final List<Map<String, dynamic>> maps = await database!.rawQuery(
+        "SELECT * FROM invoices  ORDER BY id DESC");
+    return maps;
+  }
+
+  Future<void> syncSales() async {
+    Database? database = await databaseConnection();
+
+    List<Map<String, dynamic>> allPendingInvoices =
         await database!.query('invoices', where: 'sale_status = 0');
 
-    List<SyncInvoice> allInvoices = [];
+    var mappedInvoices = allPendingInvoices.map((invoice) {
+      String createdAt =
+          DateTime.parse(invoice['created_at']).toUtc().toIso8601String();
 
-    for (Map<String, dynamic> invoiceMap in allInvoiceMaps) {
-      // Query the 'payments' table for payments with the given invoice ID.
-      List<Map<String, dynamic>> paymentMaps = await database.query(
-        'payments',
-        where: 'invoice_id = ?',
-        whereArgs: [invoiceMap['id']],
-        // Assuming 'id' is the name of the invoice ID field
-      );
-      // Convert the List<Map> to a List<Payment>.
-      List<SyncPayment> payments =
-          paymentMaps.map((map) => SyncPayment.fromJson(map)).toList();
-      // Query the 'sale_rows' table for sale rows with the given invoice ID.
-      List<Map<String, dynamic>> saleRowMaps = await database.query(
+      return {
+        'id': invoice['id'],
+        'LocalId': invoice['local_id'],
+        'SoldBy': invoice['sold_by'],
+        'storeId': invoice['store_id'],
+        'CardCode': invoice['card_code'],
+        'DocTotal': invoice['doc_total'],
+        'TotalPaid': invoice['total_paid'],
+        'CashGiven': invoice['total_paid'],
+        'Balance': invoice['balance'],
+        'Change': 0,
+        'CashBack': 0,
+        'ObjType': invoice['obj_type'],
+        'date': createdAt,
+        'payments': [],
+        'rows': [],
+      };
+    }).toList();
+
+    // prepare sale rows data
+    for (Map<String, dynamic> invoice in mappedInvoices) {
+      List<Map<String, dynamic>> soldProducts = await database.query(
         'sale_rows',
         where: 'invoice_id = ?',
-        whereArgs: [
-          invoiceMap['id']
-        ], // Assuming 'id' is the name of the invoice ID field
+        whereArgs: [invoice['id']],
       );
 
-      // Convert the List<Map> to a List<SaleRow>.
-      List<SyncSaleRow> saleRows =
-          saleRowMaps.map((map) => SyncSaleRow.fromJson(map)).toList();
+      var saleRows = soldProducts.map((sale) {
+        return {
+          'productID': sale['product_id'],
+          "UomEntry": sale['uom_entry'],
+          'Quantity': sale['quantity'],
+          'Price': sale['price'],
+          'LineTotal': sale['line_total'],
+          'storeId': sale['store_id']
+        };
+      }).toList();
 
-      // Add the payments and sale rows to the invoice map.
-      Map<String, dynamic> invoiceMapMutable =
-          Map<String, dynamic>.from(invoiceMap);
-      invoiceMapMutable['payments'] = payments;
-      invoiceMapMutable['rows'] = saleRows;
+      // end of sale rows to the invoice
+      invoice['rows'] = saleRows;
 
-      // Convert the Map to an Invoice object and add it to the list.
-      allInvoices.add(SyncInvoice.fromJson(invoiceMapMutable));
+      // add rows
+
+      // start of payments data
+      List<Map<String, dynamic>> salePayments = await database.query(
+        'payments',
+        where: 'invoice_id = ?',
+        whereArgs: [invoice['id']],
+      );
+
+      var payments = salePayments.map((payment) {
+        return {
+          'o_a_c_t_s_id': payment['account_id'],
+          'Amount': payment['sum_applied'],
+          'PaymentRemarks': ''
+        };
+      }).toList();
+
+      invoice['payments'] = payments;
+      // end of payments data
     }
+
+
     try {
-      var response = await httpPost('sales-sync', allInvoices);
-      var responsedata = jsonDecode(response.body);
-      print(
-          responsedata); // Note: responsedata is a Map, not an object with properties
+      var response =
+          await httpPost('sync-sales-mobile', jsonEncode(mappedInvoices));
+      var saleResponse = jsonDecode(response.body);
+      var syncedIds = saleResponse['ResponseData'];
+
+      if (saleResponse['ResultCode'] == 1200) {
+        for (String localId in syncedIds) {
+          // update sale_invoices where local_id = localId
+          await database.update('invoices', {'sale_status': 1},
+              where: 'local_id = ?', whereArgs: [localId]);
+        }
+      }
+
+      if (saleResponse['ResultCode'] == 1500) {
+        print('error message ${saleResponse['ResultDesc']}');
+      }
     } catch (e) {
       print('Caught error: $e');
     }
-    print(
-        'invoice array ...................................................$allInvoices');
-    for (var invoice in allInvoices) {
-      print(
-          '-----------------------------------------------------------------------' +
-              '${invoice.toJson()}');
-    }
-
-    return allInvoices;
-  }
-
-  // create a method to sync sales to online api and update the local database
-  Future<void> syncSales() async {
-    // Get a reference to the database.
-    Database? database = await databaseConnection();
-    // Query the 'invoices' table for all invoices.
-    List<Map<String, dynamic>> allInvoiceMaps =
-        await database!.query('invoices', where: 'sale_status = 0');
-
-    List<SyncInvoice> allInvoices = [];
-
-    for (Map<String, dynamic> invoiceMap in allInvoiceMaps) {
-      // Query the 'payments' table for payments with the given invoice ID.
-      List<Map<String, dynamic>> paymentMaps = await database.query(
-        'payments',
-        where: 'invoice_id = ?',
-        whereArgs: [invoiceMap['id']],
-        // Assuming 'id' is the name of the invoice ID field
-      );
-      // Convert the List<Map> to a List<Payment>.
-      List<SyncPayment> payments =
-          paymentMaps.map((map) => SyncPayment.fromJson(map)).toList();
-      // Query the 'sale_rows' table for sale rows with the given invoice ID.
-      List<Map<String, dynamic>> saleRowMaps = await database.query(
-        'sale_rows',
-        where: 'invoice_id = ?',
-        whereArgs: [
-          invoiceMap['id']
-        ], // Assuming 'id' is the name of the invoice ID field
-      );
-
-      // Convert the List<Map> to a List<SaleRow>.
-      List<SyncSaleRow> saleRows =
-          saleRowMaps.map((map) => SyncSaleRow.fromJson(map)).toList();
-
-      // Add the payments and sale rows to the invoice map.
-      Map<String, dynamic> invoiceMapMutable =
-          Map<String, dynamic>.from(invoiceMap);
-      invoiceMapMutable['payments'] = payments;
-      invoiceMapMutable['rows'] = saleRows;
-
-      // Convert the Map to an Invoice object and add it to the list.
-      allInvoices.add(SyncInvoice.fromJson(invoiceMapMutable));
-    }
-
   }
 }

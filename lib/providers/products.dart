@@ -20,6 +20,8 @@ class ProductsProvider with ChangeNotifier {
 
       final response = await httpGet('products-sync-mobile/$subscriberId/$storeId');
       final products = jsonDecode(response.body);
+
+      print('products res $_products');
       if(products['ResponseData'] != null) {
         _products = products['ResponseData'];
       }

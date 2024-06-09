@@ -5,6 +5,7 @@ import 'package:testproject/providers/login_service.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 
 class LoginPage extends StatefulWidget {
+  static const routeName = '/login';
   LoginPage({Key? key}) : super(key: key);
 
   @override

@@ -6,17 +6,22 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 
-class SoldProducts extends StatefulWidget {
-  const SoldProducts({Key? key}) : super(key: key);
+import '../../widgets/custom_appbar.dart';
+import '../../widgets/drawer_screen.dart';
+
+class InvoicesScreen extends StatefulWidget {
+  static const routeName = '/invoices-screen';
+
+  const InvoicesScreen({Key? key}) : super(key: key);
 
   @override
-  State<SoldProducts> createState() => _SoldProductsState();
+  State<InvoicesScreen> createState() => _InvoicesScreenState();
 }
 
-class _SoldProductsState extends State<SoldProducts> {
+class _InvoicesScreenState extends State<InvoicesScreen> {
   PrefService _prefs = PrefService();
 
-  late Future<List<Map<String, dynamic>>> soldproducts;
+  late Future<List<Map<String, dynamic>>> invoices;
   Map<String, dynamic> _generalSettingDetails = {};
 
   final formatnum = new NumberFormat("#,##0.00", "en_US");
@@ -29,9 +34,14 @@ class _SoldProductsState extends State<SoldProducts> {
   var cache;
   var totalSales;
 
+  Future<void> syncSales() async {
+    await DatabaseHelper.instance.syncSales();
+  }
+
+
   @override
   void initState() {
-    soldproducts = DatabaseHelper.instance.getAllSoldProducts()!;
+    invoices = DatabaseHelper.instance.getAllSaleInvoices()!;
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
 
     super.initState();
@@ -63,7 +73,7 @@ class _SoldProductsState extends State<SoldProducts> {
   @override
   void dispose() {
     // Close the database connection when the widget is disposed
-    DatabaseHelper.instance.database?.close();
+   // DatabaseHelper.instance.database?.close();
     super.dispose();
   }
 
@@ -71,13 +81,8 @@ class _SoldProductsState extends State<SoldProducts> {
   Widget build(BuildContext context) {
     //print(_prefs.readCache('token','storeid'));
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.grey.shade700,
-        title: Container(
-          child: Text('Sold Products'),
-        ),
-        elevation: 0.0,
-      ),
+      appBar: CustomAppBar(),
+      drawer: DrawerScreen(),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Container(
@@ -91,7 +96,7 @@ class _SoldProductsState extends State<SoldProducts> {
                         icon: Icon(Icons.calendar_today), //icon of text field
                         labelText: DateFormat.yMMMMd()
                             .format(DateTime.now()) //label text of field
-                        ),
+                    ),
                     readOnly: true,
                     //set it true, so that user will not able to edit text
                     onTap: () async {
@@ -105,7 +110,7 @@ class _SoldProductsState extends State<SoldProducts> {
                       if (pickedDate != null) {
                         //pickedDate output format => 2021-03-10 00:00:00.000
                         String formattedDate =
-                            DateFormat('yyyy-MM-dd').format(pickedDate);
+                        DateFormat('yyyy-MM-dd').format(pickedDate);
                         //formatted date output using intl package =>  2021-03-16
                         setState(() {
                           dateInput.text = formattedDate;
@@ -126,13 +131,23 @@ class _SoldProductsState extends State<SoldProducts> {
                     }),
               ),
               Text('Select Date'),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                      onPressed: syncSales,
+                      icon: Icon(Icons.sync),
+                      label: Text('Sync sales')),
+                ],
+              ),
               SizedBox(
-                height: 20.0,
+                height: 10.0,
               ),
               Expanded(
                 child: Container(
                     child: FutureBuilder<List<dynamic>>(
-                        future: soldproducts,
+                        future: invoices,
                         //context
                         //     .read<GetProducts>()
                         //     .fetchSoldProducts(_searchquery),
@@ -144,66 +159,51 @@ class _SoldProductsState extends State<SoldProducts> {
                             print('result $result');
                             return (result != [])
                                 ? ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: result.length,
-                                    itemBuilder: (context, index) => Card(
-                                      child: ListTile(
-                                        title: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(result[index]['name']
-                                                .toString()),
-                                            (result[index]['ref1'] != null)
-                                                ? Text(
-                                                    "Serial/Ref: ${result[index]['ref1'].toString()}")
-                                                : Text(''),
-                                          ],
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                                "Quantity Sold: ${result[index]['quantity'].toString()}"),
-                                            Row(
-                                              children: [
-                                                (result[index]['ref2'] != null)
-                                                    ? Text(
-                                                        "Customer No: ${result[index]['ref2'].toString()}")
-                                                    : Text(''),
-                                              ],
-                                            )
-                                          ],
-                                        ),
-                                        trailing: Column(
-                                          children: [
-                                            //${formatnum.format(result[index]['LineTotal']).toString()}
-                                            Expanded(
-                                              child: Text(
-                                                  "Total Ksh:  ${result[index]['line_total'].toString()}"),
-                                            ),
-                                            Expanded(
-                                              child: IconButton(
-                                                onPressed: () {},
-                                                icon: Column(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Icon(
-                                                        Icons.print,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  )
+                              shrinkWrap: true,
+                              itemCount: result.length,
+                              itemBuilder: (context, index) => Card(
+                                child: ListTile(
+                                  title: Column(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      // Text(result[index]['card_code']
+                                      //     .toString())
+                                      Text('John K ')
+                                    ],
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          "Invoice #"),
+                                      result[index]['sale_status'] == 0 ? Icon(
+                                        Icons.sync,
+                                        color: Colors.orange,
+                                      ) : Icon(
+                                        Icons.check,
+                                        color: Colors.green,
+                                      )
+                                    ],
+                                  ),
+                                  trailing: Column(
+                                   crossAxisAlignment:  CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                          "Bill: ${result[index]['doc_total'].toString()}"),
+                                      Text(
+                                          "Paid: ${result[index]['total_paid'].toString()}"),
+                                      Text(
+                                          "Balance: ${result[index]['balance'].toString()}"),
+
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
                                 : Text('Select Date');
                           } else if (snapshot.hasError) {
                             return Text('${snapshot.error}');
@@ -226,21 +226,15 @@ class _SoldProductsState extends State<SoldProducts> {
 
                           return (dateInput.text != '')
                               ? Text(
-                                  ('Total Sales : ${formatnum.format(result)}'),
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                )
+                            ('Total Sales : ${formatnum.format(result)}'),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          )
                               : Text('');
                         }
                         return Text('');
                       });
                 },
               ),
-              Consumer<GetProducts>(
-                builder: (context, value, child) {
-                  return ElevatedButton(
-                      onPressed: () {}, child: Text("Print Sold Products"));
-                },
-              )
             ],
           ),
         ),

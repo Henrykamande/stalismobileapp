@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:testproject/pages/data_sync.dart';
-import 'package:testproject/pages/products_list.dart';
+import 'package:testproject/pages/masterdata/products_list.dart';
 
-import '../pages/accounts.dart';
-import '../pages/customers.dart';
+import '../pages/masterdata/accounts.dart';
+import '../pages/masterdata/customers.dart';
+import '../pages/sales/invoices.dart';
 
 class DrawerScreen extends StatelessWidget {
   const DrawerScreen({Key? key}) : super(key: key);
@@ -88,6 +89,13 @@ class DrawerScreen extends StatelessWidget {
             // leading: const Icon(Icons.compare_arrows),
             childrenPadding: const EdgeInsets.only(left: 10.0),
             children: [
+              ListTile(
+                leading: const Icon(Icons.list),
+                title: const Text('Invoices'),
+                onTap: () {
+                  Navigator.of(context).pushReplacementNamed(InvoicesScreen.routeName);
+                },
+              ),
               ListTile(
                 leading: const Icon(Icons.list),
                 title: const Text('Sold Products'),

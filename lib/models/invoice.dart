@@ -14,23 +14,24 @@ class Invoice {
   int saleStatus;
   int? receiptNo;
   int? cancelled;
+  DateTime? createdAt;
 
-  Invoice({
-    this.id,
-    this.localId,
-    required this.storeId,
-    required this.soldBy,
-    required this.cardCode,
-    required this.objType,
-    required this.docTotal,
-    required this.totalPaid,
-    this.cashGiven,
-    required this.balance,
-    this.change,
-    required this.saleStatus,
-    this.receiptNo,
-    this.cancelled,
-  });
+  Invoice(
+      {this.id,
+      this.localId,
+      required this.storeId,
+      required this.soldBy,
+      required this.cardCode,
+      required this.objType,
+      required this.docTotal,
+      required this.totalPaid,
+      this.cashGiven,
+      required this.balance,
+      this.change,
+      required this.saleStatus,
+      this.receiptNo,
+      this.cancelled,
+      this.createdAt});
 
   factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
         id: json['id'],
@@ -47,6 +48,9 @@ class Invoice {
         saleStatus: json['sale_status'],
         receiptNo: json['receipt_no'],
         cancelled: json['cancelled'],
+        createdAt: json['created_at'] != null
+            ? DateTime.parse(json['created_at'])
+            : null,
       );
 
   Map<String, dynamic> toJson() => {
@@ -64,5 +68,6 @@ class Invoice {
         'sale_status': saleStatus,
         'receipt_no': receiptNo,
         'cancelled': cancelled,
+        'created_at': createdAt?.toIso8601String(),
       };
 }

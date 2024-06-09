@@ -1,118 +1,156 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:testproject/databasesql/sql_database_connection.dart';
-import 'package:testproject/pages/Transfer/transfer_screen.dart';
-import 'package:testproject/pages/accounts.dart';
-import 'package:testproject/pages/creditmemo/creditnote.dart';
-import 'package:testproject/pages/customers.dart';
-import 'package:testproject/pages/data_sync.dart';
-import 'package:testproject/pages/deposit/deposit.dart';
-import 'package:testproject/pages/deposit/listdeposits.dart';
-import 'package:testproject/pages/gassale/gasSale.dart';
-import 'package:testproject/pages/login/loginPage.dart';
-import 'package:testproject/pages/payment/paymentslist.dart';
-import 'package:testproject/pages/products_list.dart';
-import 'package:testproject/providers/accounts.dart';
-import 'package:testproject/providers/customer.dart';
-import 'package:testproject/providers/defaultprinter.dart';
-import 'package:testproject/providers/printservice.dart';
-import 'package:testproject/pages/creditmemo/retrunedProducts.dart';
-import 'package:testproject/pages/payment/searchaccount.dart';
-import 'package:testproject/pages/productsPages/inventorylist.dart';
-
-import 'package:testproject/pages/printerPages/general_settings.dart';
-import 'package:testproject/providers/api_service.dart';
-import 'package:testproject/providers/login_service.dart';
-import 'package:testproject/pages/productsPages/searchproduct.dart';
-import 'package:testproject/pages/productsPages/soldProducts.dart';
-import 'package:testproject/providers/products.dart';
-import 'homepage.dart';
 import 'package:provider/provider.dart';
+import 'package:testproject/pages/Transfer/transfer_screen.dart';
+import 'package:testproject/pages/data_sync.dart';
+import 'package:testproject/pages/login/loginPage.dart';
+import 'package:testproject/pages/masterdata/accounts.dart';
+import 'package:testproject/pages/masterdata/customers.dart';
+import 'package:testproject/pages/masterdata/products_list.dart';
+import 'package:testproject/pages/payment/searchaccount.dart';
+import 'package:testproject/pages/printer-pages/general_settings.dart';
+import 'package:testproject/pages/products-pages/inventorylist.dart';
+import 'package:testproject/pages/products-pages/searchproduct.dart';
+import 'package:testproject/pages/sales/invoices.dart';
+import 'package:testproject/pages/sales/paymentslist.dart';
+import 'package:testproject/pages/sales/soldProducts.dart';
+import 'package:testproject/providers/accounts.dart';
+import 'package:testproject/providers/api_service.dart';
+import 'package:testproject/providers/defaultprinter.dart';
+import 'package:testproject/providers/login_service.dart';
+import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 
-class MyHttpOverrides extends HttpOverrides{
-  @override
-  HttpClient createHttpClient(SecurityContext? context){
-    return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
-  }
-}
+import './providers/customer.dart';
+
+import './providers/products.dart';
+
+import './utils/sync_service.dart';
+import 'databasesql/sql_database_connection.dart';
+import 'homepage.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  HttpOverrides.global = MyHttpOverrides();
 
-  runApp(Stalisapp());
+  runApp(
+    FocusScope(
+      autofocus: true,
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(
+            value: SyncService(),
+          ),
+          ChangeNotifierProvider(
+            create: (cxt) => ProductListProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (cxt) => CustomerProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (cxt) => AccountsProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (cxt) => ProductsProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (cxt) => GetProducts(),
+          ),
+          ChangeNotifierProvider(
+            create: (cxt) => UserLogin(),
+          ),
+          ChangeNotifierProvider(
+            create: (cxt) => DefaultPrinter(),
+          ),
+          ChangeNotifierProvider(
+            create: (cxt) => PrinterService(),
+          ),
+          // ChangeNotifierProvider(
+          //   create: (cxt) => DatabaseHelper(),
+          // )
+        ],
+        child: const MyApp(),
+      ),
+    ),
+  );
 }
 
-class Stalisapp extends StatelessWidget {
-  const Stalisapp({Key? key}) : super(key: key);
-  static const String title = "Stalis Pos";
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late StreamSubscription<ConnectivityResult> subscription;
+
+  // var _syncingAll = false;
+
+  Future<void> syncSales() async {
+    await DatabaseHelper.instance.syncSales();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    subscription = Connectivity().onConnectivityChanged.listen(
+      (ConnectivityResult result) {
+        Provider.of<SyncService>(context, listen: false)
+            .updateConnectionStatus(result);
+
+        if (result == ConnectivityResult.wifi) {
+          Timer.periodic(Duration(minutes: 2), (Timer t) {
+            syncSales();
+          });
+        }
+        // Got a new connectivity status!
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    subscription.cancel();
+    super.dispose();
+  }
+
+  // final auth = Auth();
+
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (cxt) => ProductListProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (cxt) => CustomerProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (cxt) => AccountsProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (cxt) => ProductsProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (cxt) => GetProducts(),
-        ),
-        ChangeNotifierProvider(
-          create: (cxt) => UserLogin(),
-        ),
-        ChangeNotifierProvider(
-          create: (cxt) => DefaultPrinter(),
-        ),
-        ChangeNotifierProvider(
-          create: (cxt) => PrinterService(),
-        ),
-        // ChangeNotifierProvider(
-        //   create: (cxt) => DatabaseHelper(),
-        // )
-      ],
-      child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          initialRoute: '/',
-          // initialRoute: DataSyncScreen.routeName,
-          routes: {
-            '/login': (context) => LoginPage(),
-            '/start': (context) => HomePage(),
-            '/searchproduct': (context) => SearchProduct(),
-            '/inventory': (context) => InventoryList(),
-            '/soldproducts': (context) => SoldProducts(),
-            '/paymentsearch': (context) => PaymentSearch(),
-            '/salepayments': (context) => SalePayment(),
-            '/customerDeposit': (context) => CustomerDeposit(),
-            '/customercreditnote': (context) => CustomerCreditNote(),
-            '/returnedproducts': (context) => ReturnProducts(),
-            '/gassale': (context) => GasSale(),
-            '/customerdepositlist': (context) => CustomerDepositsList(),
-            '/transfer': (context) => TransferScreen(),
-            '/generalsettings': (context) => MyPrinter(),
-            '/generalsettings': (context) => MyPrinter(),
-            DataSyncScreen.routeName: (ctx) => const DataSyncScreen(),
-            CustomersListScreen.routeName: (ctx) => const CustomersListScreen(),
-            AccountsListScreen.routeName: (ctx) => const AccountsListScreen(),
-            ProductsListScreen.routeName: (ctx) => const ProductsListScreen()
-          },
-          title: title,
-          home: Scaffold(
-              appBar: AppBar(
-                title: Text(title),
-              ),
-              body: LoginPage() //LoginPage()
-              )),
+    return MaterialApp(
+      title: 'Stalispos',
+      theme: ThemeData(
+          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.indigo)
+              .copyWith(secondary: Colors.pink[500])),
+      // home: auth.isAuth ? const LandingScreen() : const LoginScreen(),
+      home: Scaffold(
+          appBar: AppBar(
+            title: Text("Stalis Pos"),
+          ),
+          body: LoginPage() //LoginPage()
+          ),
+      routes: {
+        LoginPage.routeName: (ctx) => LoginPage(),
+        '/start': (context) => HomePage(),
+        '/searchproduct': (context) => SearchProduct(),
+        '/inventory': (context) => InventoryList(),
+        '/soldproducts': (context) => SoldProducts(),
+        '/paymentsearch': (context) => PaymentSearch(),
+        '/salepayments': (context) => SalePayment(),
+        '/transfer': (context) => TransferScreen(),
+        '/generalsettings': (context) => MyPrinter(),
+        DataSyncScreen.routeName: (ctx) => const DataSyncScreen(),
+        CustomersListScreen.routeName: (ctx) => const CustomersListScreen(),
+        AccountsListScreen.routeName: (ctx) => const AccountsListScreen(),
+        ProductsListScreen.routeName: (ctx) => const ProductsListScreen(),
+        InvoicesScreen.routeName: (ctx) => const InvoicesScreen()
+      },
     );
   }
 }

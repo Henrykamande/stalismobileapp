@@ -14,6 +14,8 @@ import 'package:oktoast/oktoast.dart';
 import 'package:testproject/models/macaddress.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
+import 'package:testproject/widgets/custom_appbar.dart';
+import 'package:testproject/widgets/drawer_screen.dart';
 
 class MyPrinter extends StatelessWidget {
   @override
@@ -313,9 +315,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     var defaultPrinter = Provider.of<GetProducts>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Select Printer"),
-      ),
+      appBar: CustomAppBar(),
+      drawer: DrawerScreen(),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(30.0),
