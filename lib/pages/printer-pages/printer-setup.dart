@@ -1,72 +1,149 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter_bluetooth_basic/flutter_bluetooth_basic.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:oktoast/oktoast.dart';
-import 'package:testproject/models/macaddress.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/widgets/custom_appbar.dart';
 import 'package:testproject/widgets/drawer_screen.dart';
 
-class MyPrinter extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return OKToast(
-      child: MaterialApp(
-        title: 'Bluetooth demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: MyHomePage(title: 'Bluetooth demo'),
-      ),
-    );
-  }
-}
+import '../../databasesql/sql_database_connection.dart';
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
+class PrinterSetupScreen extends StatefulWidget {
+  static const routeName = '/printer-setup';
+  const PrinterSetupScreen({Key? key}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<PrinterSetupScreen> createState() => _PrinterSetupScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _PrinterSetupScreenState extends State<PrinterSetupScreen> {
   PrinterBluetoothManager printerManager = PrinterBluetoothManager();
   List<PrinterBluetooth> _devices = [];
   PrinterBluetooth? _selectedPrinter;
-  @override
-  void initState() {
-    super.initState();
+
+  // void _startScanDevices() {
+  //   printerManager.startScan(Duration(seconds: 2));
+  //
+  //  // _getBluetoothDevices();
+  // }
+
+//   void _example() {
+//     PrinterBluetoothManager printerManager = PrinterBluetoothManager();
+//
+//     printerManager.scanResults.listen((printers) async {
+//       // store found printers
+//       print("printers examples$printers");
+//     });
+//     printerManager.startScan(Duration(seconds: 4));
+//
+// // ...
+//
+//
+//   }
+
+  void _scanPrinters() {
+
+    _startScanDevices();
 
     printerManager.scanResults.listen((devices) async {
-      // print('UI: Devices found ${devices.length}');
+      print('UI: Devices found ${devices.length}');
       setState(() {
         _devices = devices;
-
-        _selectedPrinter = _devices[0];
       });
     });
+
   }
 
   void _startScanDevices() {
-    setState(() {
-      _devices = [];
-    });
+    // setState(() {
+    //   _devices = [];
+    // });
     printerManager.startScan(Duration(seconds: 2));
   }
 
-  void _stopScanDevices() {
+
+  void _getBluetoothDevices() {
+    print("getBluetoothDevices");
+  try {
+    printerManager.startScan(Duration(seconds: 2));
+
+  }catch(e){
+    print('eror printer $e');
+  }
+    printerManager.scanResults.listen((devices) async {
+      print(' setup printers $devices');
+  
+      if (devices.isNotEmpty) {
+        _devices = devices;
+        _selectedPrinter = _devices[0];
+      }
+  
+      if (devices.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You dont have any bluetooth printers connected'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+  
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    //_startScanDevices();
+    //_startScanDevices();
+
+    // _scanPrinters();
+
+    // _getluetoothdevices();
+    printerManager.startScan(Duration(seconds: 2));
+    //
+    printerManager.scanResults.listen((devices) async {
+      print(' setup printers 1 $devices');
+
+      setState(() {
+
+        print(' setup printers $devices');
+
+        if(devices.isNotEmpty) {
+          _devices = devices;
+          _selectedPrinter = _devices[0];
+        }
+
+        if(devices.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You dont have any bluetooth printers connected'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+
+      });
+    });
+
+
     printerManager.stopScan();
+  }
+
+  dynamic setDefaultPrinter(printerData) async {
+    var details = {
+      'printer_name': printerData.name,
+      'printer_address': printerData.address
+    };
+    await DatabaseHelper.instance.setDefaultPrinter(details).then((value) {
+      print(' setting printer response');
+    });
   }
 
   Future<List<int>> demoReceipt(
@@ -192,106 +269,11 @@ class _MyHomePageState extends State<MyHomePage> {
     bytes += ticket.text(timestamp,
         styles: PosStyles(align: PosAlign.center), linesAfter: 2);
 
-    // Print QR Code from image
-    // try {
-    //   const String qrData = 'example.com';
-    //   const double qrSize = 200;
-    //   final uiImg = await QrPainter(
-    //     data: qrData,
-    //     version: QrVersions.auto,
-    //     gapless: false,
-    //   ).toImageData(qrSize);
-    //   final dir = await getTemporaryDirectory();
-    //   final pathName = '${dir.path}/qr_tmp.png';
-    //   final qrFile = File(pathName);
-    //   final imgFile = await qrFile.writeAsBytes(uiImg.buffer.asUint8List());
-    //   final img = decodeImage(imgFile.readAsBytesSync());
-
-    //   bytes += ticket.image(img);
-    // } catch (e) {
-    //   print(e);
-    // }
-
-    // Print QR Code using native function
-    // bytes += ticket.qrcode('example.com');
-
     ticket.feed(2);
     ticket.cut();
     return bytes;
   }
 
-  Future<List<int>> testTicket(
-      PaperSize paper, CapabilityProfile profile) async {
-    final Generator generator = Generator(paper, profile);
-    List<int> bytes = [];
-
-    bytes += generator.text(
-        'Regular: aA bB cC dD eE fF gG hH iI jJ kK lL mM nN oO pP qQ rR sS tT uU vV wW xX yY zZ');
-    // bytes += generator.text('Special 1: àÀ èÈ éÉ ûÛ üÜ çÇ ôÔ',
-    //     styles: PosStyles(codeTable: PosCodeTable.westEur));
-    // bytes += generator.text('Special 2: blåbærgrød',
-    //     styles: PosStyles(codeTable: PosCodeTable.westEur));
-
-    bytes += generator.text('Bold text', styles: PosStyles(bold: true));
-    bytes += generator.text('Reverse text', styles: PosStyles(reverse: true));
-    bytes += generator.text('Underlined text',
-        styles: PosStyles(underline: true), linesAfter: 1);
-    bytes +=
-        generator.text('Align left', styles: PosStyles(align: PosAlign.left));
-    bytes += generator.text('Align center',
-        styles: PosStyles(align: PosAlign.center));
-    bytes += generator.text('Align right',
-        styles: PosStyles(align: PosAlign.right), linesAfter: 1);
-
-    bytes += generator.row([
-      PosColumn(
-        text: 'col3',
-        width: 3,
-        styles: PosStyles(align: PosAlign.center, underline: true),
-      ),
-      PosColumn(
-        text: 'col6',
-        width: 6,
-        styles: PosStyles(align: PosAlign.center, underline: true),
-      ),
-      PosColumn(
-        text: 'col3',
-        width: 3,
-        styles: PosStyles(align: PosAlign.center, underline: true),
-      ),
-    ]);
-
-    bytes += generator.text('Text size 200%',
-        styles: PosStyles(
-          height: PosTextSize.size2,
-          width: PosTextSize.size2,
-        ));
-
-    // Print image
-    final ByteData data = await rootBundle.load('assets/logo.png');
-    final Uint8List buf = data.buffer.asUint8List();
-    final Image image = decodeImage(buf)!;
-    bytes += generator.image(image);
-    // Print image using alternative commands
-    // bytes += generator.imageRaster(image);
-    // bytes += generator.imageRaster(image, imageFn: PosImageFn.graphics);
-
-    // Print barcode
-    final List<int> barData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 4];
-    bytes += generator.barcode(Barcode.upcA(barData));
-
-    // Print mixed (chinese + latin) text. Only for printers supporting Kanji mode
-    // bytes += generator.text(
-    //   'hello ! 中文字 # world @ éphémère &',
-    //   styles: PosStyles(codeTable: PosCodeTable.westEur),
-    //   containsChinese: true,
-    // );
-
-    bytes += generator.feed(2);
-
-    bytes += generator.cut();
-    return bytes;
-  }
 
   void _testPrint(PrinterBluetooth? printer) async {
     printerManager.selectPrinter(printer!);
@@ -344,8 +326,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         items: removeDuplicates(_getDeviceItems()),
                         onChanged: (value) {
                           _selectedPrinter = value!;
-                          defaultPrinter
-                              .defaultPrinterAddress(_selectedPrinter);
+                          setDefaultPrinter(_selectedPrinter);
                         },
                         value: _selectedPrinter,
                       ),

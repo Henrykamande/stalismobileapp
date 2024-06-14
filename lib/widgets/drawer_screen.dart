@@ -4,6 +4,7 @@ import 'package:testproject/pages/masterdata/products_list.dart';
 
 import '../pages/masterdata/accounts.dart';
 import '../pages/masterdata/customers.dart';
+import '../pages/printer-pages/printer-setup.dart';
 import '../pages/sales/invoices.dart';
 
 class DrawerScreen extends StatelessWidget {
@@ -42,7 +43,7 @@ class DrawerScreen extends StatelessWidget {
               // Update the state of the app
               // ...
               // Then close the drawer
-              Navigator.pushNamed(context, '/start');
+              Navigator.pushReplacementNamed(context, '/start');
             },
           ),
           // ListTile(
@@ -100,26 +101,26 @@ class DrawerScreen extends StatelessWidget {
                 leading: const Icon(Icons.list),
                 title: const Text('Sold Products'),
                 onTap: () {
-                  Navigator.pushNamed(context, '/soldproducts');
+                  Navigator.pushReplacementNamed(context, '/soldproducts');
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.list),
                 title: const Text('Payments'),
                 onTap: () {
-                  Navigator.pushNamed(context, '/salepayments');
+                  Navigator.pushReplacementNamed(context, '/salepayments');
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.list),
-                title: const Text('Returned Products'),
-                onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pushNamed(context, '/returnedproducts');
-                },
-              ),
+              // ListTile(
+              //   leading: const Icon(Icons.list),
+              //   title: const Text('Returned Products'),
+              //   onTap: () {
+              //     // Update the state of the app
+              //     // ...
+              //     // Then close the drawer
+              //     Navigator.pushNamed(context, '/returnedproducts');
+              //   },
+              // ),
             ],
           ),
           ExpansionTile(
@@ -180,19 +181,13 @@ class DrawerScreen extends StatelessWidget {
           ListTile(
             title: const Text('Sync Data'),
             onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
               Navigator.of(context).pushReplacementNamed(DataSyncScreen.routeName);
             },
           ),
           ListTile(
             title: const Text('Printer Setup'),
             onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pushNamed(context, '/generalsettings');
+              Navigator.of(context).pushReplacementNamed(PrinterSetupScreen.routeName);
             },
           ),
         ],

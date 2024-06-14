@@ -11,7 +11,7 @@ import 'package:testproject/pages/masterdata/accounts.dart';
 import 'package:testproject/pages/masterdata/customers.dart';
 import 'package:testproject/pages/masterdata/products_list.dart';
 import 'package:testproject/pages/payment/searchaccount.dart';
-import 'package:testproject/pages/printer-pages/general_settings.dart';
+import 'package:testproject/pages/printer-pages/printer-setup.dart';
 import 'package:testproject/pages/products-pages/inventorylist.dart';
 import 'package:testproject/pages/products-pages/searchproduct.dart';
 import 'package:testproject/pages/sales/invoices.dart';
@@ -144,7 +144,7 @@ class _MyAppState extends State<MyApp> {
         '/paymentsearch': (context) => PaymentSearch(),
         '/salepayments': (context) => SalePayment(),
         '/transfer': (context) => TransferScreen(),
-        '/generalsettings': (context) => MyPrinter(),
+        PrinterSetupScreen.routeName: (ctx) => const PrinterSetupScreen(),
         DataSyncScreen.routeName: (ctx) => const DataSyncScreen(),
         CustomersListScreen.routeName: (ctx) => const CustomersListScreen(),
         AccountsListScreen.routeName: (ctx) => const AccountsListScreen(),

@@ -10,6 +10,114 @@ import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:oktoast/oktoast.dart';
 
+Future<List<int>> saleReceipt(
+    PaperSize paper, CapabilityProfile profile, PosSale saleCard) async {
+  final Generator ticket = Generator(paper, profile);
+  List<int> bytes = [];
+
+  // Print image
+  // final ByteData data = await rootBundle.load('assets/rabbit_black.jpg');
+  // final Uint8List imageBytes = data.buffer.asUint8List();
+  // final Image? image = decodeImage(imageBytes);
+  // bytes += ticket.image(image);
+
+  bytes += ticket.text('MILEVA BEAUTY',
+      styles: PosStyles(align: PosAlign.center));
+  bytes += ticket.text('DUBOIS ROAD, AFRICANA STALLS',
+      styles: PosStyles(align: PosAlign.center));
+  bytes += ticket.text('SHOP 10A',
+      styles: PosStyles(align: PosAlign.center));
+  bytes += ticket.text('Tel: 0722561469 / 0757660406',
+      styles: PosStyles(align: PosAlign.center),  linesAfter: 1);
+  // bytes += ticket.text('Web: www.example.com',
+  //     styles: PosStyles(align: PosAlign.center), linesAfter: 1);
+
+  bytes += ticket.text('--------------------------------',
+      styles: PosStyles(align: PosAlign.center));
+
+  bytes += ticket.row([
+    PosColumn(text: 'Item        Qty       Total', width: 12),
+    // PosColumn(text: 'Quantity', width: 4),
+    // PosColumn(
+    //     text: 'Total', width: 4, styles: PosStyles(align: PosAlign.right)),
+  ]);
+
+  for (var cartItem in saleCard.rows) {
+    bytes += ticket.row([
+      PosColumn(text: '${cartItem.name}', width: 12),
+      // PosColumn(text: '${cartItem.name}', width: 7),
+      // PosColumn(
+      //     text: '${cartItem.price}', width: 2, styles: PosStyles(align: PosAlign.right)),
+      // PosColumn(
+      //     text: '${cartItem.lineTotal}', width: 2, styles: PosStyles(align: PosAlign.right)),
+    ]);
+  }
+
+
+  bytes += ticket.text('--------------------------------',
+      styles: PosStyles(align: PosAlign.center));
+
+  bytes += ticket.row([
+    PosColumn(
+        text: 'TOTAL',
+        width: 6,
+        styles: PosStyles(
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        )),
+    PosColumn(
+        text: '${saleCard.docTotal}',
+        width: 6,
+        styles: PosStyles(
+          align: PosAlign.right,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        )),
+  ]);
+
+  bytes += ticket.text('--------------------------------',
+      styles: PosStyles(align: PosAlign.center), linesAfter: 1);
+
+
+
+  bytes += ticket.feed(2);
+  bytes += ticket.text('Thank you!',
+      styles: PosStyles(align: PosAlign.center, bold: true));
+
+  final now = DateTime.now();
+  final formatter = DateFormat('MM/dd/yyyy H:m');
+  final String timestamp = formatter.format(now);
+  bytes += ticket.text(timestamp,
+      styles: PosStyles(align: PosAlign.center), linesAfter: 2);
+
+  // Print QR Code from image
+  // try {
+  //   const String qrData = 'example.com';
+  //   const double qrSize = 200;
+  //   final uiImg = await QrPainter(
+  //     data: qrData,
+  //     version: QrVersions.auto,
+  //     gapless: false,
+  //   ).toImageData(qrSize);
+  //   final dir = await getTemporaryDirectory();
+  //   final pathName = '${dir.path}/qr_tmp.png';
+  //   final qrFile = File(pathName);
+  //   final imgFile = await qrFile.writeAsBytes(uiImg.buffer.asUint8List());
+  //   final img = decodeImage(imgFile.readAsBytesSync());
+
+  //   bytes += ticket.image(img);
+  // } catch (e) {
+  //   print(e);
+  // }
+
+  // Print QR Code using native function
+  // bytes += ticket.qrcode('example.com');
+
+  ticket.feed(2);
+  ticket.cut();
+  return bytes;
+}
+
 Future<List<int>> demoReceipt(
     PaperSize paper, CapabilityProfile profile, PosSale saleCard) async {
   final Generator ticket = Generator(paper, profile);
@@ -239,7 +347,7 @@ void printingSaleReciept(
 
   // DEMO RECEIPT
   final PosPrintResult res = await printerManager
-      .printTicket((await demoReceipt(paper, profile, saleCard)));
+      .printTicket((await saleReceipt(paper, profile, saleCard)));
 
-  showToast(res.msg);
+ showToast(res.msg);
 }

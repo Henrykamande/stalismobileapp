@@ -38,7 +38,7 @@ class DatabaseHelper {
     // Open the database and store the reference.
     print(await getApplicationDocumentsDirectory());
     database = await openDatabase(
-      join(documentsDirectory.toString(), 'stalispos22.db'),
+      join(documentsDirectory.toString(), 'test.db'),
       onCreate: ((db, version) {
         return {
           db.execute(invoiceTableSql),
@@ -47,6 +47,7 @@ class DatabaseHelper {
           db.execute(customerSql),
           db.execute(accountsTableSql),
           db.execute(productsTableSql),
+          db.execute(generalSettingSql),
           // db.execute(usersTableSql),
           // db.execute(printerSetup),
           // db.execute(inventoryTableSql),
@@ -84,6 +85,36 @@ class DatabaseHelper {
     };
 
     return headers;
+  }
+
+  Future<void> setDefaultPrinter(printerData) async {
+    // Get a reference to the database.
+    Database? database = await databaseConnection();
+
+    var result =
+        await database?.query('general_settings', orderBy: 'id ASC', limit: 1);
+
+    print(' result $result');
+
+    if (result != null && result.isNotEmpty) {
+      int? firstId = result.first['id'] as int?;
+      // Record exists, update it
+      await database?.update('general_settings', printerData,
+          where: 'id = ?', whereArgs: [firstId]);
+    } else {
+      // Record doesn't exist, insert it
+      await database?.insert('general_settings', printerData);
+    }
+  }
+
+  Future<dynamic> getDefaultPrinter() async {
+    Database? database = await databaseConnection();
+
+    var result =
+        await database?.query('general_settings', orderBy: 'id ASC', limit: 1);
+
+    var address = result![0]['printer_address'];
+    return address;
   }
 
   Future<void> syncCustomers(database) async {
@@ -127,6 +158,8 @@ class DatabaseHelper {
     var bankAccounts = await AccountsProvider().fetchAccounts();
 
     await db.transaction((txn) async {
+      await txn.delete('accounts');
+
       for (var account in bankAccounts) {
         var newAccount = new Account(
             id: account['id'],
@@ -161,6 +194,9 @@ class DatabaseHelper {
     final db = await database;
 
     await db.transaction((txn) async {
+
+      await txn.delete('products');
+
       for (var product in productsData) {
         var newProduct = new Product(
             id: product['id'],
@@ -210,7 +246,7 @@ class DatabaseHelper {
     return maps;
   }
 
-  Future<void> postSale(PosSale salesCard) async {
+  Future<dynamic> postSale(PosSale salesCard) async {
     var prefsData = await sharedData();
     // Get a reference to the database.
     Database? database = await databaseConnection();
@@ -283,6 +319,8 @@ class DatabaseHelper {
         );
       }
     });
+
+    // print(" insert")
   }
 
   Future<List<Map<String, dynamic>>>? getAllSoldProducts() async {
@@ -296,8 +334,8 @@ class DatabaseHelper {
     // Get a reference to the database.
     Database? database = await databaseConnection();
 
-    final List<Map<String, dynamic>> maps = await database!.rawQuery(
-        "SELECT * FROM invoices  ORDER BY id DESC");
+    final List<Map<String, dynamic>> maps =
+        await database!.rawQuery("SELECT * FROM invoices  ORDER BY id DESC");
     return maps;
   }
 
@@ -372,7 +410,6 @@ class DatabaseHelper {
       invoice['payments'] = payments;
       // end of payments data
     }
-
 
     try {
       var response =

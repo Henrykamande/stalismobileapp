@@ -37,8 +37,12 @@ var paymentTableSql = '''CREATE TABLE `payments` (
     FOREIGN KEY ("account_id") REFERENCES "accounts"("id"),
     FOREIGN KEY ("sold_by") REFERENCES "users"("id")
 )''';
+
 var printerSetup =
     ''' CREATE TABLE `printer_setups` (`id` integer PRIMARY KEY AUTOINCREMENT,`row_text` text,`row_location` text,`store_id` integer)''';
+
+var generalSettingSql =
+''' CREATE TABLE `general_settings` (`id` integer PRIMARY KEY AUTOINCREMENT,`sell_deficit` text,`show_available_stock` text,`printer_name` text, `printer_address` text)''';
 
 var productsTableSql = ''' CREATE TABLE products (
     id INTEGER PRIMARY KEY,

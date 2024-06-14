@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:testproject/constants/constants.dart';
 import 'package:testproject/databasesql/sql_database_connection.dart';
 import 'package:testproject/models/postSale.dart';
+import 'package:testproject/pages/printer-pages/printerPage.dart';
 import 'package:testproject/providers/api_service.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
@@ -68,16 +69,29 @@ class _HomePageState extends State<HomePage> {
   final formatnum = new NumberFormat("#,##0.00", "en_US");
   PrinterBluetoothManager printerManager = PrinterBluetoothManager();
   List<PrinterBluetooth> _devices = [];
+
+  void _startScanDevices() {
+    setState(() {
+      _devices = [];
+    });
+    printerManager.startScan(Duration(seconds: 2));
+  }
+  //
+  // void _setScannedDevices() {
+  //
+  //
+  // }
+
   @override
   void initState() {
     super.initState();
-    // fetchDrivers();
-    // fetchallSaleTypes();
-    // fetchCustomers();
-    // setHeaders();
     setdate = true;
-    //_getPrinterAddress();
-    _scanPrinters();
+
+    // _startScanDevices();
+
+    // _getPrinterAddress();
+    // print(' printers $_devices');
+
 
     context.read<GetProducts>().fetchshopDetails();
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
@@ -94,7 +108,6 @@ class _HomePageState extends State<HomePage> {
   }
   // end
 
-
   // search customers method
   Future<List<Map<String, dynamic>>> _searchCustomers() async {
     final searchQuery = customerSearchController.text;
@@ -108,39 +121,19 @@ class _HomePageState extends State<HomePage> {
   }
   // end
 
-  void _scanPrinters() {
-    printerManager.scanResults.listen((devices) async {
-      // print('UI: Devices found ${devices.length}');
-      setState(() {
-        _devices = devices;
-      });
-    });
 
-    _startScanDevices();
-  }
-
-  void _startScanDevices() {
-    setState(() {
-      _devices = [];
-    });
-    printerManager.startScan(Duration(seconds: 4));
-  }
-
-  void _stopScanDevices() {
-    printerManager.stopScan();
-  }
 
   void fetchShopDetails() async {
-    var headers = await setHeaders();
+   // var headers = await setHeaders();
 
-    var url = Uri.https(baseUrl, '/api/v1/general-settings');
-    var response = await http.get(
-      url,
-      headers: headers,
-    );
-
-    if (response.statusCode == 200) {}
-    _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
+    // var url = Uri.https(baseUrl, '/api/v1/general-settings');
+    // var response = await http.get(
+    //   url,
+    //   headers: headers,
+    // );
+    //
+    // if (response.statusCode == 200) {}
+    // _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
   }
 
   void fetchDrivers() async {
@@ -191,25 +184,25 @@ class _HomePageState extends State<HomePage> {
     return headers;
   }
 
-  // _getPrinterAddress() async {
-  //   var headers = await sethenders();
-  //   var url =
-  //       Uri.https(baseUrl, '/api/v1/store-mac-address/${headers['storeid']}');
-  //   var response = await http.get(
-  //     url,
-  //     headers: headers,
-  //   );
-  //   var data = await jsonDecode(response.body);
-  //   defaultPrinter =
-  //       _devices.firstWhere((item) => item.address == data['ResponseData']);
-  //   setState(() {
-  //     defaultPrinter = defaultPrinter;
+  _getPrinterAddress() async {
+    _startScanDevices();
 
-  //     print(_devices);
-  //     print(macaddress);
-  //   });
-  //   return data['ResponseData'];
-  // }
+    var address = await DatabaseHelper.instance.getDefaultPrinter();
+
+    printerManager.scanResults.listen((devices) async {
+
+      print(' bluetooth devices $devices');
+
+      var printer = devices.firstWhere((item) => item.address == address);
+      setState(() {
+        _devices = devices;
+        defaultPrinter = printer;
+      });
+    });
+
+    printerManager.stopScan();
+
+  }
 
   void setPickedBy(pickedbyvalue) {
     setState(() {
@@ -222,7 +215,7 @@ class _HomePageState extends State<HomePage> {
   }
   // save sale
 
-  void saveSale() async {
+  dynamic saveSale() async {
     var cartData =
         Provider.of<ProductListProvider>(context, listen: false).productlist;
 
@@ -246,6 +239,8 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.red,
         ),
       );
+
+      return;
     }
 
     if (selectedCustomerId == "" &&
@@ -258,6 +253,8 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.red,
         ),
       );
+
+      return;
     }
 
     final balance = Provider.of<ProductListProvider>(context, listen: false)
@@ -289,7 +286,6 @@ class _HomePageState extends State<HomePage> {
       cardCode = int.parse(selectedCustomerId);
     }
 
-    print('customer id $cardCode');
 
     // post sale data
     PosSale saleData = new PosSale(
@@ -309,20 +305,31 @@ class _HomePageState extends State<HomePage> {
         totalPaid: totalpayment,
         userName: userName);
 
-    print('sale data $saleData');
 
-    // end of sale data post request
-    print("Print sale data");
     setState(() {
-      // _isLoading = true;
+      _isLoading = true;
     });
 
-    // hit the provider method
-    // Provider.of<GetProducts>(context, listen: false).postsale(saleData);
+    if(defaultPrinter == null) {
+      _getPrinterAddress();
+      print(' fetched bluetooth ');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please set the default printer first'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
 
     DatabaseHelper.instance.postSale(saleData).then((value) {
-      // check if request was successful
-      //if (value['ResultCode'] == 1200) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if(defaultPrinter != null) {
+        printingSaleReciept(defaultPrinter!, saleData, printerManager);
+      }
+
       Provider.of<ProductListProvider>(context, listen: false)
           .setprodLIstempty();
       Provider.of<ProductListProvider>(context, listen: false)
@@ -343,7 +350,6 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.green,
         ),
       );
-      //   printingSaleReciept(defaultPrinter!, saleData, printerManager);
 
       // end of the  success check
 
