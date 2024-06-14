@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
-import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:oktoast/oktoast.dart';
 import 'package:testproject/providers/api_service.dart';
@@ -49,7 +49,6 @@ class _PrinterSetupScreenState extends State<PrinterSetupScreen> {
 //   }
 
   void _scanPrinters() {
-
     _startScanDevices();
 
     printerManager.scanResults.listen((devices) async {
@@ -58,7 +57,6 @@ class _PrinterSetupScreenState extends State<PrinterSetupScreen> {
         _devices = devices;
       });
     });
-
   }
 
   void _startScanDevices() {
@@ -68,23 +66,21 @@ class _PrinterSetupScreenState extends State<PrinterSetupScreen> {
     printerManager.startScan(Duration(seconds: 2));
   }
 
-
   void _getBluetoothDevices() {
     print("getBluetoothDevices");
-  try {
-    printerManager.startScan(Duration(seconds: 2));
-
-  }catch(e){
-    print('eror printer $e');
-  }
+    try {
+      printerManager.startScan(Duration(seconds: 2));
+    } catch (e) {
+      print('eror printer $e');
+    }
     printerManager.scanResults.listen((devices) async {
       print(' setup printers $devices');
-  
+
       if (devices.isNotEmpty) {
         _devices = devices;
         _selectedPrinter = _devices[0];
       }
-  
+
       if (devices.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -94,46 +90,39 @@ class _PrinterSetupScreenState extends State<PrinterSetupScreen> {
         );
       }
     });
-  
   }
+
+  // if(devices.isNotEmpty) {
+  //   _devices = devices;
+  //   _selectedPrinter = _devices[0];
+  // }
+  //
+  // if(devices.isEmpty) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     const SnackBar(
+  //       content: Text('You dont have any bluetooth printers connected'),
+  //       backgroundColor: Colors.red,
+  //     ),
+  //   );
+  // }
 
   @override
   void initState() {
     super.initState();
-    //_startScanDevices();
-    //_startScanDevices();
 
-    // _scanPrinters();
+    printerManager.startScan(Duration(seconds: 4));
 
-    // _getluetoothdevices();
-    printerManager.startScan(Duration(seconds: 2));
-    //
     printerManager.scanResults.listen((devices) async {
       print(' setup printers 1 $devices');
 
       setState(() {
-
         print(' setup printers $devices');
-
-        if(devices.isNotEmpty) {
-          _devices = devices;
-          _selectedPrinter = _devices[0];
-        }
-
-        if(devices.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('You dont have any bluetooth printers connected'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-
       });
     });
 
-
-    printerManager.stopScan();
+    Future.delayed(Duration(seconds: 2), () {
+      printerManager.stopScan();
+    });
   }
 
   dynamic setDefaultPrinter(printerData) async {
@@ -273,7 +262,6 @@ class _PrinterSetupScreenState extends State<PrinterSetupScreen> {
     ticket.cut();
     return bytes;
   }
-
 
   void _testPrint(PrinterBluetooth? printer) async {
     printerManager.selectPrinter(printer!);
