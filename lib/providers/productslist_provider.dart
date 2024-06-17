@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:testproject/models/creditmemo.dart';
 
 import 'package:testproject/models/postSale.dart';
+import '../databasesql/sql_database_connection.dart';
+import '../models/cart_payment.dart';
 
 import 'api_service.dart';
 
@@ -35,6 +37,10 @@ class ProductListProvider with ChangeNotifier {
   dynamic _depositItem;
   String _selecteddate = '';
   bool _multiplePriceList = false;
+
+
+  List<CartPayment> _accounts = [];
+
   List<SaleRow> get productlist {
     return [..._productList];
   }
@@ -49,6 +55,10 @@ class ProductListProvider with ChangeNotifier {
 
   List<Payment> get paymentlist {
     return [..._payments];
+  }
+
+  List<CartPayment> get getAccountsData {
+    return _accounts;
   }
 
   dynamic get accountSelected {
@@ -194,6 +204,34 @@ class ProductListProvider with ChangeNotifier {
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   */
 //Add products new sale funttions
+
+  Future<dynamic> fetchAccountsList() async {
+    try {
+      var listData = await DatabaseHelper.instance.getAllAccounts();
+
+      var myAccounts = listData
+          .map(
+            (account) => CartPayment(
+          id: account['id'],
+          name: account['Name'],
+          amount: '',
+        ),
+      )
+          .toList();
+
+      _accounts = myAccounts;
+
+      print(' p accounts $_accounts');
+
+      notifyListeners();
+      return _accounts;
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+
+
   void addProduct(item) {
     _productList.add(item);
     notifyListeners();
@@ -220,12 +258,14 @@ class ProductListProvider with ChangeNotifier {
   }
 
   double totalPaymentcalc() {
-    _totalpayment = 0;
-    _payments.forEach((item) {
-      _totalpayment += item.sumApplied!;
-    });
-    //notifyListeners();
-    return _totalpayment;
+    double totalPayments = 0;
+    for (var element in _accounts) {
+      if (element.amount.isNotEmpty) {
+        totalPayments += double.parse(element.amount.toString());
+      }
+    }
+
+    return totalPayments;
   }
 
   void removeProduct(index) {
@@ -255,7 +295,7 @@ class ProductListProvider with ChangeNotifier {
 
   void setprodLIstempty() {
     _productList = [];
-    _payments = [];
+    _accounts = [];
     notifyListeners();
   }
 

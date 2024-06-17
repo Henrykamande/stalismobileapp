@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
+import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import 'package:testproject/databasesql/sql_database_connection.dart';
 import 'package:testproject/models/postSale.dart';
 import 'package:testproject/pages/printer-pages/printerPage.dart';
 import 'package:testproject/providers/api_service.dart';
+import 'package:testproject/providers/printservice.dart';
 import 'package:testproject/providers/productslist_provider.dart';
 import 'package:testproject/providers/shared_preferences_services.dart';
 import 'package:intl/intl.dart';
@@ -19,6 +21,10 @@ import 'package:testproject/widgets/drawer_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:testproject/utils/custom_select_box.dart';
 import 'package:testproject/utils/http.dart';
+
+import 'models/cart_payment.dart';
+import 'models/cart_payment.dart';
+import 'models/cart_payment.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -43,7 +49,6 @@ class _HomePageState extends State<HomePage> {
   var allCustomers;
   var selectedCustomerId = "";
   var selectedDriver = '';
-  PrinterBluetooth? defaultPrinter;
   var selectedSaleType = '';
   var pickedBy = "";
   var _isLoading = false;
@@ -54,6 +59,8 @@ class _HomePageState extends State<HomePage> {
   var _customerFocusNodes = <FocusNode>[];
   final FocusNode _customerSearchFocusNode = FocusNode();
   int _currentIndex = -1;
+
+  List<dynamic> _accounts = [];
 
   String todayDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
   final paymentTextStyle = const TextStyle(
@@ -67,34 +74,205 @@ class _HomePageState extends State<HomePage> {
 
   TextEditingController dateController = TextEditingController();
   final formatnum = new NumberFormat("#,##0.00", "en_US");
+
+  List<TextEditingController> controllers = [];
+
   PrinterBluetoothManager printerManager = PrinterBluetoothManager();
   List<PrinterBluetooth> _devices = [];
+  PrinterBluetooth? _selectedPrinter;
 
-  void _startScanDevices() {
-    setState(() {
-      _devices = [];
-    });
-    printerManager.startScan(Duration(seconds: 2));
+  void _printReceipt(saleData) async {
+    var address = await DatabaseHelper.instance.getDefaultPrinter();
+
+    var printer = _devices.firstWhere((item) => item.address == address);
+
+    printerManager.selectPrinter(printer!);
+
+    // TODO Don't forget to choose printer's paper
+    const PaperSize paper = PaperSize.mm80;
+    final profile = await CapabilityProfile.load();
+
+    // DEMO RECEIPT
+    final PosPrintResult res = await printerManager
+        .printTicket((await demoReceipt(paper, profile, saleData)));
+
+    // showToast(res.msg);
   }
-  //
-  // void _setScannedDevices() {
-  //
-  //
-  // }
+
+  Future<List<int>> demoReceipt(
+      PaperSize paper, CapabilityProfile profile, saleData) async {
+    final Generator ticket = Generator(paper, profile);
+    List<int> bytes = [];
+
+    // Print image
+    // final ByteData data = await rootBundle.load('assets/rabbit_black.jpg');
+    // final Uint8List imageBytes = data.buffer.asUint8List();
+    // final Image? image = decodeImage(imageBytes);
+    // bytes += ticket.image(image);
+
+    bytes += ticket.text('SAWI PHONE HUB',
+        styles: PosStyles(
+          align: PosAlign.center,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
+        ),
+        linesAfter: 1);
+
+    bytes += ticket.text('MOBILE PHONES & ACCESSORIES',
+        styles: PosStyles(align: PosAlign.center));
+    bytes += ticket.text('TEL: 0752768093',
+        styles: PosStyles(align: PosAlign.center));
+    bytes += ticket.text('If you buy from us, know it is',
+        styles: PosStyles(align: PosAlign.center));
+    bytes += ticket.text('original',
+        styles: PosStyles(align: PosAlign.center), linesAfter: 1);
+
+    bytes += ticket.text('--------------------------------',
+        styles: PosStyles(align: PosAlign.center));
+
+    bytes += ticket.row([
+      PosColumn(text: 'Item   Description', width: 12),
+    ]);
+
+    bytes += ticket.text('--------------------------------',
+        styles: PosStyles(align: PosAlign.center));
+
+    for (var sale in saleData.rows) {
+      bytes += ticket.row([
+        PosColumn(text: '${sale.name}', width: 12),
+      ]);
+
+      bytes += ticket.row([
+        PosColumn(text: '${sale.quantity} X ${sale.price} = ${sale.lineTotal}', width: 12),
+      ]);
+
+      bytes += ticket.text('--------------------------------',
+          styles: PosStyles(align: PosAlign.center));
+    }
+
+    bytes += ticket.row([
+      PosColumn(
+          text: 'BILL: ${saleData.docTotal}',
+          width: 12,
+          styles: PosStyles(
+            align: PosAlign.left,
+            height: PosTextSize.size2,
+            width: PosTextSize.size2,
+          )),
+    ]);
+
+    bytes += ticket.row([
+      PosColumn(
+          text: 'PAID: ${saleData.totalPaid}',
+          width: 12,
+          styles: PosStyles(
+            align: PosAlign.left,
+            height: PosTextSize.size2,
+            width: PosTextSize.size2,
+          )),
+    ]);
+
+    bytes += ticket.row([
+      PosColumn(
+          text: 'BALC: ${saleData.balance}',
+          width: 12,
+          styles: PosStyles(
+            align: PosAlign.left,
+            height: PosTextSize.size2,
+            width: PosTextSize.size2,
+          )),
+    ]);
+
+    bytes += ticket.text('--------------------------------',
+        styles: PosStyles(align: PosAlign.center), linesAfter: 1);
+
+    // bytes += ticket.row([
+    //   PosColumn(
+    //       text: 'Cash',
+    //       width: 7,
+    //       styles: PosStyles(align: PosAlign.right, width: PosTextSize.size2)),
+    //   PosColumn(
+    //       text: '\$15.00',
+    //       width: 5,
+    //       styles: PosStyles(align: PosAlign.right, width: PosTextSize.size2)),
+    // ]);
+    // bytes += ticket.row([
+    //   PosColumn(
+    //       text: 'Change',
+    //       width: 7,
+    //       styles: PosStyles(align: PosAlign.right, width: PosTextSize.size2)),
+    //   PosColumn(
+    //       text: '\$4.03',
+    //       width: 5,
+    //       styles: PosStyles(align: PosAlign.right, width: PosTextSize.size2)),
+    // ]);
+
+    bytes += ticket.feed(2);
+    bytes += ticket.text('Thank you!',
+        styles: PosStyles(align: PosAlign.center, bold: true));
+
+    final now = DateTime.now();
+    final formatter = DateFormat('MM/dd/yyyy H:m');
+    final String timestamp = formatter.format(now);
+    bytes += ticket.text(timestamp,
+        styles: PosStyles(align: PosAlign.center), linesAfter: 2);
+
+    // Print QR Code from image
+    // try {
+    //   const String qrData = 'example.com';
+    //   const double qrSize = 200;
+    //   final uiImg = await QrPainter(
+    //     data: qrData,
+    //     version: QrVersions.auto,
+    //     gapless: false,
+    //   ).toImageData(qrSize);
+    //   final dir = await getTemporaryDirectory();
+    //   final pathName = '${dir.path}/qr_tmp.png';
+    //   final qrFile = File(pathName);
+    //   final imgFile = await qrFile.writeAsBytes(uiImg.buffer.asUint8List());
+    //   final img = decodeImage(imgFile.readAsBytesSync());
+
+    //   bytes += ticket.image(img);
+    // } catch (e) {
+    //   print(e);
+    // }
+
+    // Print QR Code using native function
+    // bytes += ticket.qrcode('example.com');
+
+    ticket.feed(2);
+    ticket.cut();
+    return bytes;
+  }
 
   @override
   void initState() {
     super.initState();
     setdate = true;
 
-    // _startScanDevices();
+    fetchAccounts();
 
-    // _getPrinterAddress();
-    // print(' printers $_devices');
+    printerManager.startScan(Duration(seconds: 2));
 
+    printerManager.scanResults.listen((devices) async {
+      print('UI: Devices found homepage ${devices.length}');
+      setState(() {
+        _devices = devices;
+        if (_devices.length > 0) {
+          _selectedPrinter = _devices[0];
+        }
+      });
+
+      // printerManager.stopScan();
+    });
 
     context.read<GetProducts>().fetchshopDetails();
     _generalSettingDetails = context.read<GetProducts>().generalSettingsDetails;
+  }
+
+  void fetchAccounts() {
+    Provider.of<ProductListProvider>(context, listen: false)
+        .fetchAccountsList();
   }
 
   // select customer method
@@ -121,10 +299,23 @@ class _HomePageState extends State<HomePage> {
   }
   // end
 
-
+  // Future<List<dynamic>> _getAccounts() async {
+  //
+  //   print(' accounts ----------');
+  //
+  //   var accounts = await DatabaseHelper.instance.getAllAccounts();
+  //
+  //   print(' accounts $accounts');
+  //
+  //   setState(() {
+  //     _accounts = accounts!;
+  //   });
+  //
+  //   return accounts;
+  // }
 
   void fetchShopDetails() async {
-   // var headers = await setHeaders();
+    // var headers = await setHeaders();
 
     // var url = Uri.https(baseUrl, '/api/v1/general-settings');
     // var response = await http.get(
@@ -184,26 +375,6 @@ class _HomePageState extends State<HomePage> {
     return headers;
   }
 
-  _getPrinterAddress() async {
-    _startScanDevices();
-
-    var address = await DatabaseHelper.instance.getDefaultPrinter();
-
-    printerManager.scanResults.listen((devices) async {
-
-      print(' bluetooth devices $devices');
-
-      var printer = devices.firstWhere((item) => item.address == address);
-      setState(() {
-        _devices = devices;
-        defaultPrinter = printer;
-      });
-    });
-
-    printerManager.stopScan();
-
-  }
-
   void setPickedBy(pickedbyvalue) {
     setState(() {
       pickedBy = pickedbyvalue;
@@ -259,21 +430,36 @@ class _HomePageState extends State<HomePage> {
 
     final balance = Provider.of<ProductListProvider>(context, listen: false)
         .balancepayment();
-    final paymentlist =
-        Provider.of<ProductListProvider>(context, listen: false).paymentlist;
+    final paymentlist = Provider.of<ProductListProvider>(context, listen: false)
+        .getAccountsData;
+
     final totalbill =
         Provider.of<ProductListProvider>(context, listen: false).totabill;
+
     final products =
         Provider.of<ProductListProvider>(context, listen: false).productlist;
+
     final totalpayment =
-        Provider.of<ProductListProvider>(context, listen: false).totalpayment;
+        Provider.of<ProductListProvider>(context, listen: false)
+            .totalPaymentcalc();
+
     final customerNo =
         Provider.of<ProductListProvider>(context, listen: false).customerPhone;
+
+    if (balance < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You cannot pay more than the bill'),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+      return;
+    }
 
     var prefsData = await sharedData();
 
     var userName = prefsData['userName'];
-
     var allCustomers = await DatabaseHelper.instance.getAllCustomers();
     int cardCode = 0;
 
@@ -286,6 +472,12 @@ class _HomePageState extends State<HomePage> {
       cardCode = int.parse(selectedCustomerId);
     }
 
+    List<CartPayment> salePayments = [];
+    for (var payment in paymentlist) {
+      if (payment.amount != '') {
+        salePayments.add(payment);
+      }
+    }
 
     // post sale data
     PosSale saleData = new PosSale(
@@ -296,7 +488,7 @@ class _HomePageState extends State<HomePage> {
         cardCode: cardCode,
         saleType: selectedSaleType != '' ? int.parse(selectedSaleType) : 0,
         discSum: discountGiven,
-        payments: paymentlist,
+        payments: salePayments,
         docTotal: totalbill,
         balance: balance,
         driver: selectedDriver != '' ? int.parse(selectedDriver) : 0,
@@ -305,30 +497,16 @@ class _HomePageState extends State<HomePage> {
         totalPaid: totalpayment,
         userName: userName);
 
-
     setState(() {
       _isLoading = true;
     });
 
-    if(defaultPrinter == null) {
-      _getPrinterAddress();
-      print(' fetched bluetooth ');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please set the default printer first'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-
     DatabaseHelper.instance.postSale(saleData).then((value) {
-      setState(() {
-        _isLoading = false;
-      });
+      _printReceipt(saleData);
 
-      if(defaultPrinter != null) {
-        printingSaleReciept(defaultPrinter!, saleData, printerManager);
-      }
+      // Provider.of<PrinterService>(context, listen: false).getBluetooth();
+
+      // Provider.of<PrinterService>(context, listen: false).printSaleReceipt(saleData);
 
       Provider.of<ProductListProvider>(context, listen: false)
           .setprodLIstempty();
@@ -342,6 +520,7 @@ class _HomePageState extends State<HomePage> {
         selectedCustomerId = "";
         _selectedCustomer = {};
         _isLoading = false;
+        controllers = [];
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -367,6 +546,8 @@ class _HomePageState extends State<HomePage> {
       //    setState(() {
       //      _isLoading = false;
       //    });
+
+      fetchAccounts();
     });
 
     // of of provider request method
@@ -416,19 +597,23 @@ class _HomePageState extends State<HomePage> {
                       icon: Icon(Icons.add),
                       label: Text('Add Sale Item')),
                   TextButton.icon(
-                    onPressed: () {
-                      context
-                          .read<ProductListProvider>()
-                          .setPreviousRoute('/start');
-
-                      Navigator.pushNamed(context, '/paymentsearch');
-                    },
-                    icon: Icon(Icons.add),
-                    label: Text('Add Payment'),
-                    style: ButtonStyle(
-                        foregroundColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.pink)),
-                  )
+                      onPressed: () {},
+                      icon: Icon(Icons.add),
+                      label: Text('test print')),
+                  // TextButton.icon(
+                  //   onPressed: () {
+                  //     context
+                  //         .read<ProductListProvider>()
+                  //         .setPreviousRoute('/start');
+                  //
+                  //     Navigator.pushNamed(context, '/paymentsearch');
+                  //   },
+                  //   icon: Icon(Icons.add),
+                  //   label: Text('Add Payment'),
+                  //   style: ButtonStyle(
+                  //       foregroundColor: MaterialStateColor.resolveWith(
+                  //           (states) => Colors.pink)),
+                  // )
                 ],
               ),
             ),
@@ -447,7 +632,7 @@ class _HomePageState extends State<HomePage> {
                                     title: Text(
                                       value.productlist[index].name.toString(),
                                       style: TextStyle(
-                                          fontSize: 13.0,
+                                          fontSize: 16.0,
                                           fontWeight: FontWeight.bold),
                                     ),
                                     subtitle: Row(
@@ -457,7 +642,7 @@ class _HomePageState extends State<HomePage> {
                                           child: Text(
                                             "Qty: ${(value.productlist[index].quantity).toString()}",
                                             style: TextStyle(
-                                                fontSize: 11.0,
+                                                fontSize: 14.0,
                                                 fontWeight: FontWeight.bold),
                                           ),
                                         ),
@@ -466,7 +651,7 @@ class _HomePageState extends State<HomePage> {
                                           child: Text(
                                             "Price: ${value.productlist[index].price.toString()}",
                                             style: TextStyle(
-                                                fontSize: 11.0,
+                                                fontSize: 14.0,
                                                 fontWeight: FontWeight.bold),
                                           ),
                                         ),
@@ -476,10 +661,15 @@ class _HomePageState extends State<HomePage> {
                                       padding: const EdgeInsets.all(4.0),
                                       child: Column(
                                         children: [
-                                          Text(formatnum
-                                              .format(value
-                                                  .productlist[index].lineTotal)
-                                              .toString()),
+                                          Text(
+                                              formatnum
+                                                  .format(value
+                                                      .productlist[index]
+                                                      .lineTotal)
+                                                  .toString(),
+                                              style: TextStyle(
+                                                  fontSize: 14.0,
+                                                  fontWeight: FontWeight.bold)),
                                           Expanded(
                                             child: IconButton(
                                                 icon: Icon(
@@ -517,127 +707,178 @@ class _HomePageState extends State<HomePage> {
             SizedBox(
               height: 20,
             ),
-            Container(
-              child: Consumer<ProductListProvider>(
-                builder: (context, value, child) {
-                  return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: value.paymentlist.length,
-                      itemBuilder: (context, index) => index <
-                              value.paymentlist.length
-                          ? Container(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Column(
+                      children: [
+                        DataTable(
+                          dividerThickness: 0,
+                          border: const TableBorder(
+                            horizontalInside: BorderSide(
                               color: Colors.white,
-                              child: ListTile(
-                                title: Text('${value.paymentlist[index].name}'),
-                                subtitle: Text(
-                                    '${value.paymentlist[index].paymentRemarks}'),
-                                trailing: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                          "Ksh ${(formatnum.format(value.paymentlist[index].sumApplied)).toString()}"),
-                                      Expanded(
-                                        child: IconButton(
-                                            icon: Icon(
-                                              Icons.cancel,
-                                              color: Colors.red,
-                                            ),
-                                            onPressed: () {
-                                              value.removePayment(index);
-                                            }),
-                                      )
-                                    ],
+                              width: 0,
+                            ),
+                          ),
+                          dataRowHeight: 40,
+                          columnSpacing: 25,
+                          columns: const [
+                            DataColumn(
+                              label: Text("Account"),
+                            ),
+                            DataColumn(
+                              label: Text("Amount"),
+                            )
+                          ],
+                          rows: Provider.of<ProductListProvider>(context,
+                                  listen: false)
+                              .getAccountsData
+                              .map((item) {
+                            var i = Provider.of<ProductListProvider>(context,
+                                    listen: false)
+                                .getAccountsData
+                                .indexOf(item);
+
+                            TextEditingController controller =
+                                TextEditingController(
+                                    text: item.amount.toString());
+                            controllers.add(controller);
+
+                            return DataRow(
+                              cells: [
+                                DataCell(Text(
+                                  item.name.toString(),
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                )),
+                                DataCell(
+                                  SizedBox(
+                                    height: 35,
+                                    child: Container(
+                                      color: Colors.white,
+                                      width: 200,
+                                      child: TextFormField(
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
+                                        decoration: const InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          contentPadding:
+                                              EdgeInsets.only(bottom: 8.0),
+                                        ),
+                                        controller: controllers[i],
+                                        keyboardType: const TextInputType
+                                            .numberWithOptions(decimal: true),
+                                        key: Key(item.id.toString()),
+                                        inputFormatters: <TextInputFormatter>[
+                                          FilteringTextInputFormatter.allow(
+                                            RegExp(r'[0-9]'),
+                                          ),
+                                        ],
+                                        onChanged: (value) {
+                                          setState(() {
+                                            item.amount = value;
+                                          });
+                                          if (value.isEmpty) {
+                                            setState(() {
+                                              item.amount = "";
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            )
-                          : Card(
-                              child: Text("Hello"),
-                            ));
-                },
-              ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total Bill:',
-                    style: TextStyle(
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Consumer<ProductListProvider>(
-                    builder: (context, value, child) {
-                      return Text(
-                        '${formatnum.format(value.totalPrice())}',
-                        style: TextStyle(
-                          fontSize: 13.0,
-                          fontWeight: FontWeight.bold,
+                              ],
+                            );
+                          }).toList(),
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total Paid:',
-                      style: TextStyle(
-                        fontSize: 13.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Consumer<ProductListProvider>(
-                      builder: (context, value, child) {
-                        return Text(
-                          '${formatnum.format(value.totalPaymentcalc())}',
-                          style: TextStyle(
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                )),
-            Consumer<ProductListProvider>(builder: (context, value, child) {
-              return Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Balance:',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 13.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '${formatnum.format(value.balancepayment())}',
-                      style: TextStyle(
-                        fontSize: 13.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                      ],
+                    )
                   ],
                 ),
-              );
-            }),
-            Divider(),
+                Row(
+                  children: [
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total Bill:',
+                              style: paymentTextStyle,
+                            ),
+                            SizedBox(
+                              width: 30,
+                            ),
+                            Container(
+                              child: Consumer<ProductListProvider>(
+                                builder: (context, value, child) {
+                                  return Text(
+                                    '${formatnum.format(value.totalPrice())}',
+                                    style: paymentTextStyle,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total Paid:',
+                              style: paymentTextStyle,
+                            ),
+                            SizedBox(
+                              width: 30,
+                            ),
+                            Consumer<ProductListProvider>(
+                              builder: (context, value, child) {
+                                return Text(
+                                  '${formatnum.format(value.totalPaymentcalc())}',
+                                  style: paymentTextStyle,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Balance:',
+                              style: paymentTextStyle,
+                            ),
+                            SizedBox(
+                              width: 30,
+                            ),
+                            Consumer<ProductListProvider>(
+                              builder: (context, value, child) {
+                                return Text(
+                                  '${formatnum.format(value.balancepayment())}',
+                                  style: paymentTextStyle,
+                                );
+                              },
+                            ),
+                          ],
+                        )
+                      ],
+                    )
+                  ],
+                )
+              ],
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

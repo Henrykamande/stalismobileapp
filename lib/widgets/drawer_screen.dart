@@ -187,7 +187,7 @@ class DrawerScreen extends StatelessWidget {
           ListTile(
             title: const Text('Printer Setup'),
             onTap: () {
-              Navigator.of(context).pushReplacementNamed(PrinterSetupScreen.routeName);
+             Navigator.of(context).pushReplacementNamed(PrinterSetupScreen.routeName);
             },
           ),
         ],

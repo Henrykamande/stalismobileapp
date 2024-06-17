@@ -240,29 +240,9 @@ class GetProducts with ChangeNotifier {
     return data;
   }
 
-  Future defaultPrinterAddress(printerAddress) async {
-    var headers = await sethenders();
-
-    final queryparameters = jsonEncode({
-      "store_id": headers['storeid'],
-      'address': printerAddress,
-    });
-
-    var url = Uri.https(baseUrl, '/api/v1/store-mac-address');
-    response = await http.post(
-      url,
-      headers: headers,
-      body: queryparameters,
-    );
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      print('Customer Fetch ');
-    }
-    data = await jsonDecode(response.body);
-    print(data);
-
-    notifyListeners();
-    return data;
+  Future defaultPrinterAddress(printerData) async {
+    print(' printer address ${printerData}');
+    DatabaseHelper.instance.setDefaultPrinter(printerData);
   }
 
   /* Future<List<dynamic>> getPrinterAddress() async {
@@ -454,20 +434,20 @@ class GetProducts with ChangeNotifier {
   }
 
   void fetchshopDetails() async {
-    var headers = await sethenders();
+   // var headers = await sethenders();
 
-    var url = Uri.https(baseUrl, '/api/v1/general-settings');
-    var response = await http.get(
-      url,
-      headers: headers,
-    );
+    // var url = Uri.https(baseUrl, '/api/v1/general-settings');
+    // var response = await http.get(
+    //   url,
+    //   headers: headers,
+    // );
 
-    if (response.statusCode == 200) {
-      print('Sucessful POst');
-    }
-    _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
-    notifyListeners();
-    print("General Setting Data $_generalSettingDetails ");
+    // if (response.statusCode == 200) {
+    //   print('Sucessful POst');
+    // }
+    // _generalSettingDetails = jsonDecode(response.body)['ResponseData'];
+    // notifyListeners();
+    // print("General Setting Data $_generalSettingDetails ");
   }
 
   /*  Future<Map<String, dynamic>> fetchPriceList(productId, o_p_l_n_s_id) async {

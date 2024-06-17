@@ -30,6 +30,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   english_words: ^4.0.0
+  dio: ^5.4.3+1
   http: ^1.1.0
   shared_preferences: ^2.0.7
   snippet_coder_utils: ^1.0.8
@@ -49,6 +50,7 @@ dependencies:
   uuid: ^4.2.2
   blue_thermal_printer: ^1.2.3
   esc_pos_bluetooth: ^0.4.1
+  flutter_bluetooth_basic: ^0.1.7
 
 dev_dependencies:
   flutter_test:

@@ -94,7 +94,7 @@ class _PaymentSearchState extends State<PaymentSearch> {
                                     onTap: () async {
                                       Payment selectedAccount = new Payment(
                                         accountId: result[index]['id'],
-                                        name: result[index]['Name'],
+                                        // name: result[index]['Name'],
                                       );
 
                                       await paymentsData.accountchoice(selectedAccount);

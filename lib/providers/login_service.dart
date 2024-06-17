@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,16 +14,22 @@ class UserLogin with ChangeNotifier {
 
   Future<dynamic> loginApi(String password, String email) async {
     try {
-      // final dio = Dio();
       // var url = onlineBackendUrl;
-      // var response = await dio
-      //     .post('$url/login', data: {'userName': email, 'pin': password});
-      var details = {'email': email, 'password': password};
-      final loginData = jsonEncode(details);
+     final dio = Dio();
+      var url = 'https://prestige-nhg7.onrender.com';
 
-      final response = await httpPost('login', loginData);
+      var response = await dio
+          .post('$url/login', data: {'email': email, 'password': password});
 
-      var authData = jsonDecode(response.body);
+      // print(' login response ${response.data}');
+      // var details = {'email': email, 'password': password};
+      // final loginData = jsonEncode(details);
+      //
+      // final response = await httpPost('login', loginData);
+
+      // var authData = jsonDecode(response);
+
+     var authData = response.data;
 
       if (authData['ResultCode'] == 1200) {
 

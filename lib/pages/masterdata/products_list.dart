@@ -62,8 +62,8 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
                               child: ListTile(
                                 title: Text(result[index]['Name']),
                                 subtitle: Text(result[index]['SellingPrice'].toString()),
-                                trailing: Text(
-                                    'In Stock: ${result[index]['AvailableQty'].toString()}'),
+                                // trailing: Text(
+                                //     'In Stock: ${result[index]['AvailableQty'].toString()}'),
                               ),
                             ),
                           );

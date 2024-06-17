@@ -64,9 +64,9 @@ void main() {
           ChangeNotifierProvider(
             create: (cxt) => DefaultPrinter(),
           ),
-          ChangeNotifierProvider(
-            create: (cxt) => PrinterService(),
-          ),
+          // ChangeNotifierProvider(
+          //   create: (cxt) => PrinterService(),
+          // ),
           // ChangeNotifierProvider(
           //   create: (cxt) => DatabaseHelper(),
           // )
@@ -87,7 +87,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late StreamSubscription<ConnectivityResult> subscription;
 
-  // var _syncingAll = false;
+  var _syncingAll = false;
 
   Future<void> syncSales() async {
     await DatabaseHelper.instance.syncSales();
@@ -107,14 +107,13 @@ class _MyAppState extends State<MyApp> {
             syncSales();
           });
         }
-        // Got a new connectivity status!
       },
     );
   }
 
   @override
   void dispose() {
-    subscription.cancel();
+  //  subscription.cancel();
     super.dispose();
   }
 
@@ -133,7 +132,7 @@ class _MyAppState extends State<MyApp> {
           appBar: AppBar(
             title: Text("Stalis Pos"),
           ),
-          body: LoginPage() //LoginPage()
+          body: HomePage()
           ),
       routes: {
         LoginPage.routeName: (ctx) => LoginPage(),

@@ -278,14 +278,14 @@ class DatabaseHelper {
 
       for (var payment in salesCard.payments) {
         var newPayment = new Payment(
-            accountId: payment.accountId,
+            accountId: payment.id,
             invoiceId: lastInsertedInvoice,
             storeId: prefsData['storeId'],
             cardCode: salesCard.cardCode!,
-            paymentRemarks: payment.paymentRemarks,
+            paymentRemarks: '',
             soldBy: salesCard.soldBy,
             recieptNo: lastInsertedInvoice,
-            sumApplied: payment.sumApplied);
+            sumApplied: int.parse(payment.amount));
 
         // check if the record exisirt in the accounts table
 

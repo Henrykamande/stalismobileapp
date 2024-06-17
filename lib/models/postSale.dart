@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'cart_payment.dart';
+
 PosSale posSaleFromJson(String str) => PosSale.fromJson(json.decode(str));
 
 String posSaleToJson(PosSale data) => json.encode(data.toJson());
@@ -43,7 +45,7 @@ class PosSale {
   String? customerName;
   DateTime docDate;
   int discSum;
-  List<Payment> payments;
+  List<CartPayment> payments;
   List<SaleRow> rows;
   double totalPaid;
   String userName;
@@ -62,8 +64,8 @@ class PosSale {
         ref1: json["ref1"],
         docDate: DateTime.parse(json["DocDate"]),
         discSum: json["DiscSum"],
-        payments: List<Payment>.from(
-            json["payments"].map((x) => Payment.fromJson(x))),
+        payments: List<CartPayment>.from(
+            json["payments"].map((x) => CartPayment.fromJson(x))),
         rows: List<SaleRow>.from(json["rows"].map((x) => SaleRow.fromJson(x))),
         totalPaid: json["totalPaid"],
         userName: json["userName"],

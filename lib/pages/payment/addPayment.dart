@@ -134,7 +134,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                         Payment newPayment = Payment(
                           sumApplied: _amountPaid,
                           accountId: accountSelected.accountId,
-                          name: accountSelected.name,
+                          // name: accountSelected.name,
                           paymentRemarks: remarks,
                         );
 
